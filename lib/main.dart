@@ -1,10 +1,14 @@
+import 'package:business_card_scanner/core/routes/app_router.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'core/theme/app_theme.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await ScreenUtil.ensureScreenSize();
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   runApp(const MyApp());
 }
 
@@ -19,11 +23,16 @@ class MyApp extends StatelessWidget {
       minTextAdapt: true,
       splitScreenMode: true,
       builder: (context, child) {
-        return MaterialApp(
-          title: 'Business Card Scanner',
-          theme: AppTheme.lightTheme,
-          home: const MyHomePage(title: 'Test'), // Your main app widget
-          debugShowCheckedModeBanner: false,
+        return GestureDetector(
+          onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+          child: MaterialApp.router(
+            debugShowCheckedModeBanner: false,
+            title: 'Business Card Scanner',
+            theme: AppTheme.lightTheme,
+           // home: const MyHomePage(title: 'Test'), // Your main app widget
+            themeMode: ThemeMode.light,
+            routerConfig: router,
+          ),
         );
       },
     );
