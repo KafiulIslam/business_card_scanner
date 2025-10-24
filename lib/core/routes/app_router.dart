@@ -1,4 +1,5 @@
 import 'package:business_card_scanner/core/routes/routes.dart';
+import 'package:business_card_scanner/features/auth/presentation/views/login_screen.dart';
 import 'package:business_card_scanner/features/onBoard/presentation/views/onboard_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
@@ -37,16 +38,17 @@ final GoRouter router = GoRouter(
         },
       ),
     ),
-    // GoRoute(
-    //   path: Routes.login,
-    //   pageBuilder: (context, state) => CustomTransitionPage(
-    //     key: state.pageKey,
-    //     child: LoginPage(isGoogleSignIn: state.extra as bool? ?? false),
-    //     transitionsBuilder: (context, animation, secondaryAnimation, child) {
-    //       return FadeTransition(opacity: animation, child: child);
-    //     },
-    //   ),
-    // ),
+    GoRoute(
+      path: Routes.login,
+      pageBuilder: (context, state) => CustomTransitionPage(
+        key: state.pageKey,
+        child: const LoginScreen(),
+        // child: LoginScreen(isGoogleSignIn: state.extra as bool? ?? false),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+      ),
+    ),
     // GoRoute(
     //   path: Routes.userForgetPassword,
     //   pageBuilder: (context, state) => CustomTransitionPage(

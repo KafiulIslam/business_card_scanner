@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../core/routes/routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../data/models/onboard_data.dart';
 
@@ -17,19 +19,19 @@ class _OnboardScreenState extends State<OnboardScreen> {
     OnboardData(
       title: 'Your Card, Always Ready',
       description:
-      'User Business Card Scanner is free for life time. Scan and digitize your own professional card. Instantly share a pristine digital copy anytime, anywhere.',
+          'User Business Card Scanner is free for life time. Scan and digitize your own professional card. Instantly share a pristine digital copy anytime, anywhere.',
       icon: Icons.qr_code_2_rounded,
     ),
     OnboardData(
       title: 'Never Lose a Contact',
       description:
-      "Scan anyone's business card, and preserve the data life time. Our AI extracts names, emails, and numbers instantly, saving them securely to your digital rolodex.",
+          "Scan anyone's business card, and preserve the data life time. Our AI extracts names, emails, and numbers instantly, saving them securely to your digital rolodex.",
       icon: Icons.document_scanner_rounded,
     ),
     OnboardData(
       title: 'Design Your Brand',
       description:
-      'Create your own business card using our intuitive editor. Choose templates, customize colors, and generate a professional, shareable digital card instantly.',
+          'Create your own business card using our intuitive editor. Choose templates, customize colors, and generate a professional, shareable digital card instantly.',
       icon: Icons.edit_note_rounded,
     ),
   ];
@@ -51,25 +53,11 @@ class _OnboardScreenState extends State<OnboardScreen> {
   }
 
   void _onSkip() {
-    // In a real app, this would navigate to the main screen.
-    // For this example, we just print to console.
-    print('Onboarding skipped. Proceed to main app.');
-    _showSnackBar('Onboarding Skipped! Proceeding to the main screen.');
+    context.go(Routes.login);
   }
 
   void _onGetStarted() {
-    // In a real app, this would navigate to the main screen.
-    print('Onboarding complete. Proceed to main app.');
-    _showSnackBar('Onboarding Complete! Proceeding to the main screen.');
-  }
-
-  void _showSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        duration: const Duration(seconds: 2),
-      ),
-    );
+    context.go(Routes.login);
   }
 
   @override
@@ -140,7 +128,7 @@ class _OnboardScreenState extends State<OnboardScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   padding:
-                  const EdgeInsets.symmetric(horizontal: 30, vertical: 14),
+                      const EdgeInsets.symmetric(horizontal: 30, vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
@@ -169,15 +157,14 @@ class _OnboardScreenState extends State<OnboardScreen> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(
         onboardPages.length,
-            (index) => Container(
+        (index) => Container(
           margin: const EdgeInsets.symmetric(horizontal: 4.0),
           width: 8.0,
           height: 8.0,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: _currentPage == index
-                ? AppColors.primary
-                : AppColors.gray500,
+            color:
+                _currentPage == index ? AppColors.primary : AppColors.gray500,
           ),
         ),
       ),
@@ -185,10 +172,10 @@ class _OnboardScreenState extends State<OnboardScreen> {
   }
 }
 
-
 // --- SINGLE PAGE WIDGET ---
 class OnboardPage extends StatelessWidget {
   final OnboardData data;
+
   const OnboardPage({super.key, required this.data});
 
   @override
@@ -205,7 +192,8 @@ class OnboardPage extends StatelessWidget {
             decoration: BoxDecoration(
               color: AppColors.primaryLight.withOpacity(0.1),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppColors.primaryLight.withOpacity(0.3), width: 2),
+              border: Border.all(
+                  color: AppColors.primaryLight.withOpacity(0.3), width: 2),
               boxShadow: [
                 BoxShadow(
                   color: AppColors.primary.withOpacity(0.1),
