@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../data/models/onboard_data.dart';
-
 
 class OnboardWidget extends StatelessWidget {
-  final OnboardData data;
-  const OnboardWidget({super.key, required this.data});
+  final String title;
+  final String description;
+  final String iconName;
+  
+  const OnboardWidget({
+    super.key, 
+    required this.title,
+    required this.description,
+    required this.iconName,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +38,7 @@ class OnboardWidget extends StatelessWidget {
             ),
             child: Center(
               child: Icon(
-                data.icon,
+                _getIconFromName(iconName),
                 size: 100,
                 color: AppColors.primary,
               ),
@@ -42,7 +48,7 @@ class OnboardWidget extends StatelessWidget {
 
           // Title
           Text(
-            data.title,
+            title,
             textAlign: TextAlign.center,
             style: const TextStyle(
               fontSize: 28,
@@ -54,7 +60,7 @@ class OnboardWidget extends StatelessWidget {
 
           // Description
           Text(
-            data.description,
+            description,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 16,
@@ -66,5 +72,18 @@ class OnboardWidget extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  IconData _getIconFromName(String iconName) {
+    switch (iconName) {
+      case 'qr_code_2_rounded':
+        return Icons.qr_code_2_rounded;
+      case 'document_scanner_rounded':
+        return Icons.document_scanner_rounded;
+      case 'edit_note_rounded':
+        return Icons.edit_note_rounded;
+      default:
+        return Icons.info;
+    }
   }
 }

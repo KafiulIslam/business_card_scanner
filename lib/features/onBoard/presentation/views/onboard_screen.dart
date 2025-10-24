@@ -1,101 +1,130 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/routes/routes.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../data/models/onboard_data.dart';
+import '../cubit/onboard_cubit.dart';
+import '../cubit/onboard_state.dart';
+import '../widgets/onboard_widget.dart';
+import '../../domain/use_cases/get_onboard_data_use_case.dart';
+import '../../domain/use_cases/complete_onboarding_use_case.dart';
+import '../../data/repositories/onboard_repository_impl.dart';
+import '../../data/services/onboard_service_impl.dart';
 
-class OnboardScreen extends StatefulWidget {
+class OnboardScreen extends StatelessWidget {
   const OnboardScreen({super.key});
 
   @override
-  State<OnboardScreen> createState() => _OnboardScreenState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => OnboardCubit(
+        getOnboardDataUseCase: GetOnboardDataUseCase(
+          OnboardRepositoryImpl(OnboardServiceImpl()),
+        ),
+        completeOnboardingUseCase: CompleteOnboardingUseCase(
+          OnboardRepositoryImpl(OnboardServiceImpl()),
+        ),
+      )..loadOnboardData(),
+      child: const OnboardView(),
+    );
+  }
 }
 
-class _OnboardScreenState extends State<OnboardScreen> {
-  final PageController _pageController = PageController();
-  int _currentPage = 0;
-
-  final List<OnboardData> onboardPages = [
-    OnboardData(
-      title: 'Your Card, Always Ready',
-      description:
-          'User Business Card Scanner is free for life time. Scan and digitize your own professional card. Instantly share a pristine digital copy anytime, anywhere.',
-      icon: Icons.qr_code_2_rounded,
-    ),
-    OnboardData(
-      title: 'Never Lose a Contact',
-      description:
-          "Scan anyone's business card, and preserve the data life time. Our AI extracts names, emails, and numbers instantly, saving them securely to your digital rolodex.",
-      icon: Icons.document_scanner_rounded,
-    ),
-    OnboardData(
-      title: 'Design Your Brand',
-      description:
-          'Create your own business card using our intuitive editor. Choose templates, customize colors, and generate a professional, shareable digital card instantly.',
-      icon: Icons.edit_note_rounded,
-    ),
-  ];
-
-  @override
-  void initState() {
-    super.initState();
-    _pageController.addListener(() {
-      setState(() {
-        _currentPage = _pageController.page?.round() ?? 0;
-      });
-    });
-  }
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
-
-  void _onSkip() {
-    context.go(Routes.login);
-  }
-
-  void _onGetStarted() {
-    context.go(Routes.login);
-  }
+class OnboardView extends StatelessWidget {
+  const OnboardView({super.key});
 
   @override
   Widget build(BuildContext context) {
+    return BlocListener<OnboardCubit, OnboardState>(
+      listener: (context, state) {
+        if (state is OnboardCompleted) {
+          context.go(Routes.login);
+        } else if (state is OnboardError) {
+          _showSnackBar(context, state.message);
+        }
+      },
+      child: BlocBuilder<OnboardCubit, OnboardState>(
+        builder: (context, state) {
+          if (state is OnboardLoading) {
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
+          
+          if (state is OnboardError) {
+            return Scaffold(
+              body: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.error, size: 64, color: Colors.red),
+                    const SizedBox(height: 16),
+                    Text(state.message),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () => context.read<OnboardCubit>().loadOnboardData(),
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+          
+          if (state is OnboardLoaded) {
+            return _buildOnboardContent(context, state);
+          }
+          
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildOnboardContent(BuildContext context, OnboardLoaded state) {
     return Scaffold(
       body: SafeArea(
         child: Column(
           children: [
             Expanded(
               child: PageView.builder(
-                controller: _pageController,
-                itemCount: onboardPages.length,
+                onPageChanged: (index) {
+                  context.read<OnboardCubit>().goToPage(index);
+                },
+                itemCount: state.onboardData.length,
                 itemBuilder: (context, index) {
-                  return OnboardPage(data: onboardPages[index]);
+                  final entity = state.onboardData[index];
+                  return OnboardWidget(
+                    title: entity.title,
+                    description: entity.description,
+                    iconName: entity.iconName,
+                  );
                 },
               ),
             ),
-            _buildNavigation(context),
+            _buildNavigation(context, state),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildNavigation(BuildContext context) {
+  Widget _buildNavigation(BuildContext context, OnboardLoaded state) {
     return Padding(
       padding: const EdgeInsets.all(24.0),
       child: Column(
         children: [
-          _buildDotIndicator(),
+          _buildDotIndicator(state),
           const SizedBox(height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               // Skip/Back Button
-              if (_currentPage == 0)
+              if (state.currentPage == 0)
                 TextButton(
-                  onPressed: _onSkip,
+                  onPressed: () => context.read<OnboardCubit>().skipOnboarding(),
                   child: const Text(
                     'Skip',
                     style: TextStyle(color: Colors.grey, fontSize: 16),
@@ -103,11 +132,7 @@ class _OnboardScreenState extends State<OnboardScreen> {
                 )
               else
                 TextButton(
-                  onPressed: () {
-                    _pageController.previousPage(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOut);
-                  },
+                  onPressed: () => context.read<OnboardCubit>().previousPage(),
                   child: const Text(
                     'Back',
                     style: TextStyle(color: Colors.grey, fontSize: 16),
@@ -117,18 +142,15 @@ class _OnboardScreenState extends State<OnboardScreen> {
               // Next/Get Started Button
               ElevatedButton(
                 onPressed: () {
-                  if (_currentPage < onboardPages.length - 1) {
-                    _pageController.nextPage(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOut);
+                  if (state.currentPage < state.onboardData.length - 1) {
+                    context.read<OnboardCubit>().nextPage();
                   } else {
-                    _onGetStarted();
+                    context.read<OnboardCubit>().completeOnboarding();
                   }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 30, vertical: 14),
+                  padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
@@ -136,7 +158,7 @@ class _OnboardScreenState extends State<OnboardScreen> {
                   shadowColor: AppColors.primaryLight,
                 ),
                 child: Text(
-                  _currentPage == onboardPages.length - 1
+                  state.currentPage == state.onboardData.length - 1
                       ? 'Get Started'
                       : 'Next',
                   style: const TextStyle(
@@ -152,90 +174,29 @@ class _OnboardScreenState extends State<OnboardScreen> {
     );
   }
 
-  Widget _buildDotIndicator() {
+  Widget _buildDotIndicator(OnboardLoaded state) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(
-        onboardPages.length,
+        state.onboardData.length,
         (index) => Container(
           margin: const EdgeInsets.symmetric(horizontal: 4.0),
           width: 8.0,
           height: 8.0,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color:
-                _currentPage == index ? AppColors.primary : AppColors.gray500,
+            color: state.currentPage == index ? AppColors.primary : AppColors.gray500,
           ),
         ),
       ),
     );
   }
-}
 
-// --- SINGLE PAGE WIDGET ---
-class OnboardPage extends StatelessWidget {
-  final OnboardData data;
-
-  const OnboardPage({super.key, required this.data});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 64.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // Graphic Area
-          Container(
-            height: 200,
-            decoration: BoxDecoration(
-              color: AppColors.primaryLight.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                  color: AppColors.primaryLight.withOpacity(0.3), width: 2),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary.withOpacity(0.1),
-                  blurRadius: 15,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
-            child: Center(
-              child: Icon(
-                data.icon,
-                size: 100,
-                color: AppColors.primary,
-              ),
-            ),
-          ),
-          const SizedBox(height: 48),
-
-          // Title
-          Text(
-            data.title,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: AppColors.black,
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // Description
-          Text(
-            data.description,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 16,
-              color: AppColors.black.withOpacity(0.7),
-              height: 1.5,
-            ),
-          ),
-          const SizedBox(height: 48),
-        ],
+  void _showSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: const Duration(seconds: 2),
       ),
     );
   }
