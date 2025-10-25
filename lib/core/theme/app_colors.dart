@@ -18,8 +18,6 @@ class AppColors {
   static const Color scanError = Color(0xFFE53935);
 
   // Neutral Colors
-  static const Color white = Color(0xFFFFFFFF);
-  static const Color black = Color(0xFF000000);
   static const Color gray50 = Color(0xFFFAFAFA);
   static const Color gray100 = Color(0xFFF5F5F5);
   static const Color gray200 = Color(0xFFEEEEEE);
@@ -41,4 +39,13 @@ class AppColors {
   static const Color background = Color(0xFFFAFAFA);
   static const Color surface = Color(0xFFFFFFFF);
   static const Color cardBackground = Color(0xFFFFFFFF);
+
+  //icon colors
+  static const Color iconColor = Color(0xFFA1A1A1);
+
+  //border colro
+  static const Color borderColor = Color(0xFFEEEEEE);
+
+  // scaffold bg color
+  static const Color scaffoldBG = Color(0xFFf7f7f7);
 }

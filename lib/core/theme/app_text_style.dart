@@ -10,7 +10,7 @@ class AppTextStyles {
           textStyle: TextStyle(
         fontSize: 32.sp,
         fontWeight: FontWeight.bold,
-        color: AppColors.black,
+        color: Colors.black,
         height: 1.2,
       ));
 
@@ -18,7 +18,7 @@ class AppTextStyles {
           textStyle: TextStyle(
         fontSize: 28.sp,
         fontWeight: FontWeight.bold,
-        color: AppColors.black,
+        color: Colors.black,
         height: 1.2,
       ));
 
@@ -26,7 +26,7 @@ class AppTextStyles {
           textStyle: TextStyle(
         fontSize: 24.sp,
         fontWeight: FontWeight.w600,
-        color: AppColors.black,
+        color: Colors.black,
         height: 1.3,
       ));
 
@@ -34,7 +34,7 @@ class AppTextStyles {
           textStyle: TextStyle(
         fontSize: 20.sp,
         fontWeight: FontWeight.w600,
-        color: AppColors.black,
+        color: Colors.black,
         height: 1.3,
       ));
 
@@ -93,7 +93,7 @@ class AppTextStyles {
           textStyle: TextStyle(
         fontSize: 18.sp,
         fontWeight: FontWeight.w600,
-        color: AppColors.white,
+        color: Colors.white,
         height: 1.2,
       ));
 
@@ -101,7 +101,7 @@ class AppTextStyles {
           textStyle: TextStyle(
         fontSize: 16.sp,
         fontWeight: FontWeight.w600,
-        color: AppColors.white,
+        color: Colors.white,
         height: 1.2,
       ));
 
@@ -109,7 +109,7 @@ class AppTextStyles {
           textStyle: TextStyle(
         fontSize: 14.sp,
         fontWeight: FontWeight.w600,
-        color: AppColors.white,
+        color: Colors.white,
         height: 1.2,
       ));
 
@@ -127,6 +127,15 @@ class AppTextStyles {
         fontSize: 10.sp,
         fontWeight: FontWeight.w500,
         color: AppColors.gray500,
+        height: 1.2,
+        letterSpacing: 1.5,
+      ));
+
+  // hinttext
+  static TextStyle get hintText => GoogleFonts.montserrat(
+      textStyle: TextStyle(
+        fontSize: 14.sp,
+        color: AppColors.iconColor,
         height: 1.2,
         letterSpacing: 1.5,
       ));

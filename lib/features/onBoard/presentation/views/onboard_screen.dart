@@ -66,28 +66,26 @@ class _OnboardScreenState extends State<OnboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Main content area with PageView for onboarding slides
-            Expanded(
-              child: PageView.builder(
-                controller: _pageController,
-                itemCount: onboardPages.length,
-                itemBuilder: (context, index) {
-                  final page = onboardPages[index];
-                  return OnboardWidget(
-                    title: page['title'] as String,
-                    description: page['description'] as String,
-                    icon: page['icon'] as IconData,
-                  );
-                },
-              ),
+      body: Column(
+        children: [
+          // Main content area with PageView for onboarding slides
+          Expanded(
+            child: PageView.builder(
+              controller: _pageController,
+              itemCount: onboardPages.length,
+              itemBuilder: (context, index) {
+                final page = onboardPages[index];
+                return OnboardWidget(
+                  title: page['title'] as String,
+                  description: page['description'] as String,
+                  icon: page['icon'] as IconData,
+                );
+              },
             ),
-            // Navigation controls (dots, buttons)
-            _buildNavigation(context),
-          ],
-        ),
+          ),
+          // Navigation controls (dots, buttons)
+          _buildNavigation(context),
+        ],
       ),
     );
   }
@@ -159,7 +157,7 @@ class _OnboardScreenState extends State<OnboardScreen> {
                       ? 'Get Started'
                       : 'Next',
                   style:
-                      AppTextStyles.bodyMedium.copyWith(color: AppColors.white),
+                      AppTextStyles.bodyMedium.copyWith(color: Colors.white),
                 ),
               ),
             ],

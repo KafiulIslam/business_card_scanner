@@ -1,5 +1,5 @@
 import 'package:business_card_scanner/core/routes/routes.dart';
-import 'package:business_card_scanner/features/auth/presentation/views/login_screen.dart';
+import 'package:business_card_scanner/features/auth/presentation/views/login/login_screen.dart';
 import 'package:business_card_scanner/features/onBoard/presentation/views/onboard_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
