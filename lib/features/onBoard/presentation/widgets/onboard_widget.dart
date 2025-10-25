@@ -1,16 +1,20 @@
+import 'package:business_card_scanner/core/theme/app_dimensions.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:gap/gap.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_style.dart';
 
 class OnboardWidget extends StatelessWidget {
   final String title;
   final String description;
-  final String iconName;
-  
+  final IconData icon;
+
   const OnboardWidget({
-    super.key, 
+    super.key,
     required this.title,
     required this.description,
-    required this.iconName,
+    required this.icon,
   });
 
   @override
@@ -23,11 +27,12 @@ class OnboardWidget extends StatelessWidget {
         children: [
           // Graphic Area
           Container(
-            height: 200,
+            height: 200.h,
             decoration: BoxDecoration(
               color: AppColors.primaryLight.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppColors.primaryLight.withOpacity(0.3), width: 2),
+              borderRadius: BorderRadius.circular(AppDimensions.radius12),
+              border: Border.all(
+                  color: AppColors.primaryLight.withOpacity(0.3), width: 2),
               boxShadow: [
                 BoxShadow(
                   color: AppColors.primary.withOpacity(0.1),
@@ -38,52 +43,29 @@ class OnboardWidget extends StatelessWidget {
             ),
             child: Center(
               child: Icon(
-                _getIconFromName(iconName),
-                size: 100,
+                icon,
+                size: 100.w,
                 color: AppColors.primary,
               ),
             ),
           ),
-          const SizedBox(height: 48),
-
+          Gap(AppDimensions.spacing32),
           // Title
           Text(
             title,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: AppColors.black,
-            ),
+            style: AppTextStyles.headline2,
           ),
-          const SizedBox(height: 16),
-
+          Gap(AppDimensions.spacing16),
           // Description
           Text(
             description,
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 16,
-              color: AppColors.black.withOpacity(0.7),
-              height: 1.5,
-            ),
+            style: AppTextStyles.bodySmall,
           ),
-          const SizedBox(height: 48),
+          Gap(AppDimensions.spacing48),
         ],
       ),
     );
-  }
-
-  IconData _getIconFromName(String iconName) {
-    switch (iconName) {
-      case 'qr_code_2_rounded':
-        return Icons.qr_code_2_rounded;
-      case 'document_scanner_rounded':
-        return Icons.document_scanner_rounded;
-      case 'edit_note_rounded':
-        return Icons.edit_note_rounded;
-      default:
-        return Icons.info;
-    }
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'core/routes/routes.dart';
 
+
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -12,52 +13,57 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
+
   late AnimationController _controller;
 
   @override
   void initState() {
     super.initState();
+
+    // Initialize animation controller with 2-second duration
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
     );
 
+    // Listen for animation completion to trigger navigation
     _controller.addListener(() async {
       if (_controller.status == AnimationStatus.completed) {
-        // Get locale (example: from Localizations)
 
-        // Implement your logic based on locale if needed
-        // Example: print(locale.languageCode);
-
+        // Wait for additional initialization time
         await Future.delayed(const Duration(seconds: 2), () {
-          // final RoleEnum? role =
-          // AppSharedPreferences.getString(key: AppConstants.roleName) != null
-          //     ? RoleEnum.values.byName(
-          //   AppSharedPreferences.getString(key: AppConstants.roleName) ??
-          //       "",
-          // )
+          // TODO: Implement proper authentication check
+          // Example implementation:
+          // final RoleEnum? role = AppSharedPreferences.getString(key: AppConstants.roleName) != null
+          //     ? RoleEnum.values.byName(AppSharedPreferences.getString(key: AppConstants.roleName) ?? "")
           //     : null;
-          // final String? token = AppSharedPreferences.getString(
-          //   key: StorageConstants.refreshToken,
-          // );
+          // final String? token = AppSharedPreferences.getString(key: StorageConstants.refreshToken);
+
+          // Temporary token check (replace with actual implementation)
           final String token = '';
+
+          // Navigate based on authentication state
           if (mounted) {
-            if(token.isEmpty){
+            if (token.isEmpty) {
+              // User not authenticated - go to onboarding
               context.go(Routes.onboarding);
-            }else{
+            } else {
+              // User authenticated - go to main app
+              // TODO: Replace with actual main app route
               context.go(Routes.onboarding);
             }
-
           }
         });
       }
     });
 
+    // Start the animation
     _controller.forward();
   }
 
   @override
   void dispose() {
+    // Clean up animation controller to prevent memory leaks
     _controller.dispose();
     super.dispose();
   }
@@ -68,6 +74,7 @@ class _SplashScreenState extends State<SplashScreen>
       body: Container(
         width: double.infinity,
         height: double.infinity,
+        // TODO: Add background image when assets are available
         // decoration: BoxDecoration(
         //   image: DecorationImage(
         //     image: AssetImage(AppAssets.splashScreen),
@@ -78,20 +85,13 @@ class _SplashScreenState extends State<SplashScreen>
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // AnimatedBuilder(
-            //   animation: _controller,
-            //   builder: (context, child) {
-            //     return Opacity(
-            //       opacity: _controller.value,
-            //       child: Image.asset("assets/images/logo.png", width: 200.w),
-            //     );
-            //   },
-            // ),
-            10.verticalSpace,
+
+
+            // App title/brand name
             Text(
-              'Sport App',
+              'Business Card Scanner', // Updated app name
               style: TextStyle(
-                color: Colors.white,
+                color: Colors.black,
                 fontSize: 24.sp,
                 fontWeight: FontWeight.bold,
               ),

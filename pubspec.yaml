@@ -33,7 +33,9 @@ dependencies:
 
   #User interface / UI
   flutter_screenutil: ^5.9.0
-  google_fonts: ^4.0.5
+  google_fonts: ^6.3.0
+  gap: ^3.0.1
+
 
   # State Management
   flutter_bloc: ^8.1.3
