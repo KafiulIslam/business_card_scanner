@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:gap/gap.dart';
 import '../../constants/app_borders.dart';
+import '../../theme/app_dimensions.dart';
 import '../../theme/app_text_style.dart';
 
 class DropdownTextField extends StatefulWidget {
@@ -32,9 +34,7 @@ class _DropdownTextFieldState extends State<DropdownTextField> {
       children: [
         Text(widget.label,
             style: AppTextStyles.bodySmall.copyWith(color: Colors.black)),
-        const SizedBox(
-          height: 4,
-        ),
+        Gap(AppDimensions.spacing8),
         SizedBox(
           height: 56,
           child: FormField<String>(

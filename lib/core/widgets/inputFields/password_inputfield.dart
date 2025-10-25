@@ -1,8 +1,8 @@
 import 'package:business_card_scanner/core/constants/app_borders.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
-
 import '../../theme/app_colors.dart';
+import '../../theme/app_dimensions.dart';
 import '../../theme/app_text_style.dart';
 
 class PasswordInputField extends StatefulWidget {
@@ -26,7 +26,7 @@ class _PasswordInputFieldState extends State<PasswordInputField> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(widget.label, style: AppTextStyles.bodySmall.copyWith(color: Colors.black)),
-        const Gap(8),
+        Gap(AppDimensions.spacing8),
         TextFormField(
           controller: widget.controller,
           obscureText: isPassObscure,
@@ -65,9 +65,6 @@ class _PasswordInputFieldState extends State<PasswordInputField> {
             focusColor: AppColors.borderColor,
           ),
           autovalidateMode: AutovalidateMode.onUserInteraction,
-          // validator: FormBuilderValidators.compose([
-          //   FormBuilderValidators.required(),
-          // ]),
         ),
       ],
     );

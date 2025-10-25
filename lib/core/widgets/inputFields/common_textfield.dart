@@ -1,10 +1,8 @@
 import 'package:business_card_scanner/core/theme/app_colors.dart';
 import 'package:business_card_scanner/core/theme/app_dimensions.dart';
 import 'package:business_card_scanner/core/theme/app_text_style.dart';
-import 'package:business_card_scanner/core/constants/app_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
-
 import '../../constants/app_borders.dart';
 
 class CommonTextField extends StatelessWidget {
