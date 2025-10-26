@@ -1,22 +1,23 @@
 import 'package:business_card_scanner/core/theme/app_dimensions.dart';
-import 'package:business_card_scanner/core/theme/app_text_style.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../../core/routes/routes.dart';
 import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/theme/app_text_style.dart';
 import '../../../../../core/widgets/buttons/primary_button.dart';
 import '../../../../../core/widgets/inputFields/common_textfield.dart';
 import '../../../../../core/widgets/inputFields/password_inputfield.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class SignUpScreen extends StatefulWidget {
+  const SignUpScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<SignUpScreen> createState() => _SignUpScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _SignUpScreenState extends State<SignUpScreen> {
   late bool isLoading = false;
   final TextEditingController _email = TextEditingController();
   final TextEditingController _password = TextEditingController();
@@ -35,7 +36,7 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Column(
                 children: [
                   Text(
-                    'Log In',
+                    'Create Account',
                     style: AppTextStyles.headline3,
                   ),
                   Gap(AppDimensions.spacing16),
@@ -52,25 +53,36 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   Gap(AppDimensions.spacing24),
                   PrimaryButton(
-                    onTap: () async {
-                      // await authState.login(
-                      //     _email.text, _password.text, context);
-                    },
-                    buttonTitle: 'Log In',
-                   // isLoading: authState.isLogin,
-                  ),
+                      onTap: () async {
+                        // if (_email.text.isNotEmpty &&
+                        //     _password.text.isNotEmpty) {
+                        //   Navigator.push(
+                        //       context,
+                        //       MaterialPageRoute(
+                        //           builder: (_) => CompleteProfileScreen(
+                        //               email: _email.text,
+                        //               password: _password.text)));
+                        // } else {
+                        //   CustomSnack.warningSnack(
+                        //       'Please enter email and password', context);
+                        // }
+                      },
+                      buttonTitle: 'Sign Up'),
                   Gap(AppDimensions.spacing32),
-                  Text('Don’t have an account?',
-                      style: AppTextStyles.bodySmall),
+                  Text(
+                    'Already have an account?',
+                    style: AppTextStyles.bodySmall,
+                  ),
                   TextButton(
                       onPressed: () {
-                        context.go(Routes.signUp);
+                        context.go(Routes.login);
                       },
                       child: Text(
-                        'Sign Up',
+                        'Log In',
                         style: AppTextStyles.bodyMedium
                             .copyWith(color: AppColors.primary),
                       )),
+                  Gap(AppDimensions.spacing24),
                 ],
               ),
             ),
