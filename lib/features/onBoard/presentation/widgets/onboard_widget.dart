@@ -20,8 +20,11 @@ class OnboardWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 64.0),
+      padding: EdgeInsets.symmetric(
+          horizontal: AppDimensions.spacing16,
+          vertical: AppDimensions.spacing32),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -63,7 +66,6 @@ class OnboardWidget extends StatelessWidget {
             textAlign: TextAlign.center,
             style: AppTextStyles.bodySmall,
           ),
-          Gap(AppDimensions.spacing48),
         ],
       ),
     );

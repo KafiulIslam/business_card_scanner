@@ -85,6 +85,7 @@ class _OnboardScreenState extends State<OnboardScreen> {
           ),
           // Navigation controls (dots, buttons)
           _buildNavigation(context),
+           Gap(AppDimensions.spacing32),
         ],
       ),
     );
