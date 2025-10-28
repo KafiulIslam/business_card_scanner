@@ -1,4 +1,4 @@
-package com.example.business_card_scanner
+package com.codertent.cardigo
 
 import io.flutter.embedding.android.FlutterActivity
 

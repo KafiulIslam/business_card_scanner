@@ -25,14 +25,14 @@ class AppTheme {
         ),
 
         // Card Theme
-        cardTheme: CardTheme(
-          color: AppColors.cardBackground,
-          elevation: 2,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12.r),
-          ),
-          margin: EdgeInsets.all(8.w),
-        ),
+        // cardTheme: CardTheme(
+        //   color: AppColors.cardBackground,
+        //   elevation: 2,
+        //   shape: RoundedRectangleBorder(
+        //     borderRadius: BorderRadius.circular(12.r),
+        //   ),
+        //   margin: EdgeInsets.all(8.w),
+        // ),
 
         // Elevated Button Theme
         elevatedButtonTheme: ElevatedButtonThemeData(

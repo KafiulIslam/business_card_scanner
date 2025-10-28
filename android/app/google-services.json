@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1080988702876",
+    "project_id": "cardigo-51245",
+    "storage_bucket": "cardigo-51245.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1080988702876:android:024eaddb5049b16c573559",
+        "android_client_info": {
+          "package_name": "com.codertent.cardigo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDy5J3ENtWemFBjNKt7HtEeJrTnwSVW34M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
