@@ -4,7 +4,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'core/routes/routes.dart';
 
-
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -12,91 +11,43 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen>
-    with SingleTickerProviderStateMixin {
-
-  late AnimationController _controller;
-
+class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-
-    // Initialize animation controller with 2-second duration
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 2),
-    );
-
-    // Listen for animation completion to trigger navigation
-    _controller.addListener(() async {
-      if (_controller.status == AnimationStatus.completed) {
-
-        // Wait for additional initialization time
-        await Future.delayed(const Duration(seconds: 2), () {
-          // TODO: Implement proper authentication check
-          // Example implementation:
-          // final RoleEnum? role = AppSharedPreferences.getString(key: AppConstants.roleName) != null
-          //     ? RoleEnum.values.byName(AppSharedPreferences.getString(key: AppConstants.roleName) ?? "")
-          //     : null;
-          // final String? token = AppSharedPreferences.getString(key: StorageConstants.refreshToken);
-
-          // Temporary token check (replace with actual implementation)
-          final String? token = FirebaseAuth.instance.currentUser?.uid;
-
-          // Navigate based on authentication state
-          if (mounted) {
-            if (token?.isEmpty ?? true) {
-              // User not authenticated - go to onboarding
-              context.go(Routes.onboarding);
-            } else {
-              // User authenticated - go to dashboard
-              context.go(Routes.dashboard);
-            }
-          }
-        });
-      }
-    });
-
-    // Start the animation
-    _controller.forward();
+    _checkAuthentication();
   }
 
-  @override
-  void dispose() {
-    // Clean up animation controller to prevent memory leaks
-    _controller.dispose();
-    super.dispose();
+  //using firebase
+
+  void _checkAuthentication() async {
+    // Optional splash delay
+    await Future.delayed(const Duration(seconds: 1));
+
+    if (!mounted) return;
+
+    // Re-check current auth state after delay to avoid stale value
+    final User? user = FirebaseAuth.instance.currentUser;
+
+    // Navigate based on authentication state
+    if (user != null) {
+      context.go(Routes.dashboard);
+    } else {
+      context.go(Routes.login);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SizedBox(
-        width: double.infinity,
-        height: double.infinity,
-        // TODO: Add background image when assets are available
-        // decoration: BoxDecoration(
-        //   image: DecorationImage(
-        //     image: AssetImage(AppAssets.splashScreen),
-        //     fit: BoxFit.fill,
-        //   ),
-        // ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-
-
-            // App title/brand name
-            Text(
-              'Business Card Scanner', // Updated app name
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 24.sp,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
+      body: Center(
+        child: Text(
+          'Business Card Scanner', // Updated app name
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 24.sp,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
     );
