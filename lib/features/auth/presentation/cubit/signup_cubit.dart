@@ -1,6 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import '../../data/model/app_user.dart';
+import '../../domain/entities/app_user.dart';
 import '../../domain/use_cases/sign_up_use_case.dart';
 part 'signup_state.dart';
 

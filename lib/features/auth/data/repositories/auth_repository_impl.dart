@@ -1,4 +1,4 @@
-import 'package:business_card_scanner/features/auth/data/model/app_user.dart';
+import 'package:business_card_scanner/features/auth/domain/entities/app_user.dart';
 import 'package:business_card_scanner/features/auth/domain/repositories/auth_repository.dart';
 import '../services/firebase_auth_service.dart';
 
