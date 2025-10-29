@@ -6,7 +6,7 @@ abstract class SignupState extends Equatable {
   const factory SignupState.initial() = SignupInitial;
   const factory SignupState.loading() = SignupLoading;
   factory SignupState.success(AppUser user) = SignupSuccess;
-  factory SignupState.failure(String message) = SignupFailure;
+  const factory SignupState.failure(String message) = SignupFailure;
 
   @override
   List<Object?> get props => [];

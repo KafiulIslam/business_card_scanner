@@ -3,4 +3,6 @@ import 'package:business_card_scanner/features/auth/domain/entities/app_user.dar
 abstract class AuthRepository {
   Future<AppUser> signUpWithEmail(
       {required String email, required String password});
+  Future<AppUser> signInWithEmail(
+      {required String email, required String password});
 }

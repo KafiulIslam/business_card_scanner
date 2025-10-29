@@ -16,4 +16,16 @@ class FirebaseAuthService {
     }
     return user;
   }
+
+  Future<fb.User> signInWithEmail(
+      {required String email, required String password}) async {
+    final credential = await _auth.signInWithEmailAndPassword(
+        email: email, password: password);
+    final user = credential.user;
+    if (user == null) {
+      throw Exception('Login failed: user is null');
+    }
+    return user;
+  }
+
 }

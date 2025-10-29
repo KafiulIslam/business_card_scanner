@@ -1,10 +1,10 @@
 import 'package:business_card_scanner/core/routes/routes.dart';
 import 'package:business_card_scanner/features/auth/presentation/views/login/login_screen.dart';
 import 'package:business_card_scanner/features/auth/presentation/views/signUp/sign_up_screen.dart';
+import 'package:business_card_scanner/features/dashboard/dashboard_screen.dart';
 import 'package:business_card_scanner/features/onBoard/presentation/views/onboard_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
-
 import '../../splash_screen.dart';
 
 final GoRouter router = GoRouter(
@@ -55,6 +55,16 @@ final GoRouter router = GoRouter(
       pageBuilder: (context, state) => CustomTransitionPage(
         key: state.pageKey,
         child: const SignUpScreen(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+      ),
+    ),
+    GoRoute(
+      path: Routes.dashboard,
+      pageBuilder: (context, state) => CustomTransitionPage(
+        key: state.pageKey,
+        child: const DashboardScreen(),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(opacity: animation, child: child);
         },

@@ -35,6 +35,7 @@ class MyApp extends StatelessWidget {
       splitScreenMode: true,
       builder: (context, child) {
         return GestureDetector(
+          // to remove keyboard on tap
           onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
           child: AppProviders(
             child: MaterialApp.router(

@@ -15,4 +15,13 @@ class AuthRepositoryImpl implements AuthRepository {
     return AppUser(
         uid: user.uid, email: user.email, displayName: user.displayName);
   }
+
+  @override
+  Future<AppUser> signInWithEmail(
+      {required String email, required String password}) async {
+    final user = await _firebaseAuthService.signInWithEmail(
+        email: email, password: password);
+    return AppUser(
+        uid: user.uid, email: user.email, displayName: user.displayName);
+  }
 }

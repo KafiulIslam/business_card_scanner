@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
@@ -40,17 +41,16 @@ class _SplashScreenState extends State<SplashScreen>
           // final String? token = AppSharedPreferences.getString(key: StorageConstants.refreshToken);
 
           // Temporary token check (replace with actual implementation)
-          final String token = '';
+          final String? token = FirebaseAuth.instance.currentUser?.uid;
 
           // Navigate based on authentication state
           if (mounted) {
-            if (token.isEmpty) {
+            if (token?.isEmpty ?? true) {
               // User not authenticated - go to onboarding
               context.go(Routes.onboarding);
             } else {
-              // User authenticated - go to main app
-              // TODO: Replace with actual main app route
-              context.go(Routes.onboarding);
+              // User authenticated - go to dashboard
+              context.go(Routes.dashboard);
             }
           }
         });

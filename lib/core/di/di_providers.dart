@@ -5,6 +5,8 @@ import 'package:business_card_scanner/features/auth/data/repositories/auth_repos
 import 'package:business_card_scanner/features/auth/domain/repositories/auth_repository.dart';
 import 'package:business_card_scanner/features/auth/domain/use_cases/sign_up_use_case.dart';
 import 'package:business_card_scanner/features/auth/presentation/cubit/signup_cubit.dart';
+import 'package:business_card_scanner/features/auth/domain/use_cases/sign_in_use_case.dart';
+import 'package:business_card_scanner/features/auth/presentation/cubit/login_cubit.dart';
 
 class AppProviders extends StatelessWidget {
   final Widget child;
@@ -24,9 +26,19 @@ class AppProviders extends StatelessWidget {
         RepositoryProvider<SignUpUseCase>(
           create: (ctx) => SignUpUseCase(ctx.read<AuthRepository>()),
         ),
+        RepositoryProvider<SignInUseCase>(
+          create: (ctx) => SignInUseCase(ctx.read<AuthRepository>()),
+        ),
       ],
-      child: BlocProvider<SignupCubit>(
-        create: (ctx) => SignupCubit(ctx.read<SignUpUseCase>()),
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider<SignupCubit>(
+            create: (ctx) => SignupCubit(ctx.read<SignUpUseCase>()),
+          ),
+          BlocProvider<LoginCubit>(
+            create: (ctx) => LoginCubit(ctx.read<SignInUseCase>()),
+          ),
+        ],
         child: child,
       ),
     );
