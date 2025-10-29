@@ -38,6 +38,7 @@ dependencies:
 
   #backend
   firebase_core: ^4.2.0
+  firebase_auth: ^6.1.0
 
   # State Management
   flutter_bloc: ^8.1.3

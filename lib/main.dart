@@ -7,6 +7,7 @@ import 'core/theme/app_theme.dart';
 import 'firebase_options.dart';
 
 void main() async {
+
   //initialize flutter project
   WidgetsFlutterBinding.ensureInitialized();
 
