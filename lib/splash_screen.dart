@@ -33,7 +33,7 @@ class _SplashScreenState extends State<SplashScreen> {
     if (user != null) {
       context.go(Routes.dashboard);
     } else {
-      context.go(Routes.login);
+      context.go(Routes.onboarding);
     }
   }
 
