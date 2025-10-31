@@ -23,9 +23,19 @@ class ScanResultScreen extends StatefulWidget {
 }
 
 class _ScanResultScreenState extends State<ScanResultScreen> {
-  String? selectedCategory = 'General';
+  late String selectedCategory = 'General';
   String? selectedTag = 'Prospects';
   final TextEditingController _whereYouMetController = TextEditingController();
+
+  final List<String> categories = [
+    'General',
+    'Prospect',
+    'Trial',
+    'Customer',
+    'Inactive',
+    'Lead',
+    'Partner'
+  ];
 
   @override
   void dispose() {
@@ -111,27 +121,29 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
 
   Widget _buildCategoryDropdown() {
     return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacing16,
-        vertical: AppDimensions.spacing12,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: AppColors.secondaryLight.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(AppDimensions.radius12),
-        border: Border.all(color: AppColors.secondaryLight),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            selectedCategory!,
-            style: AppTextStyles.labelMedium.copyWith(
-              color: AppColors.secondary,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          Icon(Icons.arrow_drop_down, color: AppColors.secondary),
-        ],
+          borderRadius: BorderRadius.circular(AppDimensions.radius32),
+          color: AppColors.primaryLight.withOpacity(0.2)),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: selectedCategory,
+          onChanged: (value) {
+            setState(() {
+              selectedCategory = value ?? '';
+            });
+          },
+          iconEnabledColor: AppColors.primary,
+          style: AppTextStyles.labelMedium.copyWith(color: AppColors.primary),
+          items: categories.map((String value) {
+            return DropdownMenuItem<String>(
+              value: value,
+              child: Text(
+                value
+              ),
+            );
+          }).toList(),
+        ),
       ),
     );
   }
