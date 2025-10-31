@@ -14,7 +14,7 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  int _currentIndex = 2; // Default to Scan in the middle
+  int _currentIndex = 0; // Default to Scan in the middle
 
   late final List<Widget> _pages = const <Widget>[
     NetworkScreen(),
@@ -44,28 +44,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
         },
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.group_outlined),
-            activeIcon: Icon(Icons.group),
+            icon: Icon(Icons.contacts_outlined),
+            //activeIcon: Icon(Icons.group),
             label: 'Network',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.credit_card_outlined),
-            activeIcon: Icon(Icons.credit_card),
+            icon: Icon(Icons.contact_mail_sharp),
+           // activeIcon: Icon(Icons.credit_card),
             label: 'My Card',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.qr_code_scanner_outlined),
-            activeIcon: Icon(Icons.qr_code_scanner),
+            //activeIcon: Icon(Icons.qr_code_scanner),
             label: 'Scan',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.build_outlined),
-            activeIcon: Icon(Icons.build),
+            icon: Icon(Icons.category_outlined),
+           // activeIcon: Icon(Icons.build),
             label: 'Tools',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.menu),
-            activeIcon: Icon(Icons.menu_open),
+            //activeIcon: Icon(Icons.menu_open),
             label: 'Menu',
           ),
         ],

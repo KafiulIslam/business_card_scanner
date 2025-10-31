@@ -7,6 +7,7 @@ import 'package:business_card_scanner/features/auth/domain/use_cases/sign_up_use
 import 'package:business_card_scanner/features/auth/presentation/cubit/signup_cubit.dart';
 import 'package:business_card_scanner/features/auth/domain/use_cases/sign_in_use_case.dart';
 import 'package:business_card_scanner/features/auth/presentation/cubit/login_cubit.dart';
+import 'package:business_card_scanner/features/scanner/presentation/cubit/scan_cubit.dart';
 
 class AppProviders extends StatelessWidget {
   final Widget child;
@@ -37,6 +38,9 @@ class AppProviders extends StatelessWidget {
           ),
           BlocProvider<LoginCubit>(
             create: (ctx) => LoginCubit(ctx.read<SignInUseCase>()),
+          ),
+          BlocProvider<ScanCubit>(
+            create: (_) => ScanCubit(),
           ),
         ],
         child: child,
