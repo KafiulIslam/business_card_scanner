@@ -25,7 +25,14 @@ class ScanResultScreen extends StatefulWidget {
 class _ScanResultScreenState extends State<ScanResultScreen> {
   late String selectedCategory = 'General';
   String? selectedTag = 'Prospects';
-  final TextEditingController _whereYouMetController = TextEditingController();
+  late final TextEditingController _whereYouMetController;
+  late final TextEditingController _nameController;
+  late final TextEditingController _jobTitleController;
+  late final TextEditingController _companyController;
+  late final TextEditingController _emailController;
+  late final TextEditingController _phoneController;
+  late final TextEditingController _addressController;
+  late final TextEditingController _websiteController;
 
   final List<String> categories = [
     'General',
@@ -38,8 +45,28 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _whereYouMetController = TextEditingController();
+    _nameController = TextEditingController(text: widget.extracted['name'] ?? '');
+    _jobTitleController = TextEditingController(text: widget.extracted['jobTitle'] ?? '');
+    _companyController = TextEditingController(text: widget.extracted['company'] ?? '');
+    _emailController = TextEditingController(text: widget.extracted['email'] ?? '');
+    _phoneController = TextEditingController(text: widget.extracted['phone'] ?? '');
+    _addressController = TextEditingController(text: widget.extracted['address'] ?? '');
+    _websiteController = TextEditingController(text: widget.extracted['website'] ?? '');
+  }
+
+  @override
   void dispose() {
     _whereYouMetController.dispose();
+    _nameController.dispose();
+    _jobTitleController.dispose();
+    _companyController.dispose();
+    _emailController.dispose();
+    _phoneController.dispose();
+    _addressController.dispose();
+    _websiteController.dispose();
     super.dispose();
   }
 
@@ -84,12 +111,12 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
             Gap(AppDimensions.spacing16),
 
             // Tags Row
-            Padding(
-              padding:
-                  EdgeInsets.symmetric(horizontal: AppDimensions.spacing16),
-              child: _buildTagsRow(),
-            ),
-            Gap(AppDimensions.spacing24),
+            // Padding(
+            //   padding:
+            //       EdgeInsets.symmetric(horizontal: AppDimensions.spacing16),
+            //   child: _buildTagsRow(),
+            // ),
+            // Gap(AppDimensions.spacing24),
 
             // Extracted Information Fields
             _buildExtractedFields(),
@@ -138,9 +165,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
           items: categories.map((String value) {
             return DropdownMenuItem<String>(
               value: value,
-              child: Text(
-                value
-              ),
+              child: Text(value),
             );
           }).toList(),
         ),
@@ -208,91 +233,74 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
   }
 
   Widget _buildExtractedFields() {
-    return Container(
-      color: Colors.white,
-      padding: EdgeInsets.symmetric(vertical: AppDimensions.spacing8),
-      child: Column(
-        children: [
-          _buildField(
-            icon: Icons.description_outlined,
-            label: 'Where you met?',
-            controllerValue: _whereYouMetController,
-            hint: 'Where you met? there interest etc....',
-            isEditable: true,
-          ),
-          _buildField(
-            icon: Icons.person_outline,
-            label: 'Name',
-            textValue: widget.extracted['name'] ?? '',
-          ),
-          _buildField(
-            icon: Icons.business_outlined,
-            label: 'Job Title',
-            textValue: widget.extracted['jobTitle'] ?? '',
-            highlightText: 'Manager',
-          ),
-          _buildField(
-            icon: Icons.domain_outlined,
-            label: 'Company',
-            textValue: widget.extracted['company'] ?? '',
-          ),
-          _buildField(
-            icon: Icons.email_outlined,
-            label: 'Email',
-            textValue: widget.extracted['email'] ?? 'abc@xyz.com',
-            showAddButton: true,
-          ),
-          _buildField(
-            icon: Icons.phone_outlined,
-            label: 'Phone',
-            textValue: widget.extracted['phone'] ?? '',
-            showAddButton: true,
-          ),
-          _buildField(
-            icon: Icons.location_on_outlined,
-            label: 'Address',
-            textValue: widget.extracted['address'] ?? '',
-          ),
-          _buildField(
-            icon: Icons.language_outlined,
-            label: 'Website',
-            textValue: widget.extracted['website'] ?? '',
-            showAddButton: true,
-          ),
-          if (widget.extracted['website'] != null)
-            _buildField(
-              icon: Icons.language_outlined,
-              label: 'Website',
-              textValue: widget.extracted['website'] ?? '',
-              showRemoveButton: true,
-            ),
-        ],
-      ),
+    return Column(
+      children: [
+        _buildField(
+          icon: Icons.description_outlined,
+          label: 'Where you met?',
+          controllerValue: _whereYouMetController,
+          hint: 'Where you met?',
+        ),
+        _buildField(
+          icon: Icons.person_outline,
+          label: 'Name',
+          controllerValue: _nameController,
+          hint: 'Name',
+        ),
+        _buildField(
+          icon: Icons.work,
+          label: 'Job Title',
+          controllerValue: _jobTitleController,
+          hint: 'Job Title',
+        ),
+        _buildField(
+          icon: Icons.domain,
+          label: 'Company',
+          controllerValue: _companyController,
+          hint: 'Company',
+        ),
+        _buildField(
+          icon: Icons.email_outlined,
+          label: 'Email',
+          controllerValue: _emailController,
+          hint: 'Email',
+        ),
+        _buildField(
+          icon: Icons.phone_outlined,
+          label: 'Phone',
+          controllerValue: _phoneController,
+          hint: 'Phone',
+        ),
+        _buildField(
+          icon: Icons.location_on_outlined,
+          label: 'Address',
+          controllerValue: _addressController,
+          hint: 'Address',
+        ),
+        _buildField(
+          icon: Icons.language_outlined,
+          label: 'Website',
+          controllerValue: _websiteController,
+          hint: 'Website',
+        ),
+      ],
     );
   }
 
   Widget _buildField({
     required IconData icon,
     required String label,
-    String? textValue,
-    TextEditingController? controllerValue,
+    required TextEditingController controllerValue,
     String? hint,
-    bool isEditable = false,
-    String? highlightText,
-    bool showAddButton = false,
-    bool showRemoveButton = false,
   }) {
-    final hasController = controllerValue != null;
-    final displayValue = textValue ?? '';
-
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: AppDimensions.spacing16,
         vertical: AppDimensions.spacing12,
       ),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         border: Border(
-          bottom: BorderSide(color: AppColors.gray200, width: 0.5),
+          bottom: BorderSide(color: AppColors.borderColor, width: 1),
         ),
       ),
       child: Row(
@@ -300,38 +308,32 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
           Container(
             padding: EdgeInsets.all(AppDimensions.spacing8),
             decoration: BoxDecoration(
-              color: AppColors.gray100,
+              color: AppColors.primaryLight.withOpacity(0.2),
               borderRadius: BorderRadius.circular(AppDimensions.radius8),
             ),
-            child: Icon(icon, size: 20, color: AppColors.gray600),
+            child: Icon(icon, size: 20, color: AppColors.primary),
           ),
           Gap(AppDimensions.spacing12),
           Expanded(
-            child: isEditable && hasController
-                ? TextField(
-                    controller: controllerValue,
-                    style: AppTextStyles.bodyMedium,
-                    decoration: InputDecoration(
-                      hintText: hint,
-                      hintStyle: AppTextStyles.hintText,
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.zero,
-                    ),
-                  )
-                : _buildHighlightedText(displayValue, highlightText),
+            child: TextField(
+              controller: controllerValue,
+              cursorColor: AppColors.primary,
+              style: AppTextStyles.bodySmall.copyWith(color: Colors.black),
+              decoration: InputDecoration(
+                filled: false,
+                fillColor: Colors.transparent,
+                hintText: hint,
+                hintStyle: AppTextStyles.hintText,
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                disabledBorder: InputBorder.none,
+                errorBorder: InputBorder.none,
+                focusedErrorBorder: InputBorder.none,
+                contentPadding: EdgeInsets.zero,
+              ),
+            ),
           ),
-          if (showAddButton)
-            IconButton(
-              icon: const Icon(Icons.add_circle, color: AppColors.success),
-              onPressed: () {},
-              iconSize: 24,
-            ),
-          if (showRemoveButton)
-            IconButton(
-              icon: const Icon(Icons.remove_circle, color: AppColors.error),
-              onPressed: () {},
-              iconSize: 24,
-            ),
         ],
       ),
     );

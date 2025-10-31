@@ -4,6 +4,7 @@ import 'package:bloc/bloc.dart';
 import 'package:camera/camera.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../domain/entities/scan_result_data.dart';
 import 'scan_state.dart';
 
 class ScanCubit extends Cubit<ScanState> {

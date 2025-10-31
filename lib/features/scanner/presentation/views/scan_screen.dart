@@ -26,6 +26,7 @@ class _ScanView extends StatefulWidget {
 }
 
 class _ScanViewState extends State<_ScanView> with WidgetsBindingObserver {
+
   @override
   void initState() {
     super.initState();

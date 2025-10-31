@@ -1,17 +1,6 @@
-import 'dart:io';
 import 'package:camera/camera.dart';
 
-class ScanResultData {
-  final String rawText;
-  final Map<String, String?> extracted;
-  final File? imageFile;
-
-  const ScanResultData({
-    required this.rawText,
-    required this.extracted,
-    this.imageFile,
-  });
-}
+import '../../domain/entities/scan_result_data.dart';
 
 class ScanState {
   final CameraController? cameraController;
