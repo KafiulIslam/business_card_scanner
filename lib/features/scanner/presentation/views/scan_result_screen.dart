@@ -1,10 +1,16 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:business_card_scanner/core/theme/app_colors.dart';
 import 'package:business_card_scanner/core/theme/app_text_style.dart';
 import 'package:business_card_scanner/core/theme/app_dimensions.dart';
+import 'package:business_card_scanner/core/utils/custom_snack.dart';
+import 'package:business_card_scanner/features/network/domain/entities/network_card.dart';
+import 'package:business_card_scanner/features/network/presentation/cubit/network_cubit.dart';
+import 'package:business_card_scanner/features/network/presentation/cubit/network_state.dart';
 
 class ScanResultScreen extends StatefulWidget {
   final String rawText;
@@ -48,13 +54,20 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
   void initState() {
     super.initState();
     _whereYouMetController = TextEditingController();
-    _nameController = TextEditingController(text: widget.extracted['name'] ?? '');
-    _jobTitleController = TextEditingController(text: widget.extracted['jobTitle'] ?? '');
-    _companyController = TextEditingController(text: widget.extracted['company'] ?? '');
-    _emailController = TextEditingController(text: widget.extracted['email'] ?? '');
-    _phoneController = TextEditingController(text: widget.extracted['phone'] ?? '');
-    _addressController = TextEditingController(text: widget.extracted['address'] ?? '');
-    _websiteController = TextEditingController(text: widget.extracted['website'] ?? '');
+    _nameController =
+        TextEditingController(text: widget.extracted['name'] ?? '');
+    _jobTitleController =
+        TextEditingController(text: widget.extracted['jobTitle'] ?? '');
+    _companyController =
+        TextEditingController(text: widget.extracted['company'] ?? '');
+    _emailController =
+        TextEditingController(text: widget.extracted['email'] ?? '');
+    _phoneController =
+        TextEditingController(text: widget.extracted['phone'] ?? '');
+    _addressController =
+        TextEditingController(text: widget.extracted['address'] ?? '');
+    _websiteController =
+        TextEditingController(text: widget.extracted['website'] ?? '');
   }
 
   @override
@@ -74,24 +87,55 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        // leading: IconButton(
-        //   icon: const Icon(Icons.arrow_back),
-        //   onPressed: () => Navigator.of(context).pop(),
-        // ),
         title: Text(
           'Scanned Details',
           style: AppTextStyles.headline4,
         ),
-        actions: const [
-          CircleAvatar(
-            radius: 18,
-            backgroundColor: AppColors.primary,
-            child: Icon(
-              Icons.check,
-              color: Colors.white,
+        actions: [
+          BlocListener<NetworkCubit, NetworkState>(
+            listenWhen: (prev, curr) => prev.isSuccess != curr.isSuccess || prev.error != curr.error,
+            listener: (context, state) {
+              if (state.isSuccess) {
+                CustomSnack.success('Card saved successfully', context);
+                context.read<NetworkCubit>().reset();
+                Navigator.of(context).pop();
+              } else if (state.error != null) {
+                CustomSnack.warning(state.error!, context);
+                context.read<NetworkCubit>().reset();
+              }
+            },
+            child: BlocBuilder<NetworkCubit, NetworkState>(
+              builder: (context, state) {
+                return InkWell(
+                  onTap: state.isLoading ? null : _saveCard,
+                  child: Container(
+                    margin: const EdgeInsets.only(right: 16),
+                    height: 36,
+                    width: 36,
+                    decoration: BoxDecoration(
+                      color: state.isLoading
+                          ? AppColors.gray400
+                          : AppColors.primary,
+                      borderRadius: BorderRadius.circular(AppDimensions.radius8),
+                    ),
+                    child: state.isLoading
+                        ? const SizedBox(
+                            width: 8,
+                            height: 8,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: AppColors.primary,
+                            ),
+                          )
+                        : const Icon(
+                            Icons.save_as_outlined,
+                            color: Colors.white,
+                          ),
+                  ),
+                );
+              },
             ),
           ),
-          Gap(16)
         ],
       ),
       body: SingleChildScrollView(
@@ -361,5 +405,39 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _saveCard() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      CustomSnack.warning('Please login to save cards', context);
+      return;
+    }
+
+    try {
+      // Generate card ID
+      final cardId = DateTime.now().millisecondsSinceEpoch.toString();
+
+      // Create NetworkCard entity (imageUrl is empty string as we're not uploading to Storage)
+      final networkCard = NetworkCard(
+        cardId: cardId,
+        uid: user.uid,
+        imageUrl: '', // Empty string - images not uploaded to Firebase Storage
+        category: selectedCategory,
+        note: _whereYouMetController.text,
+        name: _nameController.text,
+        title: _jobTitleController.text,
+        company: _companyController.text,
+        email: _emailController.text,
+        phone: _phoneController.text,
+        address: _addressController.text,
+        website: _websiteController.text,
+      );
+
+      // Save to Firestore
+      await context.read<NetworkCubit>().saveNetworkCard(networkCard);
+    } catch (e) {
+      CustomSnack.warning('Failed to save card: $e', context);
+    }
   }
 }

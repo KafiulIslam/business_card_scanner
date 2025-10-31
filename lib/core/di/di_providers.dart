@@ -8,6 +8,12 @@ import 'package:business_card_scanner/features/auth/presentation/cubit/signup_cu
 import 'package:business_card_scanner/features/auth/domain/use_cases/sign_in_use_case.dart';
 import 'package:business_card_scanner/features/auth/presentation/cubit/login_cubit.dart';
 import 'package:business_card_scanner/features/scanner/presentation/cubit/scan_cubit.dart';
+import 'package:business_card_scanner/features/network/data/services/firebase_storage_service.dart';
+import 'package:business_card_scanner/features/network/data/services/firebase_network_service.dart';
+import 'package:business_card_scanner/features/network/data/repositories/network_repository_impl.dart';
+import 'package:business_card_scanner/features/network/domain/repositories/network_repository.dart';
+import 'package:business_card_scanner/features/network/domain/use_cases/save_network_card_use_case.dart';
+import 'package:business_card_scanner/features/network/presentation/cubit/network_cubit.dart';
 
 class AppProviders extends StatelessWidget {
   final Widget child;
@@ -30,6 +36,18 @@ class AppProviders extends StatelessWidget {
         RepositoryProvider<SignInUseCase>(
           create: (ctx) => SignInUseCase(ctx.read<AuthRepository>()),
         ),
+        RepositoryProvider<FirebaseStorageService>(
+          create: (_) => FirebaseStorageService(),
+        ),
+        RepositoryProvider<FirebaseNetworkService>(
+          create: (_) => FirebaseNetworkService(),
+        ),
+        RepositoryProvider<NetworkRepository>(
+          create: (ctx) => NetworkRepositoryImpl(ctx.read<FirebaseNetworkService>()),
+        ),
+        RepositoryProvider<SaveNetworkCardUseCase>(
+          create: (ctx) => SaveNetworkCardUseCase(ctx.read<NetworkRepository>()),
+        ),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -41,6 +59,9 @@ class AppProviders extends StatelessWidget {
           ),
           BlocProvider<ScanCubit>(
             create: (_) => ScanCubit(),
+          ),
+          BlocProvider<NetworkCubit>(
+            create: (ctx) => NetworkCubit(ctx.read<SaveNetworkCardUseCase>()),
           ),
         ],
         child: child,
