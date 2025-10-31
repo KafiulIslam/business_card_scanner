@@ -186,7 +186,7 @@ class ScanCubit extends Cubit<ScanState> {
     final addressReg = RegExp(
         r'\d+\s+[A-Za-z\s]+(?:Street|St|Avenue|Ave|Road|Rd|Boulevard|Blvd|Drive|Dr|Lane|Ln|Court|Ct|Way|Place|Pl)[,\s]*(?:[A-Za-z\s]+)?[,\s]*(?:[A-Za-z]+)?',
         caseSensitive: false);
-    
+
     // Alternative address pattern (city, state/country)
     final cityStateReg = RegExp(
         r'[A-Z][a-zA-Z\s]+,\s*(?:[A-Z]{2}|[A-Za-z\s]+)',
@@ -218,7 +218,7 @@ class ScanCubit extends Cubit<ScanState> {
       if (email != null && l.contains(email)) continue;
       if (phone != null && l.contains(phone)) continue;
       if (website != null && l.contains(website)) continue;
-      
+
       // Check if line contains job title keywords
       for (final keyword in jobTitleKeywords) {
         if (lowerLine.contains(keyword)) {
@@ -238,7 +238,7 @@ class ScanCubit extends Cubit<ScanState> {
       if (email != null && l.contains(email)) continue;
       if (phone != null && l.contains(phone)) continue;
       if (website != null && l.contains(website)) continue;
-      
+
       // Check for company indicators
       for (final indicator in companyIndicators) {
         if (lowerLine.contains(indicator)) {
@@ -246,7 +246,7 @@ class ScanCubit extends Cubit<ScanState> {
           break;
         }
       }
-      
+
       // If no indicator found but line is capitalized and reasonable length, might be company
       if (company == null && l.length > 3 && l.length < 50) {
         final words = l.split(' ');

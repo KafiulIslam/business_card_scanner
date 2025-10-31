@@ -53,7 +53,7 @@ class _ScanViewState extends State<_ScanView> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     return BlocConsumer<ScanCubit, ScanState>(
       listenWhen: (prev, curr) =>
-          prev.errorMessage != curr.errorMessage || prev.result != curr.result,
+      prev.errorMessage != curr.errorMessage || prev.result != curr.result,
       listener: (context, state) async {
         // Errors → SnackBar
         final msg = state.errorMessage;
