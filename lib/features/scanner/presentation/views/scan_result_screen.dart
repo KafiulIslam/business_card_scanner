@@ -249,7 +249,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
         ),
         _buildField(
           icon: Icons.work,
-          label: 'Job Title',
+          label: 'Title',
           controllerValue: _jobTitleController,
           hint: 'Job Title',
         ),
