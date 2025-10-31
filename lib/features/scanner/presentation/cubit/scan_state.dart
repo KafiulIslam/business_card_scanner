@@ -6,7 +6,11 @@ class ScanResultData {
   final Map<String, String?> extracted;
   final File? imageFile;
 
-  const ScanResultData({required this.rawText, required this.extracted, this.imageFile});
+  const ScanResultData({
+    required this.rawText,
+    required this.extracted,
+    this.imageFile,
+  });
 }
 
 class ScanState {
@@ -23,11 +27,11 @@ class ScanState {
   });
 
   factory ScanState.initial() => const ScanState(
-        cameraController: null,
-        isBusy: false,
-        errorMessage: null,
-        result: null,
-      );
+    cameraController: null,
+    isBusy: false,
+    errorMessage: null,
+    result: null,
+  );
 
   ScanState copyWith({
     CameraController? cameraController,
@@ -45,5 +49,3 @@ class ScanState {
     );
   }
 }
-
-
