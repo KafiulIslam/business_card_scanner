@@ -1,3 +1,4 @@
+import 'package:business_card_scanner/core/theme/app_assets.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -41,14 +42,7 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: Text(
-          'Business Card Scanner', // Updated app name
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 24.sp,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        child: Image.asset(AppAssets.logo, height: 200.h,width: 200.w,),
       ),
     );
   }

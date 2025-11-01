@@ -13,6 +13,7 @@ import 'package:business_card_scanner/features/network/data/services/firebase_ne
 import 'package:business_card_scanner/features/network/data/repositories/network_repository_impl.dart';
 import 'package:business_card_scanner/features/network/domain/repositories/network_repository.dart';
 import 'package:business_card_scanner/features/network/domain/use_cases/save_network_card_use_case.dart';
+import 'package:business_card_scanner/features/network/domain/use_cases/get_network_cards_use_case.dart';
 import 'package:business_card_scanner/features/network/presentation/cubit/network_cubit.dart';
 
 class AppProviders extends StatelessWidget {
@@ -48,6 +49,9 @@ class AppProviders extends StatelessWidget {
         RepositoryProvider<SaveNetworkCardUseCase>(
           create: (ctx) => SaveNetworkCardUseCase(ctx.read<NetworkRepository>()),
         ),
+        RepositoryProvider<GetNetworkCardsUseCase>(
+          create: (ctx) => GetNetworkCardsUseCase(ctx.read<NetworkRepository>()),
+        ),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -61,7 +65,10 @@ class AppProviders extends StatelessWidget {
             create: (_) => ScanCubit(),
           ),
           BlocProvider<NetworkCubit>(
-            create: (ctx) => NetworkCubit(ctx.read<SaveNetworkCardUseCase>()),
+            create: (ctx) => NetworkCubit(
+              ctx.read<SaveNetworkCardUseCase>(),
+              ctx.read<GetNetworkCardsUseCase>(),
+            ),
           ),
         ],
         child: child,

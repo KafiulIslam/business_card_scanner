@@ -42,7 +42,6 @@ class MyApp extends StatelessWidget {
               debugShowCheckedModeBanner: false,
               title: 'Cardigo',
               theme: AppTheme.lightTheme,
-              // home: const MyHomePage(title: 'Test'), // Your main app widget
               themeMode: ThemeMode.light,
               routerConfig: router,
             ),

@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class NetworkCard {
   final String cardId;
   final String uid;
@@ -11,6 +13,7 @@ class NetworkCard {
   final String phone;
   final String address;
   final String website;
+  final DateTime? createdAt;
 
   NetworkCard({
     required this.cardId,
@@ -25,10 +28,11 @@ class NetworkCard {
     required this.phone,
     required this.address,
     required this.website,
+    this.createdAt,
   });
 
-  Map<String, String> toMap() {
-    return {
+  Map<String, dynamic> toMap() {
+    final map = <String, dynamic>{
       'cardId': cardId,
       'uid': uid,
       'imageUrl': imageUrl,
@@ -42,9 +46,24 @@ class NetworkCard {
       'address': address,
       'website': website,
     };
+    if (createdAt != null) {
+      map['createdAt'] = Timestamp.fromDate(createdAt!);
+    } else {
+      map['createdAt'] = FieldValue.serverTimestamp();
+    }
+    return map;
   }
 
   factory NetworkCard.fromMap(Map<String, dynamic> map) {
+    DateTime? createdAt;
+    if (map['createdAt'] != null) {
+      if (map['createdAt'] is DateTime) {
+        createdAt = map['createdAt'] as DateTime;
+      } else if (map['createdAt'] is Timestamp) {
+        createdAt = (map['createdAt'] as Timestamp).toDate();
+      }
+    }
+    
     return NetworkCard(
       cardId: map['cardId']?.toString() ?? '',
       uid: map['uid']?.toString() ?? '',
@@ -58,6 +77,7 @@ class NetworkCard {
       phone: map['phone']?.toString() ?? '',
       address: map['address']?.toString() ?? '',
       website: map['website']?.toString() ?? '',
+      createdAt: createdAt,
     );
   }
 }
