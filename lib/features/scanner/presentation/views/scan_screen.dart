@@ -17,36 +17,52 @@ class ScanScreen extends StatefulWidget {
 }
 
 class _ScanScreenState extends State<ScanScreen> with WidgetsBindingObserver {
-
+  bool _isDisposed = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    // Initialize camera when screen opens
-    context.read<ScanCubit>().initialize();
+    // Initialize camera and text recognizer only when screen opens
+    _initializeCamera();
   }
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    // Ensure camera/textRecognizer are released.
-    context.read<ScanCubit>().disposeResources();
+    if (!_isDisposed) {
+      WidgetsBinding.instance.removeObserver(this);
+      // Ensure camera/textRecognizer are properly released when screen closes
+      context.read<ScanCubit>().disposeResources();
+      _isDisposed = true;
+    }
     super.dispose();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    // Forward lifecycle to cubit to handle camera properly
-    context.read<ScanCubit>().handleLifecycle(state);
+    // Only handle lifecycle if screen is still mounted
+    if (!_isDisposed && mounted) {
+      // Forward lifecycle to cubit to handle camera properly
+      context.read<ScanCubit>().handleLifecycle(state);
+    }
   }
 
+  Future<void> _initializeCamera() async {
+    if (!mounted) return;
+    try {
+      await context.read<ScanCubit>().initialize();
+    } catch (e) {
+      if (mounted) {
+        debugPrint('Failed to initialize camera: $e');
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<ScanCubit, ScanState>(
       listenWhen: (prev, curr) =>
-      prev.errorMessage != curr.errorMessage || prev.result != curr.result,
+          prev.errorMessage != curr.errorMessage || prev.result != curr.result,
       listener: (context, state) async {
         // Errors → SnackBar
         final msg = state.errorMessage;
@@ -188,7 +204,7 @@ class _ScanScreenState extends State<ScanScreen> with WidgetsBindingObserver {
     );
   }
 
-  Widget _buildShutterButton(){
+  Widget _buildShutterButton() {
     return CircleAvatar(
       radius: 30,
       backgroundColor: Colors.white,
@@ -203,7 +219,6 @@ class _ScanScreenState extends State<ScanScreen> with WidgetsBindingObserver {
       ),
     );
   }
-
 }
 
 /// Overlay painter: dims outside, shows a business-card aspect frame with bold corners.

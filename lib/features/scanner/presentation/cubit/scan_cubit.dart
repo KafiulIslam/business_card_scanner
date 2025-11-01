@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:ui';
 import 'package:bloc/bloc.dart';
 import 'package:camera/camera.dart';
+import 'package:flutter/foundation.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../domain/entities/scan_result_data.dart';
@@ -10,14 +11,29 @@ import 'scan_state.dart';
 class ScanCubit extends Cubit<ScanState> {
   ScanCubit() : super(ScanState.initial());
 
- TextRecognizer? _textRecognizer;
+  TextRecognizer? _textRecognizer;
+  bool _isInitialized = false;
+  bool _isDisposing = false;
 
   // ========= Lifecycle =========
 
   Future<void> initialize() async {
+    // Prevent multiple initializations
+    if (_isInitialized || _isDisposing) {
+      return;
+    }
+
+    // If already initialized, return early
+    if (state.cameraController != null && _textRecognizer != null) {
+      return;
+    }
+
     try {
       emit(state.copyWith(isBusy: true, clearError: true));
-      _textRecognizer ??= TextRecognizer(script: TextRecognitionScript.latin);
+
+      // Initialize TextRecognizer first
+      _textRecognizer?.close(); // Dispose existing if any
+      _textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
 
       // Pick back camera (fallback to first if not found)
       final cameras = await availableCameras();
@@ -34,34 +50,89 @@ class ScanCubit extends Cubit<ScanState> {
       await controller.initialize();
 
       // Optional: auto flash (adjust to your UX)
-      try { await controller.setFlashMode(FlashMode.auto); } catch (_) {}
+      try { 
+        await controller.setFlashMode(FlashMode.auto); 
+      } catch (_) {
+        // Ignore flash errors
+      }
 
+      _isInitialized = true;
       emit(state.copyWith(cameraController: controller, isBusy: false));
     } catch (e) {
+      // Clean up on error
+      await _disposeTextRecognizer();
       emit(state.copyWith(isBusy: false, errorMessage: e.toString()));
+      _isInitialized = false;
     }
   }
 
   Future<void> handleLifecycle(AppLifecycleState appState) async {
+    // Don't handle lifecycle if we're disposing or not initialized
+    if (_isDisposing || !_isInitialized) {
+      return;
+    }
+
     final controller = state.cameraController;
     if (controller == null) return;
 
-    // On inactive/paused, release camera; on resumed, re-init.
+    // On inactive/paused, pause camera (don't dispose completely)
     if (appState == AppLifecycleState.inactive ||
         appState == AppLifecycleState.paused) {
-      await controller.dispose();
-      emit(state.copyWith(cameraController: null));
+      try {
+        await controller.stopImageStream();
+        // Don't dispose, just pause - will be resumed when app comes back
+      } catch (_) {
+        // Ignore errors
+      }
     } else if (appState == AppLifecycleState.resumed) {
-      await initialize();
+      // Only re-initialize if controller was disposed (shouldn't happen with our approach)
+      if (!controller.value.isInitialized) {
+        try {
+          await controller.initialize();
+        } catch (_) {
+          // If initialization fails, we'll need full re-init
+          await initialize();
+        }
+      }
     }
   }
 
   Future<void> disposeResources() async {
+    if (_isDisposing) {
+      return; // Already disposing
+    }
+
+    _isDisposing = true;
+    _isInitialized = false;
+
     try {
-      await state.cameraController?.dispose();
+      // Dispose camera controller first
+      final controller = state.cameraController;
+      if (controller != null && controller.value.isInitialized) {
+        await controller.dispose();
+      }
+      
+      // Dispose text recognizer
+      await _disposeTextRecognizer();
+
+      // Clear state
+      emit(state.copyWith(cameraController: null, isBusy: false));
+    } catch (e) {
+      // Log error but don't rethrow - ensure cleanup continues
+      debugPrint('Error disposing resources: $e');
+    } finally {
+      _isDisposing = false;
+    }
+  }
+
+  Future<void> _disposeTextRecognizer() async {
+    try {
       await _textRecognizer?.close();
+    } catch (_) {
+      // Ignore errors during dispose
+    } finally {
       _textRecognizer = null;
-    } catch (_) {}
+    }
   }
 
   // ========= Actions =========
@@ -139,9 +210,18 @@ class ScanCubit extends Cubit<ScanState> {
   // ========= Helpers =========
 
   Future<String> _recognize(InputImage input) async {
-    _textRecognizer ??= TextRecognizer(script: TextRecognitionScript.latin);
-    final recognizedText = await _textRecognizer!.processImage(input);
-    return recognizedText.text;
+    // Ensure TextRecognizer is initialized (should be initialized in initialize())
+    if (_textRecognizer == null) {
+      throw Exception('TextRecognizer not initialized. Call initialize() first.');
+    }
+
+    try {
+      final recognizedText = await _textRecognizer!.processImage(input);
+      return recognizedText.text;
+    } catch (e) {
+      // If recognition fails, throw meaningful error
+      throw Exception('Text recognition failed: $e');
+    }
   }
 
   Map<String, String?> _extractFields(String text) {
