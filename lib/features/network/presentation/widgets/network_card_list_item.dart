@@ -91,23 +91,25 @@ class NetworkCardListItem extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Name and Category Tag (General)
-                  Row(children: [
-                    Expanded(
-                      child: Text(
-                        card.name,
-                        style: AppTextStyles.bodySmall.copyWith(
-                            fontWeight: FontWeight.bold, color: Colors.black),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          card.name,
+                          style: AppTextStyles.bodySmall.copyWith(
+                              fontWeight: FontWeight.bold, color: Colors.black),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                    ),
-                    Icon(
-                      Icons.more_horiz,
-                      color: AppColors.primary,
-                      size: 18.w,
-                    )
-                  ],),
-const Gap(2),
+                      Icon(
+                        Icons.more_horiz,
+                        color: AppColors.primary,
+                        size: 18.w,
+                      )
+                    ],
+                  ),
+                  const Gap(2),
                   // Title
                   if (card.title.isNotEmpty)
                     Text(
@@ -126,62 +128,47 @@ const Gap(2),
                       overflow: TextOverflow.ellipsis,
                     ),
                   const Gap(2),
-                  Row(children: [
-                 Icon(
-                   Icons.calendar_today_outlined,
-                   size: 14.w,
-                   color: AppColors.gray600,
-                 ),
-                 Gap(AppDimensions.spacing4),
-                 Text(
-                   'dateText',
-                   style: AppTextStyles.bodySmall.copyWith(
-                     color: AppColors.gray600,
-                     fontSize: 12.sp,
-                   ),
-                 ),
-                 const Spacer(),
-                 Container(
-                   margin: EdgeInsets.only(left: AppDimensions.spacing8),
-                   padding: EdgeInsets.symmetric(
-                     horizontal: AppDimensions.spacing8,
-                     vertical: AppDimensions.spacing4,
-                   ),
-                   decoration: BoxDecoration(
-                     color: AppColors.primaryLight.withOpacity(0.2),
-                     borderRadius:
-                     BorderRadius.circular(AppDimensions.radius8),
-                   ),
-                   child: Text(
-                     categories.first,
-                     style: AppTextStyles.labelSmall.copyWith(
-                       color: AppColors.primary,
-                       fontSize: 11.sp,
-                     ),
-                   ),
-                 )
-               ],),
-                  
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.calendar_month_outlined,
+                        size: 14.w,
+                        color: AppColors.gray600,
+                      ),
+                      Gap(AppDimensions.spacing4),
+                      Text(
+                        'dateText',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.gray600,
+                          fontSize: 12.sp,
+                        ),
+                      ),
+                      const Spacer(),
+                      Container(
+                        margin: EdgeInsets.only(left: AppDimensions.spacing8),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: AppDimensions.spacing8,
+                          vertical: AppDimensions.spacing4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryLight.withOpacity(0.2),
+                          borderRadius:
+                              BorderRadius.circular(AppDimensions.radius8),
+                        ),
+                        child: Text(
+                          categories.first,
+                          style: AppTextStyles.labelSmall.copyWith(
+                            color: AppColors.primary,
+                            fontSize: 11.sp,
+                          ),
+                        ),
+                      )
+                    ],
+                  ),
                 ],
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCardPlaceholder() {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.gray100,
-        borderRadius: BorderRadius.circular(AppDimensions.radius12),
-      ),
-      child: Center(
-        child: Icon(
-          Icons.business_center_outlined,
-          color: AppColors.gray400,
-          size: 32.w,
         ),
       ),
     );
