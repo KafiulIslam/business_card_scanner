@@ -13,13 +13,19 @@ class NetworkCubit extends Cubit<NetworkState> {
     this._getNetworkCardsUseCase,
   ) : super(NetworkState.initial());
 
-  Future<void> saveNetworkCard(NetworkCard card) async {
-    emit(state.copyWith(isLoading: true, error: null));
+  void setLoading(bool isLoading) {
+    emit(state.copyWith(isLoading: isLoading, error: null, isSuccess: false));
+  }
+
+  Future<void> saveNetworkCard(NetworkCard card, {bool setLoadingState = true}) async {
+    if (setLoadingState) {
+      emit(state.copyWith(isLoading: true, error: null, isSuccess: false));
+    }
     try {
       await _saveNetworkCardUseCase(card);
-      emit(state.copyWith(isLoading: false, isSuccess: true));
+      emit(state.copyWith(isLoading: false, isSuccess: true, error: null));
     } catch (e) {
-      emit(state.copyWith(isLoading: false, error: e.toString()));
+      emit(state.copyWith(isLoading: false, error: e.toString(), isSuccess: false));
     }
   }
 

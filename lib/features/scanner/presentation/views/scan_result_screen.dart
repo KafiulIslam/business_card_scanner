@@ -120,14 +120,15 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
                       borderRadius: BorderRadius.circular(AppDimensions.radius8),
                     ),
                     child: state.isLoading
-                        ? const SizedBox(
-                            width: 8,
-                            height: 8,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: AppColors.primary,
+                        ? const Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: SizedBox(
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: AppColors.primary,
+                              ),
                             ),
-                          )
+                        )
                         : const Icon(
                             Icons.save_as_outlined,
                             color: Colors.white,
@@ -409,7 +410,6 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
   }
 
   Future<void> _saveCard() async {
-    print('on tap one');
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       CustomSnack.warning('Please login to save cards', context);
@@ -421,10 +421,16 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
       return;
     }
 
+    final cubit = context.read<NetworkCubit>();
+    
     try {
+      // Reset state and set loading immediately so loader shows
+      cubit.reset();
+      cubit.setLoading(true);
+
       // Generate card ID
       final cardId = DateTime.now().millisecondsSinceEpoch.toString();
-      print('on tap two');
+
       // First, upload the image to Firebase Storage
       final storageService = context.read<FirebaseStorageService>();
       String imageUrl = '';
@@ -432,7 +438,10 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
       try {
         imageUrl = await storageService.uploadCardImage(widget.imageFile!, cardId);
       } catch (e) {
-        CustomSnack.warning('Failed to upload image: $e', context);
+        cubit.setLoading(false);
+        if (mounted) {
+          CustomSnack.warning('Failed to upload image: $e', context);
+        }
         return;
       }
 
@@ -453,11 +462,14 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
         createdAt: DateTime.now(), // Set current date time
       );
 
-      // Save to Firestore
-      await context.read<NetworkCubit>().saveNetworkCard(networkCard);
+      // Save to Firestore - this will emit success state
+      // Don't set loading state again since we're already managing it
+      await cubit.saveNetworkCard(networkCard, setLoadingState: false);
     } catch (e) {
-      print('on tap four');
-      CustomSnack.warning('Failed to save card: $e', context);
+      cubit.setLoading(false);
+      if (mounted) {
+        CustomSnack.warning('Failed to save card: $e', context);
+      }
     }
   }
 }
