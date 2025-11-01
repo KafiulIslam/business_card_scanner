@@ -11,6 +11,7 @@ import 'package:business_card_scanner/core/utils/custom_snack.dart';
 import 'package:business_card_scanner/features/network/domain/entities/network_card.dart';
 import 'package:business_card_scanner/features/network/presentation/cubit/network_cubit.dart';
 import 'package:business_card_scanner/features/network/presentation/cubit/network_state.dart';
+import 'package:business_card_scanner/features/network/data/services/firebase_storage_service.dart';
 
 class ScanResultScreen extends StatefulWidget {
   final String rawText;
@@ -408,21 +409,38 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
   }
 
   Future<void> _saveCard() async {
+    print('on tap one');
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       CustomSnack.warning('Please login to save cards', context);
       return;
     }
 
+    if (widget.imageFile == null) {
+      CustomSnack.warning('Image file is missing', context);
+      return;
+    }
+
     try {
       // Generate card ID
       final cardId = DateTime.now().millisecondsSinceEpoch.toString();
+      print('on tap two');
+      // First, upload the image to Firebase Storage
+      final storageService = context.read<FirebaseStorageService>();
+      String imageUrl = '';
+      
+      try {
+        imageUrl = await storageService.uploadCardImage(widget.imageFile!, cardId);
+      } catch (e) {
+        CustomSnack.warning('Failed to upload image: $e', context);
+        return;
+      }
 
-      // Create NetworkCard entity (imageUrl is empty string as we're not uploading to Storage)
+      // Create NetworkCard entity with uploaded image URL and createdAt
       final networkCard = NetworkCard(
         cardId: cardId,
         uid: user.uid,
-        imageUrl: '', // Empty string - images not uploaded to Firebase Storage
+        imageUrl: imageUrl,
         category: selectedCategory,
         note: _whereYouMetController.text,
         name: _nameController.text,
@@ -432,11 +450,13 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
         phone: _phoneController.text,
         address: _addressController.text,
         website: _websiteController.text,
+        createdAt: DateTime.now(), // Set current date time
       );
 
       // Save to Firestore
       await context.read<NetworkCubit>().saveNetworkCard(networkCard);
     } catch (e) {
+      print('on tap four');
       CustomSnack.warning('Failed to save card: $e', context);
     }
   }

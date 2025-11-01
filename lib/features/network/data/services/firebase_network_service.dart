@@ -10,9 +10,12 @@ class FirebaseNetworkService {
   Future<void> saveNetworkCard(NetworkCard card) async {
     try {
       final data = card.toMap();
-      // Ensure createdAt is set if not provided
-      if (!data.containsKey('createdAt') || data['createdAt'] == null) {
-        data['createdAt'] = FieldValue.serverTimestamp();
+      // Ensure createdAt is always set to current date time (DateTime.now())
+      // If createdAt is not provided in the card, use current time
+      if (card.createdAt == null) {
+        data['createdAt'] = Timestamp.fromDate(DateTime.now());
+      } else {
+        data['createdAt'] = Timestamp.fromDate(card.createdAt!);
       }
       await _firestore.collection('network').doc(card.cardId).set(data);
     } catch (e) {

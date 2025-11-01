@@ -75,10 +75,8 @@ class NetworkCardListItem extends StatelessWidget {
           children: [
             // Business Card Thumbnail
             CustomImageHolder(
-                //imageUrl: card.imageUrl,
+                 imageUrl: card.imageUrl,
                 isCircle: false,
-                imageUrl:
-                    'https://asset.gecdesigns.com/img/visiting-card-templates/bold-and-creative-business-card-template-for-entrepreneurs-1680966036989-cover.webp',
                 height: 90.h,
                 width: 90.w,
                 errorWidget: const Icon(
@@ -137,7 +135,7 @@ class NetworkCardListItem extends StatelessWidget {
                       ),
                       Gap(AppDimensions.spacing4),
                       Text(
-                        'dateText',
+                        dateText,
                         style: AppTextStyles.bodySmall.copyWith(
                           color: AppColors.gray600,
                           fontSize: 12.sp,

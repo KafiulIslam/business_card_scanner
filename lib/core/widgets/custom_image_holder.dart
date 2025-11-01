@@ -43,8 +43,9 @@ class CustomImageHolder extends StatelessWidget {
         width: width,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: AppColors.primaryLight,
+          color: AppColors.scaffoldBG,
           shape: isCircle ? BoxShape.circle : BoxShape.rectangle,
+          borderRadius: isCircle ? null : BorderRadius.circular(8),
           border: Border.all(color: AppColors.borderColor),
         ),
         child: errorWidget,

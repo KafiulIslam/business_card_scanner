@@ -46,10 +46,9 @@ class NetworkCard {
       'address': address,
       'website': website,
     };
+    // createdAt will be handled by FirebaseNetworkService to always use DateTime.now()
     if (createdAt != null) {
       map['createdAt'] = Timestamp.fromDate(createdAt!);
-    } else {
-      map['createdAt'] = FieldValue.serverTimestamp();
     }
     return map;
   }
