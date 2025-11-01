@@ -10,7 +10,7 @@ import 'scan_state.dart';
 class ScanCubit extends Cubit<ScanState> {
   ScanCubit() : super(ScanState.initial());
 
-  TextRecognizer? _textRecognizer;
+ TextRecognizer? _textRecognizer;
 
   // ========= Lifecycle =========
 

@@ -465,6 +465,9 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
       // Save to Firestore - this will emit success state
       // Don't set loading state again since we're already managing it
       await cubit.saveNetworkCard(networkCard, setLoadingState: false);
+     // final user = FirebaseAuth.instance.currentUser;
+      await cubit.fetchNetworkCards(user.uid);
+
     } catch (e) {
       cubit.setLoading(false);
       if (mounted) {

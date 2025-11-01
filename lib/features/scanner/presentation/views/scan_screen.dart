@@ -9,23 +9,15 @@ import 'scan_result_screen.dart';
 import 'package:business_card_scanner/core/theme/app_dimensions.dart';
 import 'package:business_card_scanner/core/theme/app_text_style.dart';
 
-class ScanScreen extends StatelessWidget {
+class ScanScreen extends StatefulWidget {
   const ScanScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return const _ScanView();
-  }
+  State<ScanScreen> createState() => _ScanScreenState();
 }
 
-class _ScanView extends StatefulWidget {
-  const _ScanView({super.key});
+class _ScanScreenState extends State<ScanScreen> with WidgetsBindingObserver {
 
-  @override
-  State<_ScanView> createState() => _ScanViewState();
-}
-
-class _ScanViewState extends State<_ScanView> with WidgetsBindingObserver {
 
   @override
   void initState() {
@@ -48,6 +40,7 @@ class _ScanViewState extends State<_ScanView> with WidgetsBindingObserver {
     // Forward lifecycle to cubit to handle camera properly
     context.read<ScanCubit>().handleLifecycle(state);
   }
+
 
   @override
   Widget build(BuildContext context) {
