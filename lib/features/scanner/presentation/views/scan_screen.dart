@@ -1,11 +1,12 @@
 import 'package:business_card_scanner/core/utils/custom_snack.dart';
+import 'package:business_card_scanner/core/routes/routes.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
+import 'package:go_router/go_router.dart';
 import '../cubit/scan_cubit.dart';
 import '../cubit/scan_state.dart';
-import 'scan_result_screen.dart';
 import 'package:business_card_scanner/core/theme/app_dimensions.dart';
 import 'package:business_card_scanner/core/theme/app_text_style.dart';
 
@@ -71,17 +72,16 @@ class _ScanScreenState extends State<ScanScreen> with WidgetsBindingObserver {
           context.read<ScanCubit>().clearError();
         }
 
-        // On result → open ScanResultScreen, then clear result
+        // On result → open ScanResultScreen using go_router, then clear result
         final result = state.result;
         if (result != null) {
-          await Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => ScanResultScreen(
-                rawText: result.rawText,
-                extracted: result.extracted,
-                imageFile: result.imageFile,
-              ),
-            ),
+          await context.push(
+            Routes.scanResult,
+            extra: {
+              'rawText': result.rawText,
+              'extracted': result.extracted,
+              'imageFile': result.imageFile,
+            },
           );
           if (context.mounted) {
             context.read<ScanCubit>().clearResult();

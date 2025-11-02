@@ -8,6 +8,7 @@ import 'package:business_card_scanner/core/theme/app_colors.dart';
 import 'package:business_card_scanner/core/theme/app_text_style.dart';
 import 'package:business_card_scanner/core/theme/app_dimensions.dart';
 import 'package:business_card_scanner/core/utils/custom_snack.dart';
+import 'package:go_router/go_router.dart';
 import 'package:business_card_scanner/features/network/domain/entities/network_card.dart';
 import 'package:business_card_scanner/features/network/presentation/cubit/network_cubit.dart';
 import 'package:business_card_scanner/features/network/presentation/cubit/network_state.dart';
@@ -99,7 +100,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
               if (state.isSuccess) {
                 CustomSnack.success('Card saved successfully', context);
                 context.read<NetworkCubit>().reset();
-                Navigator.of(context).pop();
+                context.pop(); // Use go_router's context.pop()
               } else if (state.error != null) {
                 CustomSnack.warning(state.error!, context);
                 context.read<NetworkCubit>().reset();
