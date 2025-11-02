@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:business_card_scanner/core/theme/app_assets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -15,52 +16,31 @@ import 'package:business_card_scanner/features/network/presentation/cubit/networ
 import 'package:business_card_scanner/features/network/presentation/cubit/network_state.dart';
 import 'package:business_card_scanner/features/network/data/services/firebase_storage_service.dart';
 
-class ScanResultScreen extends StatefulWidget {
-  final String rawText;
-  final Map<String, String?> extracted;
-  final File? imageFile;
+import '../../../../core/utils/assets_path.dart';
 
-  const ScanResultScreen({
-    super.key,
-    required this.rawText,
-    required this.extracted,
-    this.imageFile,
-  });
+class CreateCardManuallyScreen extends StatefulWidget {
+  const CreateCardManuallyScreen({super.key});
 
   @override
-  State<ScanResultScreen> createState() => _ScanResultScreenState();
+  State<CreateCardManuallyScreen> createState() =>
+      _CreateCardManuallyScreenState();
 }
 
-class _ScanResultScreenState extends State<ScanResultScreen> {
+class _CreateCardManuallyScreenState extends State<CreateCardManuallyScreen> {
   late String selectedCategory = NetworkConstants.defaultCategory;
   String? selectedTag = NetworkConstants.defaultTag;
-  late final TextEditingController _whereYouMetController;
-  late final TextEditingController _nameController;
-  late final TextEditingController _jobTitleController;
-  late final TextEditingController _companyController;
-  late final TextEditingController _emailController;
-  late final TextEditingController _phoneController;
-  late final TextEditingController _addressController;
-  late final TextEditingController _websiteController;
+  final TextEditingController _whereYouMetController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _jobTitleController = TextEditingController();
+  final TextEditingController _companyController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
+  final TextEditingController _websiteController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _whereYouMetController = TextEditingController();
-    _nameController =
-        TextEditingController(text: widget.extracted['name'] ?? '');
-    _jobTitleController =
-        TextEditingController(text: widget.extracted['jobTitle'] ?? '');
-    _companyController =
-        TextEditingController(text: widget.extracted['company'] ?? '');
-    _emailController =
-        TextEditingController(text: widget.extracted['email'] ?? '');
-    _phoneController =
-        TextEditingController(text: widget.extracted['phone'] ?? '');
-    _addressController =
-        TextEditingController(text: widget.extracted['address'] ?? '');
-    _websiteController =
-        TextEditingController(text: widget.extracted['website'] ?? '');
   }
 
   @override
@@ -81,12 +61,13 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Scanned Details',
+          'Create Manually',
           style: AppTextStyles.headline4,
         ),
         actions: [
           BlocListener<NetworkCubit, NetworkState>(
-            listenWhen: (prev, curr) => prev.isSuccess != curr.isSuccess || prev.error != curr.error,
+            listenWhen: (prev, curr) =>
+                prev.isSuccess != curr.isSuccess || prev.error != curr.error,
             listener: (context, state) {
               if (state.isSuccess) {
                 CustomSnack.success('Card saved successfully', context);
@@ -100,7 +81,8 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
             child: BlocBuilder<NetworkCubit, NetworkState>(
               builder: (context, state) {
                 return InkWell(
-                  onTap: state.isLoading ? null : _saveCard,
+                  // onTap: state.isLoading ? null : _saveCard,
+                  onTap: () {},
                   child: Container(
                     margin: const EdgeInsets.only(right: 16),
                     height: 36,
@@ -109,18 +91,19 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
                       color: state.isLoading
                           ? AppColors.gray400
                           : AppColors.primary,
-                      borderRadius: BorderRadius.circular(AppDimensions.radius8),
+                      borderRadius:
+                          BorderRadius.circular(AppDimensions.radius8),
                     ),
                     child: state.isLoading
                         ? const Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: SizedBox(
+                            padding: EdgeInsets.all(8.0),
+                            child: SizedBox(
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
                                 color: AppColors.primary,
                               ),
                             ),
-                        )
+                          )
                         : const Icon(
                             Icons.save_as_outlined,
                             color: Colors.white,
@@ -168,16 +151,61 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
   Widget _buildCardPreview() {
     return Padding(
       padding: const EdgeInsets.all(16.0),
-      child: SizedBox(
+      child: Container(
         height: 200.h,
         width: double.infinity,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(AppDimensions.radius8),
-          child: Image.file(
-            widget.imageFile ?? File(''),
-            fit: BoxFit.cover,
-            // helpful guards
-            errorBuilder: (_, __, ___) => const Icon(Icons.broken_image),
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            color: Colors.white,
+            image: DecorationImage(
+                image: AssetImage(AssetsPath.manualCardBg), fit: BoxFit.cover)),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Kafiul Islam',
+                style: AppTextStyles.bodyMedium.copyWith(color: Colors.white),
+              ),
+              Text(
+                'CEO & Founder',
+                style: AppTextStyles.bodySmall.copyWith(color: Colors.white),
+              ),
+              const Spacer(),
+              Row(
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _cardInfoTile(Icons.phone, '+01628924397'),
+
+                      _cardInfoTile(
+                          Icons.location_on_outlined, 'Bogura, Rajshahi'),
+
+                      _cardInfoTile(Icons.email, 'kafiulislam@gmail.com'),
+
+                      _cardInfoTile(Icons.language_outlined, 'codertent.com'),
+                    ],
+                  ),
+                  const Spacer(),
+                  Column(
+                    children: [
+                      const Icon(
+                        Icons.domain,
+                        color: Colors.white,
+                        size: 48,
+                      ),
+                      Text(
+                        'CoderTent',
+                        style: AppTextStyles.bodyMedium
+                            .copyWith(color: Colors.white),
+                      )
+                    ],
+                  )
+                ],
+              )
+            ],
           ),
         ),
       ),
@@ -206,65 +234,6 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
               child: Text(value),
             );
           }).toList(),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTagsRow() {
-    return Row(
-      children: [
-        _buildTag('Prospects', isSelected: selectedTag == 'Prospects'),
-        Gap(AppDimensions.spacing8),
-        _buildTag('Leads', isSelected: selectedTag == 'Leads'),
-        Gap(AppDimensions.spacing8),
-        _buildTag('Conferences', isSelected: selectedTag == 'Conferences'),
-        const Spacer(),
-        Container(
-          padding: EdgeInsets.all(AppDimensions.spacing8),
-          decoration: BoxDecoration(
-            color: AppColors.success,
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(Icons.add, color: Colors.white, size: 20),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTag(String label, {required bool isSelected}) {
-    return InkWell(
-      onTap: () => setState(() => selectedTag = label),
-      child: Container(
-        padding: EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacing12,
-          vertical: AppDimensions.spacing8,
-        ),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.secondaryLight.withOpacity(0.2)
-              : Colors.white,
-          borderRadius: BorderRadius.circular(AppDimensions.radius20),
-          border: Border.all(
-            color: isSelected ? AppColors.secondary : AppColors.gray300,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              isSelected ? Icons.check_circle : Icons.circle_outlined,
-              size: 16,
-              color: isSelected ? AppColors.secondary : AppColors.gray400,
-            ),
-            Gap(AppDimensions.spacing4),
-            Text(
-              label,
-              style: AppTextStyles.labelSmall.copyWith(
-                color: isSelected ? AppColors.secondary : AppColors.gray600,
-              ),
-            ),
-          ],
         ),
       ),
     );
@@ -377,94 +346,87 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
     );
   }
 
-  Widget _buildHighlightedText(String text, String? highlightText) {
-    if (highlightText == null || !text.contains(highlightText)) {
-      return Text(text, style: AppTextStyles.bodyMedium);
-    }
-
-    final parts = text.split(highlightText);
-    return RichText(
-      text: TextSpan(
-        children: [
-          TextSpan(text: parts[0], style: AppTextStyles.bodyMedium),
-          TextSpan(
-            text: highlightText,
-            style: AppTextStyles.bodyMedium.copyWith(
-              backgroundColor: AppColors.success.withOpacity(0.3),
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          if (parts.length > 1)
-            TextSpan(text: parts[1], style: AppTextStyles.bodyMedium),
-        ],
-      ),
+  Widget _cardInfoTile(IconData icon, String info) {
+    return Row(
+      children: [
+        Icon(
+          icon,
+          color: Colors.white,
+          size: 18,
+        ),
+        const Gap(8),
+        Text(
+          info,
+          style: AppTextStyles.labelSmall.copyWith(color: Colors.white),
+        )
+      ],
     );
   }
 
-  Future<void> _saveCard() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      CustomSnack.warning('Please login to save cards', context);
-      return;
-    }
-
-    if (widget.imageFile == null) {
-      CustomSnack.warning('Image file is missing', context);
-      return;
-    }
-
-    final cubit = context.read<NetworkCubit>();
-    
-    try {
-      // Reset state and set loading immediately so loader shows
-      cubit.reset();
-      cubit.setLoading(true);
-
-      // Generate card ID
-      final cardId = DateTime.now().millisecondsSinceEpoch.toString();
-
-      // First, upload the image to Firebase Storage
-      final storageService = context.read<FirebaseStorageService>();
-      String imageUrl = '';
-      
-      try {
-        imageUrl = await storageService.uploadCardImage(widget.imageFile!, cardId);
-      } catch (e) {
-        cubit.setLoading(false);
-        if (mounted) {
-          CustomSnack.warning('Failed to upload image: $e', context);
-        }
-        return;
-      }
-
-      // Create NetworkCard entity with uploaded image URL and createdAt
-      final networkCard = NetworkCard(
-        cardId: cardId,
-        uid: user.uid,
-        imageUrl: imageUrl,
-        category: selectedCategory,
-        note: _whereYouMetController.text,
-        name: _nameController.text,
-        title: _jobTitleController.text,
-        company: _companyController.text,
-        email: _emailController.text,
-        phone: _phoneController.text,
-        address: _addressController.text,
-        website: _websiteController.text,
-        createdAt: DateTime.now(), // Set current date time
-      );
-
-      // Save to Firestore - this will emit success state
-      // Don't set loading state again since we're already managing it
-      await cubit.saveNetworkCard(networkCard, setLoadingState: false);
-     // final user = FirebaseAuth.instance.currentUser;
-      await cubit.fetchNetworkCards(user.uid);
-
-    } catch (e) {
-      cubit.setLoading(false);
-      if (mounted) {
-        CustomSnack.warning('Failed to save card: $e', context);
-      }
-    }
-  }
+// Future<void> _saveCard() async {
+//   final user = FirebaseAuth.instance.currentUser;
+//   if (user == null) {
+//     CustomSnack.warning('Please login to save cards', context);
+//     return;
+//   }
+//
+//   if (widget.imageFile == null) {
+//     CustomSnack.warning('Image file is missing', context);
+//     return;
+//   }
+//
+//   final cubit = context.read<NetworkCubit>();
+//
+//   try {
+//     // Reset state and set loading immediately so loader shows
+//     cubit.reset();
+//     cubit.setLoading(true);
+//
+//     // Generate card ID
+//     final cardId = DateTime.now().millisecondsSinceEpoch.toString();
+//
+//     // First, upload the image to Firebase Storage
+//     final storageService = context.read<FirebaseStorageService>();
+//     String imageUrl = '';
+//
+//     try {
+//       imageUrl =
+//           await storageService.uploadCardImage(widget.imageFile!, cardId);
+//     } catch (e) {
+//       cubit.setLoading(false);
+//       if (mounted) {
+//         CustomSnack.warning('Failed to upload image: $e', context);
+//       }
+//       return;
+//     }
+//
+//     // Create NetworkCard entity with uploaded image URL and createdAt
+//     final networkCard = NetworkCard(
+//       cardId: cardId,
+//       uid: user.uid,
+//       imageUrl: imageUrl,
+//       category: selectedCategory,
+//       note: _whereYouMetController.text,
+//       name: _nameController.text,
+//       title: _jobTitleController.text,
+//       company: _companyController.text,
+//       email: _emailController.text,
+//       phone: _phoneController.text,
+//       address: _addressController.text,
+//       website: _websiteController.text,
+//       createdAt: DateTime.now(), // Set current date time
+//     );
+//
+//     // Save to Firestore - this will emit success state
+//     // Don't set loading state again since we're already managing it
+//     await cubit.saveNetworkCard(networkCard, setLoadingState: false);
+//     // final user = FirebaseAuth.instance.currentUser;
+//     await cubit.fetchNetworkCards(user.uid);
+//   } catch (e) {
+//     cubit.setLoading(false);
+//     if (mounted) {
+//       CustomSnack.warning('Failed to save card: $e', context);
+//     }
+//   }
+// }
 }

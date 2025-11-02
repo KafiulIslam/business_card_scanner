@@ -176,7 +176,9 @@ class _ScanScreenState extends State<ScanScreen> with WidgetsBindingObserver {
                           // Manual add (hook up your route)
                           InkWell(
                             onTap: () {
-                              // TODO: Navigate to manual card entry screen
+                                context.push(
+                                Routes.createCardManually,
+                              );
                             },
                             child: Column(
                               mainAxisSize: MainAxisSize.min,

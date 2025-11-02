@@ -4,6 +4,7 @@ import 'package:business_card_scanner/features/auth/presentation/views/login/log
 import 'package:business_card_scanner/features/auth/presentation/views/signUp/sign_up_screen.dart';
 import 'package:business_card_scanner/features/dashboard/dashboard_screen.dart';
 import 'package:business_card_scanner/features/onBoard/presentation/views/onboard_screen.dart';
+import 'package:business_card_scanner/features/scanner/presentation/views/create_card_manually_screen.dart';
 import 'package:business_card_scanner/features/scanner/presentation/views/scan_result_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
@@ -83,6 +84,19 @@ final GoRouter router = GoRouter(
             extracted: (args?['extracted'] as Map<String, String?>?) ?? {},
             imageFile: args?['imageFile'] as File?,
           ),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+        );
+      },
+    ),
+    GoRoute(
+      path: Routes.createCardManually,
+      pageBuilder: (context, state) {
+        final args = state.extra as Map<String, dynamic>?;
+        return CustomTransitionPage(
+          key: state.pageKey,
+          child: CreateCardManuallyScreen(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return FadeTransition(opacity: animation, child: child);
           },

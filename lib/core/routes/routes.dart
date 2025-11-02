@@ -11,6 +11,7 @@ class Routes {
 
   //!======================== Scanner Routes ========================
   static const String scanResult = '/scan-result';
+  static const String createCardManually = '/create-card-manually';
 
 
   //!======================== User Routes ========================
