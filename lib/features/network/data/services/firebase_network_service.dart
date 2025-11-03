@@ -9,6 +9,9 @@ class FirebaseNetworkService {
 
   Future<void> saveNetworkCard(NetworkModel card) async {
     try {
+      if (card.cardId == null) {
+        throw Exception('Card ID is required to save network card');
+      }
       final data = card.toMap();
       // Ensure createdAt is always set to current date time (DateTime.now())
       // If createdAt is not provided in the card, use current time
@@ -17,7 +20,7 @@ class FirebaseNetworkService {
       } else {
         data['createdAt'] = Timestamp.fromDate(card.createdAt!);
       }
-      await _firestore.collection('network').doc(card.cardId).set(data);
+      await _firestore.collection('network').doc(card.cardId!).set(data);
     } catch (e) {
       throw Exception('Failed to save network card: $e');
     }

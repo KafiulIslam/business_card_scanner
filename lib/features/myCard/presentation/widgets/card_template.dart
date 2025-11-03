@@ -1,3 +1,4 @@
+import 'package:business_card_scanner/features/network/domain/entities/network_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
@@ -5,7 +6,9 @@ import '../../../../core/theme/app_text_style.dart';
 import '../../../../core/utils/assets_path.dart';
 
 class CardTemplate extends StatelessWidget {
-  const CardTemplate({super.key});
+  final NetworkModel network;
+
+  const CardTemplate({super.key, required this.network});
 
   @override
   Widget build(BuildContext context) {
@@ -16,8 +19,7 @@ class CardTemplate extends StatelessWidget {
           borderRadius: BorderRadius.circular(8),
           color: Colors.white,
           image: DecorationImage(
-              image: AssetImage(AssetsPath.manualCardBg),
-              fit: BoxFit.cover)),
+              image: AssetImage(network.imageUrl ?? ''), fit: BoxFit.cover)),
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
         child: Column(
@@ -29,12 +31,12 @@ class CardTemplate extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '_nameController.text',
+                      network.name ?? '',
                       style: AppTextStyles.headline1
                           .copyWith(fontSize: 16, color: Colors.white),
                     ),
                     Text(
-                      '_jobTitleController.text',
+                      network.title ?? '',
                       style: AppTextStyles.headline3
                           .copyWith(fontSize: 14, color: Colors.white),
                     ),
@@ -43,14 +45,13 @@ class CardTemplate extends StatelessWidget {
                 const Spacer(),
                 Column(
                   children: [
-
-                      const Icon(
-                        Icons.domain,
-                        color: Colors.white,
-                        size: 42,
-                      ),
+                    const Icon(
+                      Icons.domain,
+                      color: Colors.white,
+                      size: 42,
+                    ),
                     Text(
-                     ' _companyController.text',
+                      network.company ?? '',
                       style: AppTextStyles.headline1
                           .copyWith(fontSize: 14, color: Colors.white),
                     )
@@ -62,15 +63,14 @@ class CardTemplate extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _cardInfoTile(Icons.phone, '_phoneController.text'),
+                _cardInfoTile(Icons.phone, network.phone ?? ""),
                 const Gap(2),
                 _cardInfoTile(
-                    Icons.location_on_outlined, '_addressController.text'),
+                    Icons.location_on_outlined, network.address ?? ''),
                 const Gap(2),
-                _cardInfoTile(Icons.email, '_emailController.text'),
+                _cardInfoTile(Icons.email, network.email ?? ''),
                 const Gap(2),
-                _cardInfoTile(
-                    Icons.language_outlined, '_websiteController.text'),
+                _cardInfoTile(Icons.language_outlined, network.website ?? ''),
               ],
             ),
           ],
@@ -97,5 +97,4 @@ class CardTemplate extends StatelessWidget {
       ],
     );
   }
-
 }

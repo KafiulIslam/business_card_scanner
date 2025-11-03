@@ -39,7 +39,7 @@ class MyCardScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             _buildCardIcon(),
-            Gap( AppDimensions.spacing16),
+            Gap(AppDimensions.spacing16),
             Text(
               'Tap Here to Create Your Digital Business Card',
               textAlign: TextAlign.center,
@@ -151,5 +151,4 @@ class MyCardScreen extends StatelessWidget {
       ),
     );
   }
-
 }

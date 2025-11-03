@@ -46,13 +46,16 @@ class _NetworkScreenState extends State<NetworkScreen> {
     if (query.isEmpty) return cards;
     final lowerQuery = query.toLowerCase();
     return cards.where((card) {
-      return card.name.toLowerCase().contains(lowerQuery) ||
-          (card.title.isNotEmpty &&
-              card.title.toLowerCase().contains(lowerQuery)) ||
-          (card.company.isNotEmpty &&
-              card.company.toLowerCase().contains(lowerQuery)) ||
-          (card.email.isNotEmpty &&
-              card.email.toLowerCase().contains(lowerQuery));
+      return (card.name?.toLowerCase().contains(lowerQuery) ?? false) ||
+          (card.title != null &&
+              card.title!.isNotEmpty &&
+              card.title!.toLowerCase().contains(lowerQuery)) ||
+          (card.company != null &&
+              card.company!.isNotEmpty &&
+              card.company!.toLowerCase().contains(lowerQuery)) ||
+          (card.email != null &&
+              card.email!.isNotEmpty &&
+              card.email!.toLowerCase().contains(lowerQuery));
     }).toList();
   }
 

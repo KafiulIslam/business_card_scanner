@@ -23,12 +23,13 @@ class NetworkCardListItem extends StatelessWidget {
   Widget build(BuildContext context) {
     // Parse categories from comma-separated string or use single category
     final categories = card.category
-        .split(',')
-        .map((e) => e.trim())
-        .where((e) => e.isNotEmpty)
-        .toList();
-    if (categories.isEmpty && card.category.isNotEmpty) {
-      categories.add(card.category);
+            ?.split(',')
+            .map((e) => e.trim())
+            .where((e) => e.isNotEmpty)
+            .toList() ??
+        [];
+    if (categories.isEmpty && card.category != null && card.category!.isNotEmpty) {
+      categories.add(card.category!);
     }
 
     // Format date
@@ -75,7 +76,7 @@ class NetworkCardListItem extends StatelessWidget {
           children: [
             // Business Card Thumbnail
             CustomImageHolder(
-              imageUrl: card.imageUrl,
+              imageUrl: card.imageUrl ?? '',
               isCircle: false,
               height: 90.h,
               width: 100.w,
@@ -83,7 +84,7 @@ class NetworkCardListItem extends StatelessWidget {
                 Icons.contact_mail_sharp,
                 color: AppColors.iconColor,
               ),
-              fitType: card.isCameraScanned ? BoxFit.cover : BoxFit.fill,
+              fitType: (card.isCameraScanned == true) ? BoxFit.cover : BoxFit.fill,
             ),
             Gap(AppDimensions.spacing8),
             Expanded(
@@ -95,7 +96,7 @@ class NetworkCardListItem extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          card.name,
+                          card.name ?? 'Unknown',
                           style: AppTextStyles.bodySmall.copyWith(
                               fontWeight: FontWeight.bold, color: Colors.black),
                           maxLines: 1,
@@ -111,18 +112,18 @@ class NetworkCardListItem extends StatelessWidget {
                   ),
                   const Gap(2),
                   // Title
-                  if (card.title.isNotEmpty)
+                  if (card.title != null && card.title!.isNotEmpty)
                     Text(
-                      card.title,
+                      card.title!,
                       style: AppTextStyles.labelSmall,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                   const Gap(2),
                   //Company
-                  if (card.company.isNotEmpty)
+                  if (card.company != null && card.company!.isNotEmpty)
                     Text(
-                      card.company,
+                      card.company!,
                       style: AppTextStyles.labelSmall,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -144,25 +145,26 @@ class NetworkCardListItem extends StatelessWidget {
                         ),
                       ),
                       const Spacer(),
-                      Container(
-                        margin: EdgeInsets.only(left: AppDimensions.spacing8),
-                        padding: EdgeInsets.symmetric(
-                          horizontal: AppDimensions.spacing8,
-                          vertical: AppDimensions.spacing4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.primaryLight.withOpacity(0.2),
-                          borderRadius:
-                              BorderRadius.circular(AppDimensions.radius8),
-                        ),
-                        child: Text(
-                          categories.first,
-                          style: AppTextStyles.labelSmall.copyWith(
-                            color: AppColors.primary,
-                            fontSize: 11.sp,
+                      if (categories.isNotEmpty)
+                        Container(
+                          margin: EdgeInsets.only(left: AppDimensions.spacing8),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: AppDimensions.spacing8,
+                            vertical: AppDimensions.spacing4,
                           ),
-                        ),
-                      )
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryLight.withOpacity(0.2),
+                            borderRadius:
+                                BorderRadius.circular(AppDimensions.radius8),
+                          ),
+                          child: Text(
+                            categories.first,
+                            style: AppTextStyles.labelSmall.copyWith(
+                              color: AppColors.primary,
+                              fontSize: 11.sp,
+                            ),
+                          ),
+                        )
                     ],
                   ),
                 ],

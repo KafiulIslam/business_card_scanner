@@ -1,58 +1,56 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class NetworkModel {
-  final String cardId;
-  final String uid;
-  final String imageUrl;
-  final String category;
-  final String note;
-  final String name;
-  final String title;
-  final String company;
-  final String email;
-  final String phone;
-  final String address;
-  final String website;
+  final String? cardId;
+  final String? uid;
+  final String? imageUrl;
+  final String? category;
+  final String? note;
+  final String? name;
+  final String? title;
+  final String? company;
+  final String? email;
+  final String? phone;
+  final String? address;
+  final String? website;
   final DateTime? createdAt;
-  final bool isCameraScanned;
+  final bool? isCameraScanned;
 
   NetworkModel({
-    required this.cardId,
-    required this.uid,
-    required this.imageUrl,
-    required this.category,
-    required this.note,
-    required this.name,
-    required this.title,
-    required this.company,
-    required this.email,
-    required this.phone,
-    required this.address,
-    required this.website,
+    this.cardId,
+    this.uid,
+    this.imageUrl,
+    this.category,
+    this.note,
+    this.name,
+    this.title,
+    this.company,
+    this.email,
+    this.phone,
+    this.address,
+    this.website,
     this.createdAt,
-    this.isCameraScanned = false,
+    this.isCameraScanned,
   });
 
   Map<String, dynamic> toMap() {
-    final map = <String, dynamic>{
-      'cardId': cardId,
-      'uid': uid,
-      'imageUrl': imageUrl,
-      'category': category,
-      'note': note,
-      'name': name,
-      'title': title,
-      'company': company,
-      'email': email,
-      'phone': phone,
-      'address': address,
-      'website': website,
-      'isCameraScanned': isCameraScanned,
-    };
-    // createdAt will be handled by FirebaseNetworkService to always use DateTime.now()
+    final map = <String, dynamic>{};
+    if (cardId != null) map['cardId'] = cardId;
+    if (uid != null) map['uid'] = uid;
+    if (imageUrl != null) map['imageUrl'] = imageUrl;
+    if (category != null) map['category'] = category;
+    if (note != null) map['note'] = note;
+    if (name != null) map['name'] = name;
+    if (title != null) map['title'] = title;
+    if (company != null) map['company'] = company;
+    if (email != null) map['email'] = email;
+    if (phone != null) map['phone'] = phone;
+    if (address != null) map['address'] = address;
+    if (website != null) map['website'] = website;
     if (createdAt != null) {
       map['createdAt'] = Timestamp.fromDate(createdAt!);
     }
+    if (isCameraScanned != null) map['isCameraScanned'] = isCameraScanned;
     return map;
   }
 
@@ -65,23 +63,22 @@ class NetworkModel {
         createdAt = (map['createdAt'] as Timestamp).toDate();
       }
     }
-    
+
     return NetworkModel(
-      cardId: map['cardId']?.toString() ?? '',
-      uid: map['uid']?.toString() ?? '',
-      imageUrl: map['imageUrl']?.toString() ?? '',
-      category: map['category']?.toString() ?? '',
-      note: map['note']?.toString() ?? '',
-      name: map['name']?.toString() ?? '',
-      title: map['title']?.toString() ?? '',
-      company: map['company']?.toString() ?? '',
-      email: map['email']?.toString() ?? '',
-      phone: map['phone']?.toString() ?? '',
-      address: map['address']?.toString() ?? '',
-      website: map['website']?.toString() ?? '',
+      cardId: map['cardId']?.toString(),
+      uid: map['uid']?.toString(),
+      imageUrl: map['imageUrl']?.toString(),
+      category: map['category']?.toString(),
+      note: map['note']?.toString(),
+      name: map['name']?.toString(),
+      title: map['title']?.toString(),
+      company: map['company']?.toString(),
+      email: map['email']?.toString(),
+      phone: map['phone']?.toString(),
+      address: map['address']?.toString(),
+      website: map['website']?.toString(),
       createdAt: createdAt,
-      isCameraScanned: map['isCameraScanned'] as bool? ?? false,
+      isCameraScanned: map['isCameraScanned'] as bool?,
     );
   }
 }
-
