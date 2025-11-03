@@ -3,6 +3,7 @@ import 'package:business_card_scanner/core/routes/routes.dart';
 import 'package:business_card_scanner/features/auth/presentation/views/login/login_screen.dart';
 import 'package:business_card_scanner/features/auth/presentation/views/signUp/sign_up_screen.dart';
 import 'package:business_card_scanner/features/dashboard/dashboard_screen.dart';
+import 'package:business_card_scanner/features/myCard/presentation/views/choose_template_screen.dart';
 import 'package:business_card_scanner/features/onBoard/presentation/views/onboard_screen.dart';
 import 'package:business_card_scanner/features/scanner/presentation/views/create_card_manually_screen.dart';
 import 'package:business_card_scanner/features/scanner/presentation/views/scan_result_screen.dart';
@@ -63,6 +64,7 @@ final GoRouter router = GoRouter(
         },
       ),
     ),
+    //!======================== Dashboard Routes ========================
     GoRoute(
       path: Routes.dashboard,
       pageBuilder: (context, state) => CustomTransitionPage(
@@ -98,6 +100,19 @@ final GoRouter router = GoRouter(
         return CustomTransitionPage(
           key: state.pageKey,
           child: CreateCardManuallyScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+        );
+      },
+    ),
+    //!======================== My Card Routes ========================
+    GoRoute(
+      path: Routes.chooseTemplate,
+      pageBuilder: (context, state) {
+        return CustomTransitionPage(
+          key: state.pageKey,
+          child: const ChooseTemplateScreen(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return FadeTransition(opacity: animation, child: child);
           },

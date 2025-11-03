@@ -14,6 +14,10 @@ class Routes {
   static const String createCardManually = '/create-card-manually';
 
 
+  //!======================== My Card Routes ========================
+  static const String chooseTemplate = '/choose-template';
+
+
   //!======================== User Routes ========================
   static const String userForgetPassword = '/user/forgetPassword';
   static const String userRegisterPersonalInfo = '/user/registerPersonalInfo';
