@@ -81,6 +81,7 @@ class _ScanScreenState extends State<ScanScreen> with WidgetsBindingObserver {
               'rawText': result.rawText,
               'extracted': result.extracted,
               'imageFile': result.imageFile,
+              'isCameraScanned': result.isCameraScanned,
             },
           );
           if (context.mounted) {

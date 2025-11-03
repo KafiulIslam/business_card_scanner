@@ -101,6 +101,7 @@ class _CreateCardManuallyScreenState extends State<CreateCardManuallyScreen> {
         address: _addressController.text,
         website: _websiteController.text,
         createdAt: DateTime.now(),
+        isCameraScanned: false, // Manual cards are not camera scanned
       );
 
       await cubit.saveNetworkCard(networkCard, setLoadingState: false);

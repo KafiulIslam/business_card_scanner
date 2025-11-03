@@ -19,12 +19,14 @@ class ScanResultScreen extends StatefulWidget {
   final String rawText;
   final Map<String, String?> extracted;
   final File? imageFile;
+  final bool isCameraScanned;
 
   const ScanResultScreen({
     super.key,
     required this.rawText,
     required this.extracted,
     this.imageFile,
+    this.isCameraScanned = false,
   });
 
   @override
@@ -96,7 +98,8 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
         phone: _phoneController.text,
         address: _addressController.text,
         website: _websiteController.text,
-        createdAt: DateTime.now(), // Set current date time
+        createdAt: DateTime.now(),
+        isCameraScanned: widget.isCameraScanned,
       );
 
       // Save to Firestore - this will emit success state

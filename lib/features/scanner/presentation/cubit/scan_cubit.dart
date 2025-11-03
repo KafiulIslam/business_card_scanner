@@ -152,6 +152,7 @@ class ScanCubit extends Cubit<ScanState> {
           rawText: recognized,
           extracted: _extractFields(recognized),
           imageFile: File(xfile.path),
+          isCameraScanned: true,
         ),
       ));
     } catch (e) {
@@ -178,6 +179,7 @@ class ScanCubit extends Cubit<ScanState> {
           rawText: recognized,
           extracted: _extractFields(recognized),
           imageFile: File(xFile.path),
+          isCameraScanned: false,
         ),
       ));
     } catch (e) {
@@ -197,6 +199,7 @@ class ScanCubit extends Cubit<ScanState> {
           rawText: recognized,
           extracted: _extractFields(recognized),
           imageFile: File(path),
+          isCameraScanned: false,
         ),
       ));
     } catch (e) {

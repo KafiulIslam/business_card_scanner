@@ -75,14 +75,16 @@ class NetworkCardListItem extends StatelessWidget {
           children: [
             // Business Card Thumbnail
             CustomImageHolder(
-                 imageUrl: card.imageUrl,
-                isCircle: false,
-                height: 90.h,
-                width: 100.w,
-                errorWidget: const Icon(
-                  Icons.contact_mail_sharp,
-                  color: AppColors.iconColor,
-                ),),
+              imageUrl: card.imageUrl,
+              isCircle: false,
+              height: 90.h,
+              width: 100.w,
+              errorWidget: const Icon(
+                Icons.contact_mail_sharp,
+                color: AppColors.iconColor,
+              ),
+              fitType: card.isCameraScanned ? BoxFit.cover : BoxFit.fill,
+            ),
             Gap(AppDimensions.spacing8),
             Expanded(
               child: Column(

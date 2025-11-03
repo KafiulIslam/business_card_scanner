@@ -83,6 +83,7 @@ final GoRouter router = GoRouter(
             rawText: args?['rawText'] as String? ?? '',
             extracted: (args?['extracted'] as Map<String, String?>?) ?? {},
             imageFile: args?['imageFile'] as File?,
+            isCameraScanned: args?['isCameraScanned'] as bool? ?? false,
           ),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return FadeTransition(opacity: animation, child: child);

@@ -14,6 +14,7 @@ class NetworkCard {
   final String address;
   final String website;
   final DateTime? createdAt;
+  final bool isCameraScanned;
 
   NetworkCard({
     required this.cardId,
@@ -29,6 +30,7 @@ class NetworkCard {
     required this.address,
     required this.website,
     this.createdAt,
+    this.isCameraScanned = false,
   });
 
   Map<String, dynamic> toMap() {
@@ -45,6 +47,7 @@ class NetworkCard {
       'phone': phone,
       'address': address,
       'website': website,
+      'isCameraScanned': isCameraScanned,
     };
     // createdAt will be handled by FirebaseNetworkService to always use DateTime.now()
     if (createdAt != null) {
@@ -77,6 +80,7 @@ class NetworkCard {
       address: map['address']?.toString() ?? '',
       website: map['website']?.toString() ?? '',
       createdAt: createdAt,
+      isCameraScanned: map['isCameraScanned'] as bool? ?? false,
     );
   }
 }
