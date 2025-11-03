@@ -2,21 +2,22 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 
-
 class CustomImageHolder extends StatelessWidget {
   final String imageUrl;
   final double height;
   final double width;
   final bool isCircle;
   final Widget errorWidget;
+  final BoxFit? fitType;
 
   const CustomImageHolder(
       {super.key,
-        required this.imageUrl,
-        required this.height,
-        required this.width,
-        this.isCircle = true,
-        required this.errorWidget});
+      required this.imageUrl,
+      required this.height,
+      required this.width,
+      this.isCircle = true,
+      required this.errorWidget,
+      this.fitType = BoxFit.fill});
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +30,7 @@ class CustomImageHolder extends StatelessWidget {
           color: AppColors.primaryLight,
           shape: isCircle ? BoxShape.circle : BoxShape.rectangle,
           borderRadius: isCircle ? null : BorderRadius.circular(8),
-          image: DecorationImage(image: imageProvider, fit: BoxFit.cover),
+          image: DecorationImage(image: imageProvider, fit: fitType),
         ),
       ),
       placeholder: (context, url) => const Padding(

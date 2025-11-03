@@ -13,20 +13,44 @@ class FirebaseStorageService {
         _auth = auth ?? fb.FirebaseAuth.instance;
 
   Future<String> uploadCardImage(File imageFile, String cardId) async {
-    try {
-      final user = _auth.currentUser;
-      if (user == null) {
-        throw Exception('User not authenticated');
-      }
-
-      final ref = _storage.ref().child('network_cards').child(user.uid).child('$cardId.jpg');
-      final uploadTask = ref.putFile(imageFile);
-      final snapshot = await uploadTask;
-      final downloadUrl = await snapshot.ref.getDownloadURL();
-      return downloadUrl.toString();
-    } catch (e) {
-      throw Exception('Failed to upload image: $e');
+    if (!await imageFile.exists()) {
+      throw Exception('Image file does not exist');
     }
+
+    final fileSize = await imageFile.length();
+    if (fileSize == 0) {
+      throw Exception('Image file is empty');
+    }
+
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw Exception('User not authenticated');
+    }
+
+    // Read file bytes and use putData (avoids file access issues)
+    final imageBytes = await imageFile.readAsBytes();
+
+    // Detect content type based on file extension
+    final fileExtension = imageFile.path.toLowerCase().split('.').last;
+    final contentType = fileExtension == 'png' ? 'image/png' : 'image/jpeg';
+    final storageExtension = fileExtension == 'png' ? 'png' : 'jpg';
+
+    // Upload to: network_cards/{userId}/{cardId}.{extension}
+    final ref = _storage
+        .ref()
+        .child('network_cards')
+        .child(user.uid)
+        .child('$cardId.$storageExtension');
+
+    final metadata = SettableMetadata(
+      contentType: contentType,
+      cacheControl: 'max-age=3600',
+    );
+
+    final snapshot = await ref.putData(imageBytes, metadata);
+    final downloadUrl = await snapshot.ref.getDownloadURL();
+
+    return downloadUrl.toString();
   }
 }
 

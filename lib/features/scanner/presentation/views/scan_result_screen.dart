@@ -34,6 +34,8 @@ class ScanResultScreen extends StatefulWidget {
 class _ScanResultScreenState extends State<ScanResultScreen> {
   late String selectedCategory = NetworkConstants.defaultCategory;
   String? selectedTag = NetworkConstants.defaultTag;
+
+  // field controllers
   late final TextEditingController _whereYouMetController;
   late final TextEditingController _nameController;
   late final TextEditingController _jobTitleController;
@@ -42,6 +44,74 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
   late final TextEditingController _phoneController;
   late final TextEditingController _addressController;
   late final TextEditingController _websiteController;
+
+  // upload data to firestore network collection
+  Future<void> _saveCard() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      CustomSnack.warning('Please login to save cards', context);
+      return;
+    }
+
+    if (widget.imageFile == null) {
+      CustomSnack.warning('Image file is missing', context);
+      return;
+    }
+
+    final cubit = context.read<NetworkCubit>();
+
+    try {
+      // Reset state and set loading immediately so loader shows
+      cubit.reset();
+      cubit.setLoading(true);
+
+      // Generate card ID
+      final cardId = DateTime.now().millisecondsSinceEpoch.toString();
+
+      // First, upload the image to Firebase Storage
+      final storageService = context.read<FirebaseStorageService>();
+      String imageUrl = '';
+
+      try {
+        imageUrl = await storageService.uploadCardImage(widget.imageFile!, cardId);
+      } catch (e) {
+        cubit.setLoading(false);
+        if (mounted) {
+          CustomSnack.warning('Failed to upload image: $e', context);
+        }
+        return;
+      }
+
+      // Create NetworkCard entity with uploaded image URL and createdAt
+      final networkCard = NetworkCard(
+        cardId: cardId,
+        uid: user.uid,
+        imageUrl: imageUrl,
+        category: selectedCategory,
+        note: _whereYouMetController.text,
+        name: _nameController.text,
+        title: _jobTitleController.text,
+        company: _companyController.text,
+        email: _emailController.text,
+        phone: _phoneController.text,
+        address: _addressController.text,
+        website: _websiteController.text,
+        createdAt: DateTime.now(), // Set current date time
+      );
+
+      // Save to Firestore - this will emit success state
+      // Don't set loading state again since we're already managing it
+      await cubit.saveNetworkCard(networkCard, setLoadingState: false);
+      // final user = FirebaseAuth.instance.currentUser;
+      await cubit.fetchNetworkCards(user.uid);
+
+    } catch (e) {
+      cubit.setLoading(false);
+      if (mounted) {
+        CustomSnack.warning('Failed to save card: $e', context);
+      }
+    }
+  }
 
   @override
   void initState() {
@@ -401,70 +471,5 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
     );
   }
 
-  Future<void> _saveCard() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      CustomSnack.warning('Please login to save cards', context);
-      return;
-    }
 
-    if (widget.imageFile == null) {
-      CustomSnack.warning('Image file is missing', context);
-      return;
-    }
-
-    final cubit = context.read<NetworkCubit>();
-    
-    try {
-      // Reset state and set loading immediately so loader shows
-      cubit.reset();
-      cubit.setLoading(true);
-
-      // Generate card ID
-      final cardId = DateTime.now().millisecondsSinceEpoch.toString();
-
-      // First, upload the image to Firebase Storage
-      final storageService = context.read<FirebaseStorageService>();
-      String imageUrl = '';
-      
-      try {
-        imageUrl = await storageService.uploadCardImage(widget.imageFile!, cardId);
-      } catch (e) {
-        cubit.setLoading(false);
-        if (mounted) {
-          CustomSnack.warning('Failed to upload image: $e', context);
-        }
-        return;
-      }
-
-      // Create NetworkCard entity with uploaded image URL and createdAt
-      final networkCard = NetworkCard(
-        cardId: cardId,
-        uid: user.uid,
-        imageUrl: imageUrl,
-        category: selectedCategory,
-        note: _whereYouMetController.text,
-        name: _nameController.text,
-        title: _jobTitleController.text,
-        company: _companyController.text,
-        email: _emailController.text,
-        phone: _phoneController.text,
-        address: _addressController.text,
-        website: _websiteController.text,
-        createdAt: DateTime.now(), // Set current date time
-      );
-
-      // Save to Firestore - this will emit success state
-      // Don't set loading state again since we're already managing it
-      await cubit.saveNetworkCard(networkCard, setLoadingState: false);
-     // final user = FirebaseAuth.instance.currentUser;
-      await cubit.fetchNetworkCards(user.uid);
-
-    } catch (e) {
-      cubit.setLoading(false);
-      if (mounted) {
-        CustomSnack.warning('Failed to save card: $e', context);
-      }
-    }
-  }
 }

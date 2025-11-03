@@ -78,11 +78,11 @@ class NetworkCardListItem extends StatelessWidget {
                  imageUrl: card.imageUrl,
                 isCircle: false,
                 height: 90.h,
-                width: 90.w,
+                width: 100.w,
                 errorWidget: const Icon(
                   Icons.contact_mail_sharp,
                   color: AppColors.iconColor,
-                )),
+                ),),
             Gap(AppDimensions.spacing8),
             Expanded(
               child: Column(
