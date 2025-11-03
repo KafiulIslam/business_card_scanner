@@ -15,7 +15,6 @@ import 'package:business_card_scanner/features/network/domain/entities/network_c
 import 'package:business_card_scanner/features/network/presentation/cubit/network_cubit.dart';
 import 'package:business_card_scanner/features/network/presentation/cubit/network_state.dart';
 import 'package:business_card_scanner/features/network/data/services/firebase_storage_service.dart';
-
 import '../../../../core/utils/assets_path.dart';
 
 class CreateCardManuallyScreen extends StatefulWidget {
@@ -37,11 +36,6 @@ class _CreateCardManuallyScreenState extends State<CreateCardManuallyScreen> {
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _websiteController = TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-  }
 
   @override
   void dispose() {
@@ -166,11 +160,13 @@ class _CreateCardManuallyScreenState extends State<CreateCardManuallyScreen> {
             children: [
               Text(
                 'Kafiul Islam',
-                style: AppTextStyles.bodyMedium.copyWith(color: Colors.white),
+                style: AppTextStyles.headline1
+                    .copyWith(fontSize: 16, color: Colors.white),
               ),
               Text(
                 'CEO & Founder',
-                style: AppTextStyles.bodySmall.copyWith(color: Colors.white),
+                style: AppTextStyles.headline3
+                    .copyWith(fontSize: 14, color: Colors.white),
               ),
               const Spacer(),
               Row(
@@ -179,12 +175,12 @@ class _CreateCardManuallyScreenState extends State<CreateCardManuallyScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _cardInfoTile(Icons.phone, '+01628924397'),
-
+                      const Gap(2),
                       _cardInfoTile(
                           Icons.location_on_outlined, 'Bogura, Rajshahi'),
-
+                      const Gap(2),
                       _cardInfoTile(Icons.email, 'kafiulislam@gmail.com'),
-
+                      const Gap(2),
                       _cardInfoTile(Icons.language_outlined, 'codertent.com'),
                     ],
                   ),
@@ -198,8 +194,8 @@ class _CreateCardManuallyScreenState extends State<CreateCardManuallyScreen> {
                       ),
                       Text(
                         'CoderTent',
-                        style: AppTextStyles.bodyMedium
-                            .copyWith(color: Colors.white),
+                        style: AppTextStyles.headline1
+                            .copyWith(fontSize: 16, color: Colors.white),
                       )
                     ],
                   )
