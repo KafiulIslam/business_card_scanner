@@ -1,7 +1,7 @@
-import 'package:business_card_scanner/features/network/domain/entities/network_card.dart';
+import 'package:business_card_scanner/features/network/domain/entities/network_model.dart';
 
 abstract class NetworkRepository {
-  Future<void> saveNetworkCard(NetworkCard card);
-  Future<List<NetworkCard>> getNetworkCardsByUid(String uid);
+  Future<void> saveNetworkCard(NetworkModel card);
+  Future<List<NetworkModel>> getNetworkCardsByUid(String uid);
 }
 

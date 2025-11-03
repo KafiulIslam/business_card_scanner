@@ -12,7 +12,7 @@ import 'package:business_card_scanner/core/theme/app_dimensions.dart';
 import 'package:business_card_scanner/core/utils/custom_snack.dart';
 import 'package:business_card_scanner/core/constants/network_constants.dart';
 import 'package:go_router/go_router.dart';
-import 'package:business_card_scanner/features/network/domain/entities/network_card.dart';
+import 'package:business_card_scanner/features/network/domain/entities/network_model.dart';
 import 'package:business_card_scanner/features/network/presentation/cubit/network_cubit.dart';
 import 'package:business_card_scanner/features/network/presentation/cubit/network_state.dart';
 import 'package:business_card_scanner/features/network/data/services/firebase_storage_service.dart';
@@ -87,7 +87,7 @@ class _CreateCardManuallyScreenState extends State<CreateCardManuallyScreen> {
               );
 
       // Create and save network card
-      final networkCard = NetworkCard(
+      final networkCard = NetworkModel(
         cardId: cardId,
         uid: user.uid,
         imageUrl: imageUrl,

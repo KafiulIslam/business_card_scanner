@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:business_card_scanner/features/network/domain/entities/network_card.dart';
+import 'package:business_card_scanner/features/network/domain/entities/network_model.dart';
 
 class FirebaseNetworkService {
   final FirebaseFirestore _firestore;
@@ -7,7 +7,7 @@ class FirebaseNetworkService {
   FirebaseNetworkService({FirebaseFirestore? firestore})
       : _firestore = firestore ?? FirebaseFirestore.instance;
 
-  Future<void> saveNetworkCard(NetworkCard card) async {
+  Future<void> saveNetworkCard(NetworkModel card) async {
     try {
       final data = card.toMap();
       // Ensure createdAt is always set to current date time (DateTime.now())
@@ -23,7 +23,7 @@ class FirebaseNetworkService {
     }
   }
 
-  Future<List<NetworkCard>> getNetworkCardsByUid(String uid) async {
+  Future<List<NetworkModel>> getNetworkCardsByUid(String uid) async {
     try {
       QuerySnapshot snapshot;
       try {
@@ -45,7 +45,7 @@ class FirebaseNetworkService {
           .map((doc) {
             final data = doc.data() as Map<String, dynamic>;
             // createdAt will be handled in fromMap if not present
-            return NetworkCard.fromMap(data);
+            return NetworkModel.fromMap(data);
           })
           .toList();
 
@@ -62,7 +62,7 @@ class FirebaseNetworkService {
     }
   }
 
-  Stream<List<NetworkCard>> getNetworkCardsStreamByUid(String uid) {
+  Stream<List<NetworkModel>> getNetworkCardsStreamByUid(String uid) {
     return _firestore
         .collection('network')
         .where('uid', isEqualTo: uid)
@@ -72,7 +72,7 @@ class FirebaseNetworkService {
             .map((doc) {
               final data = doc.data();
               data['createdAt'] = doc.data()['createdAt'];
-              return NetworkCard.fromMap(data);
+              return NetworkModel.fromMap(data);
             })
             .toList());
   }

@@ -1,7 +1,7 @@
 import 'package:business_card_scanner/core/theme/app_colors.dart';
 import 'package:business_card_scanner/core/theme/app_dimensions.dart';
 import 'package:business_card_scanner/core/theme/app_text_style.dart';
-import 'package:business_card_scanner/features/network/domain/entities/network_card.dart';
+import 'package:business_card_scanner/features/network/domain/entities/network_model.dart';
 import 'package:business_card_scanner/features/network/presentation/cubit/network_cubit.dart';
 import 'package:business_card_scanner/features/network/presentation/cubit/network_state.dart';
 import 'package:business_card_scanner/features/network/presentation/widgets/network_card_list_item.dart';
@@ -42,7 +42,7 @@ class _NetworkScreenState extends State<NetworkScreen> {
     super.dispose();
   }
 
-  List<NetworkCard> _filterCards(List<NetworkCard> cards, String query) {
+  List<NetworkModel> _filterCards(List<NetworkModel> cards, String query) {
     if (query.isEmpty) return cards;
     final lowerQuery = query.toLowerCase();
     return cards.where((card) {
@@ -164,7 +164,7 @@ class _NetworkScreenState extends State<NetworkScreen> {
     );
   }
 
-  void _showCardOptions(BuildContext context, NetworkCard card) {
+  void _showCardOptions(BuildContext context, NetworkModel card) {
     showModalBottomSheet(
       context: context,
       backgroundColor: AppColors.surface,

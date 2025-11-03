@@ -1,10 +1,10 @@
-import 'package:business_card_scanner/features/network/domain/entities/network_card.dart';
+import 'package:business_card_scanner/features/network/domain/entities/network_model.dart';
 
 class NetworkState {
   final bool isLoading;
   final bool isSuccess;
   final String? error;
-  final List<NetworkCard> cards;
+  final List<NetworkModel> cards;
 
   NetworkState({
     required this.isLoading,
@@ -24,7 +24,7 @@ class NetworkState {
     bool? isLoading,
     bool? isSuccess,
     String? error,
-    List<NetworkCard>? cards,
+    List<NetworkModel>? cards,
     bool clearError = false,
   }) {
     return NetworkState(

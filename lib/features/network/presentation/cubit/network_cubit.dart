@@ -1,5 +1,5 @@
 import 'package:bloc/bloc.dart';
-import 'package:business_card_scanner/features/network/domain/entities/network_card.dart';
+import 'package:business_card_scanner/features/network/domain/entities/network_model.dart';
 import 'package:business_card_scanner/features/network/domain/use_cases/save_network_card_use_case.dart';
 import 'package:business_card_scanner/features/network/domain/use_cases/get_network_cards_use_case.dart';
 import 'network_state.dart';
@@ -17,7 +17,7 @@ class NetworkCubit extends Cubit<NetworkState> {
     emit(state.copyWith(isLoading: isLoading, error: null, isSuccess: false));
   }
 
-  Future<void> saveNetworkCard(NetworkCard card, {bool setLoadingState = true}) async {
+  Future<void> saveNetworkCard(NetworkModel card, {bool setLoadingState = true}) async {
     if (setLoadingState) {
       emit(state.copyWith(isLoading: true, error: null, isSuccess: false));
     }

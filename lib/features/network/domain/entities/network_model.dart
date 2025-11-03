@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class NetworkCard {
+class NetworkModel {
   final String cardId;
   final String uid;
   final String imageUrl;
@@ -16,7 +16,7 @@ class NetworkCard {
   final DateTime? createdAt;
   final bool isCameraScanned;
 
-  NetworkCard({
+  NetworkModel({
     required this.cardId,
     required this.uid,
     required this.imageUrl,
@@ -56,7 +56,7 @@ class NetworkCard {
     return map;
   }
 
-  factory NetworkCard.fromMap(Map<String, dynamic> map) {
+  factory NetworkModel.fromMap(Map<String, dynamic> map) {
     DateTime? createdAt;
     if (map['createdAt'] != null) {
       if (map['createdAt'] is DateTime) {
@@ -66,7 +66,7 @@ class NetworkCard {
       }
     }
     
-    return NetworkCard(
+    return NetworkModel(
       cardId: map['cardId']?.toString() ?? '',
       uid: map['uid']?.toString() ?? '',
       imageUrl: map['imageUrl']?.toString() ?? '',
