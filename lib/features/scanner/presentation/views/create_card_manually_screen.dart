@@ -259,14 +259,6 @@ class _CreateCardManuallyScreenState extends State<CreateCardManuallyScreen> {
             ),
             Gap(AppDimensions.spacing16),
 
-            // Tags Row
-            // Padding(
-            //   padding:
-            //       EdgeInsets.symmetric(horizontal: AppDimensions.spacing16),
-            //   child: _buildTagsRow(),
-            // ),
-            // Gap(AppDimensions.spacing24),
-
             // Extracted Information Fields
             _buildExtractedFields(),
             Gap(AppDimensions.spacing48 * 2), // Space for bottom buttons
