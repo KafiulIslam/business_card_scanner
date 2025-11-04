@@ -14,6 +14,7 @@ import 'package:business_card_scanner/features/network/domain/entities/network_m
 import 'package:business_card_scanner/features/network/presentation/cubit/network_cubit.dart';
 import 'package:business_card_scanner/features/network/presentation/cubit/network_state.dart';
 import 'package:business_card_scanner/features/network/data/services/firebase_storage_service.dart';
+import '../../../../core/widgets/inputFields/card_info_field.dart';
 
 class ScanResultScreen extends StatefulWidget {
   final String rawText;
@@ -75,7 +76,8 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
       String imageUrl = '';
 
       try {
-        imageUrl = await storageService.uploadCardImage(widget.imageFile!, cardId);
+        imageUrl =
+            await storageService.uploadCardImage(widget.imageFile!, cardId);
       } catch (e) {
         cubit.setLoading(false);
         if (mounted) {
@@ -106,7 +108,6 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
       // Don't set loading state again since we're already managing it
       await cubit.saveNetworkCard(networkCard, setLoadingState: false);
       await cubit.fetchNetworkCards(user.uid);
-
     } catch (e) {
       cubit.setLoading(false);
       if (mounted) {
@@ -158,7 +159,8 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
         ),
         actions: [
           BlocListener<NetworkCubit, NetworkState>(
-            listenWhen: (prev, curr) => prev.isSuccess != curr.isSuccess || prev.error != curr.error,
+            listenWhen: (prev, curr) =>
+                prev.isSuccess != curr.isSuccess || prev.error != curr.error,
             listener: (context, state) {
               if (state.isSuccess) {
                 CustomSnack.success('Card saved successfully', context);
@@ -181,18 +183,19 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
                       color: state.isLoading
                           ? AppColors.gray400
                           : AppColors.primary,
-                      borderRadius: BorderRadius.circular(AppDimensions.radius8),
+                      borderRadius:
+                          BorderRadius.circular(AppDimensions.radius8),
                     ),
                     child: state.isLoading
                         ? const Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: SizedBox(
+                            padding: EdgeInsets.all(8.0),
+                            child: SizedBox(
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
                                 color: AppColors.primary,
                               ),
                             ),
-                        )
+                          )
                         : const Icon(
                             Icons.save_as_outlined,
                             color: Colors.white,
@@ -345,133 +348,47 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
   Widget _buildExtractedFields() {
     return Column(
       children: [
-        _buildField(
-          icon: Icons.description_outlined,
-          label: 'Where you met?',
-          controllerValue: _whereYouMetController,
-          hint: 'Where you met?',
-        ),
-        _buildField(
+        CardInfoField(
+            icon: Icons.description_outlined,
+            controller: _whereYouMetController,
+            hint: 'Where you met?'),
+        CardInfoField(
           icon: Icons.person_outline,
-          label: 'Name',
-          controllerValue: _nameController,
+          controller: _nameController,
           hint: 'Name',
         ),
-        _buildField(
+        CardInfoField(
           icon: Icons.work,
-          label: 'Title',
-          controllerValue: _jobTitleController,
+          controller: _jobTitleController,
           hint: 'Job Title',
         ),
-        _buildField(
+        CardInfoField(
           icon: Icons.domain,
-          label: 'Company',
-          controllerValue: _companyController,
+          controller: _companyController,
           hint: 'Company',
         ),
-        _buildField(
+        CardInfoField(
           icon: Icons.email_outlined,
-          label: 'Email',
-          controllerValue: _emailController,
+          controller: _emailController,
           hint: 'Email',
         ),
-        _buildField(
+        CardInfoField(
           icon: Icons.phone_outlined,
-          label: 'Phone',
-          controllerValue: _phoneController,
+          controller: _phoneController,
           hint: 'Phone',
         ),
-        _buildField(
+        CardInfoField(
           icon: Icons.location_on_outlined,
-          label: 'Address',
-          controllerValue: _addressController,
+          controller: _addressController,
           hint: 'Address',
         ),
-        _buildField(
+        CardInfoField(
           icon: Icons.language_outlined,
-          label: 'Website',
-          controllerValue: _websiteController,
+          controller: _websiteController,
           hint: 'Website',
         ),
       ],
     );
   }
-
-  Widget _buildField({
-    required IconData icon,
-    required String label,
-    required TextEditingController controllerValue,
-    String? hint,
-  }) {
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacing16,
-        vertical: AppDimensions.spacing12,
-      ),
-      decoration: const BoxDecoration(
-        border: Border(
-          bottom: BorderSide(color: AppColors.borderColor, width: 1),
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: EdgeInsets.all(AppDimensions.spacing8),
-            decoration: BoxDecoration(
-              color: AppColors.primaryLight.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(AppDimensions.radius8),
-            ),
-            child: Icon(icon, size: 20, color: AppColors.primary),
-          ),
-          Gap(AppDimensions.spacing12),
-          Expanded(
-            child: TextField(
-              controller: controllerValue,
-              cursorColor: AppColors.primary,
-              style: AppTextStyles.bodySmall.copyWith(color: Colors.black),
-              decoration: InputDecoration(
-                filled: false,
-                fillColor: Colors.transparent,
-                hintText: hint,
-                hintStyle: AppTextStyles.hintText,
-                border: InputBorder.none,
-                enabledBorder: InputBorder.none,
-                focusedBorder: InputBorder.none,
-                disabledBorder: InputBorder.none,
-                errorBorder: InputBorder.none,
-                focusedErrorBorder: InputBorder.none,
-                contentPadding: EdgeInsets.zero,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHighlightedText(String text, String? highlightText) {
-    if (highlightText == null || !text.contains(highlightText)) {
-      return Text(text, style: AppTextStyles.bodyMedium);
-    }
-
-    final parts = text.split(highlightText);
-    return RichText(
-      text: TextSpan(
-        children: [
-          TextSpan(text: parts[0], style: AppTextStyles.bodyMedium),
-          TextSpan(
-            text: highlightText,
-            style: AppTextStyles.bodyMedium.copyWith(
-              backgroundColor: AppColors.success.withOpacity(0.3),
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          if (parts.length > 1)
-            TextSpan(text: parts[1], style: AppTextStyles.bodyMedium),
-        ],
-      ),
-    );
-  }
-
 
 }
