@@ -15,6 +15,12 @@ import 'package:business_card_scanner/features/network/domain/repositories/netwo
 import 'package:business_card_scanner/features/network/domain/use_cases/save_network_card_use_case.dart';
 import 'package:business_card_scanner/features/network/domain/use_cases/get_network_cards_use_case.dart';
 import 'package:business_card_scanner/features/network/presentation/cubit/network_cubit.dart';
+import 'package:business_card_scanner/features/myCard/data/services/firebase_my_card_service.dart';
+import 'package:business_card_scanner/features/myCard/data/repositories/my_card_repository_impl.dart';
+import 'package:business_card_scanner/features/myCard/domain/repositories/my_card_repository.dart';
+import 'package:business_card_scanner/features/myCard/domain/use_cases/save_my_card_use_case.dart';
+import 'package:business_card_scanner/features/myCard/domain/use_cases/get_my_cards_use_case.dart';
+import 'package:business_card_scanner/features/myCard/presentation/cubit/my_card_cubit.dart';
 
 class AppProviders extends StatelessWidget {
   final Widget child;
@@ -52,6 +58,18 @@ class AppProviders extends StatelessWidget {
         RepositoryProvider<GetNetworkCardsUseCase>(
           create: (ctx) => GetNetworkCardsUseCase(ctx.read<NetworkRepository>()),
         ),
+        RepositoryProvider<FirebaseMyCardService>(
+          create: (_) => FirebaseMyCardService(),
+        ),
+        RepositoryProvider<MyCardRepository>(
+          create: (ctx) => MyCardRepositoryImpl(ctx.read<FirebaseMyCardService>()),
+        ),
+        RepositoryProvider<SaveMyCardUseCase>(
+          create: (ctx) => SaveMyCardUseCase(ctx.read<MyCardRepository>()),
+        ),
+        RepositoryProvider<GetMyCardsUseCase>(
+          create: (ctx) => GetMyCardsUseCase(ctx.read<MyCardRepository>()),
+        ),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -68,6 +86,12 @@ class AppProviders extends StatelessWidget {
             create: (ctx) => NetworkCubit(
               ctx.read<SaveNetworkCardUseCase>(),
               ctx.read<GetNetworkCardsUseCase>(),
+            ),
+          ),
+          BlocProvider<MyCardCubit>(
+            create: (ctx) => MyCardCubit(
+              ctx.read<SaveMyCardUseCase>(),
+              ctx.read<GetMyCardsUseCase>(),
             ),
           ),
         ],
