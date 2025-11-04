@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:business_card_scanner/core/widgets/card_info_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -273,10 +274,10 @@ class _CreateCardManuallyScreenState extends State<CreateCardManuallyScreen> {
       padding: const EdgeInsets.all(16.0),
       child: Screenshot(
         controller: _screenshotController,
-      child: Container(
-        height: 200.h,
-        width: double.infinity,
-        decoration: BoxDecoration(
+        child: Container(
+          height: 200.h,
+          width: double.infinity,
+          decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
               color: Colors.white,
               image: DecorationImage(
@@ -327,15 +328,19 @@ class _CreateCardManuallyScreenState extends State<CreateCardManuallyScreen> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _cardInfoTile(Icons.phone, _phoneController.text),
+                    CardInfoTile(
+                        icon: Icons.phone, info: _phoneController.text),
                     const Gap(2),
-                    _cardInfoTile(
-                        Icons.location_on_outlined, _addressController.text),
+                    CardInfoTile(
+                        icon: Icons.location_on_outlined,
+                        info: _addressController.text),
                     const Gap(2),
-                    _cardInfoTile(Icons.email, _emailController.text),
+                    CardInfoTile(
+                        icon: Icons.email, info: _emailController.text),
                     const Gap(2),
-                    _cardInfoTile(
-                        Icons.language_outlined, _websiteController.text),
+                    CardInfoTile(
+                        icon: Icons.language_outlined,
+                        info: _websiteController.text),
                   ],
                 ),
               ],
@@ -483,22 +488,4 @@ class _CreateCardManuallyScreenState extends State<CreateCardManuallyScreen> {
     );
   }
 
-  Widget _cardInfoTile(IconData icon, String info) {
-    return Row(
-        children: [
-        if (info.isNotEmpty) ...[
-          Icon(
-            icon,
-            color: Colors.white,
-            size: 18,
-          ),
-        ],
-        const Gap(8),
-        Text(
-          info,
-          style: AppTextStyles.labelSmall.copyWith(color: Colors.white),
-        )
-      ],
-    );
-  }
 }

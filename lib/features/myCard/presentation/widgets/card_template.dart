@@ -5,6 +5,7 @@ import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/routes/routes.dart';
 import '../../../../core/theme/app_text_style.dart';
+import '../../../../core/widgets/card_info_tile.dart';
 
 class CardTemplate extends StatelessWidget {
   final NetworkModel network;
@@ -69,39 +70,23 @@ class CardTemplate extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _cardInfoTile(Icons.phone, network.phone ?? ""),
+                  CardInfoTile(icon: Icons.phone, info: network.phone ?? ""),
                   const Gap(2),
-                  _cardInfoTile(
-                      Icons.location_on_outlined, network.address ?? ''),
+                  CardInfoTile(
+                      icon: Icons.location_on_outlined,
+                      info: network.address ?? ''),
                   const Gap(2),
-                  _cardInfoTile(Icons.email, network.email ?? ''),
+                  CardInfoTile(icon: Icons.email, info: network.email ?? ''),
                   const Gap(2),
-                  _cardInfoTile(Icons.language_outlined, network.website ?? ''),
+                  CardInfoTile(
+                      icon: Icons.language_outlined,
+                      info: network.website ?? ''),
                 ],
               ),
             ],
           ),
         ),
       ),
-    );
-  }
-
-  Widget _cardInfoTile(IconData icon, String info) {
-    return Row(
-      children: [
-        if (info.isNotEmpty) ...[
-          Icon(
-            icon,
-            color: Colors.white,
-            size: 18,
-          ),
-        ],
-        const Gap(8),
-        Text(
-          info,
-          style: AppTextStyles.labelSmall.copyWith(color: Colors.white),
-        )
-      ],
     );
   }
 }

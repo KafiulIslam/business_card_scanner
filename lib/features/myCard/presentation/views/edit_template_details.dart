@@ -5,6 +5,9 @@ import 'package:business_card_scanner/core/theme/app_colors.dart';
 import 'package:business_card_scanner/core/theme/app_text_style.dart';
 import 'package:business_card_scanner/core/theme/app_dimensions.dart';
 import 'package:business_card_scanner/core/utils/assets_path.dart';
+import 'package:screenshot/screenshot.dart';
+
+import '../../../../core/widgets/card_info_tile.dart';
 
 class EditTemplateDetails extends StatefulWidget {
   final String imagePath;
@@ -42,6 +45,19 @@ class _EditTemplateDetailsState extends State<EditTemplateDetails>
     AssetsPath.temp9,
     AssetsPath.temp10,
   ];
+
+  // fields controllers
+  final TextEditingController _whereYouMetController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _jobTitleController = TextEditingController();
+  final TextEditingController _companyController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
+  final TextEditingController _websiteController = TextEditingController();
+
+  // Screenshot controller for capturing the card preview widget
+  final ScreenshotController _screenshotController = ScreenshotController();
 
   @override
   void initState() {
@@ -111,145 +127,82 @@ class _EditTemplateDetailsState extends State<EditTemplateDetails>
   }
 
   Widget _buildCardPreview() {
-    // Red accent color to match the image design
-    const redAccent = Color(0xFFE91E63);
-    
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: AppDimensions.spacing16),
-      height: 280.h,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppDimensions.radius16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Screenshot(
+        controller: _screenshotController,
+        child: Container(
+          height: 200.h,
+          width: double.infinity,
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              color: Colors.white,
+              image: DecorationImage(
+                  image: AssetImage(AssetsPath.manualCardBg),
+                  fit: BoxFit.cover)),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _nameController.text,
+                          style: AppTextStyles.headline1
+                              .copyWith(fontSize: 16, color: Colors.white),
+                        ),
+                        Text(
+                          _jobTitleController.text,
+                          style: AppTextStyles.headline3
+                              .copyWith(fontSize: 14, color: Colors.white),
+                        ),
+                      ],
+                    ),
+                    const Spacer(),
+                    Column(
+                      children: [
+                        if (_companyController.text.isNotEmpty) ...[
+                          const Icon(
+                            Icons.domain,
+                            color: Colors.white,
+                            size: 42,
+                          ),
+                        ],
+                        Text(
+                          _companyController.text,
+                          style: AppTextStyles.headline1
+                              .copyWith(fontSize: 14, color: Colors.white),
+                        )
+                      ],
+                    )
+                  ],
+                ),
+                const Spacer(),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    CardInfoTile(
+                        icon: Icons.phone, info: _phoneController.text),
+                    const Gap(2),
+                    CardInfoTile(
+                        icon: Icons.location_on_outlined,
+                        info: _addressController.text),
+                    const Gap(2),
+                    CardInfoTile(
+                        icon: Icons.email, info: _emailController.text),
+                    const Gap(2),
+                    CardInfoTile(
+                        icon: Icons.language_outlined,
+                        info: _websiteController.text),
+                  ],
+                ),
+              ],
+            ),
           ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppDimensions.radius16),
-        child: Stack(
-          children: [
-            // Background Image
-            Image.asset(
-              _cardBackgrounds[_selectedBackgroundIndex],
-              width: double.infinity,
-              height: double.infinity,
-              fit: BoxFit.cover,
-            ),
-            // Red vertical strip on left (to match image design)
-            Positioned(
-              left: 0,
-              top: 0,
-              bottom: 0,
-              child: Container(
-                width: 6.w,
-                color: redAccent,
-              ),
-            ),
-            // Red angular shapes in top-right (simplified)
-            Positioned(
-              top: 0,
-              right: 0,
-              child: CustomPaint(
-                size: Size(60.w, 60.h),
-                painter: RedAnglesPainter(),
-              ),
-            ),
-            // Content Overlay
-            Container(
-              padding: EdgeInsets.all(24.w),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Top Row - Name and QR Code
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Left Side - Name and Info
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Michal Johns',
-                              style: AppTextStyles.headline1.copyWith(
-                                fontSize: 20.sp,
-                                color: redAccent,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Gap(4.h),
-                            Text(
-                              'solution Manager',
-                              style: AppTextStyles.bodyMedium.copyWith(
-                                fontSize: 12.sp,
-                                color: Colors.white,
-                              ),
-                            ),
-                            Gap(2.h),
-                            Text(
-                              'EclixTech',
-                              style: AppTextStyles.bodyMedium.copyWith(
-                                fontSize: 12.sp,
-                                color: Colors.white,
-                              ),
-                            ),
-                            Gap(16.h),
-                            _buildContactInfo(
-                              Icons.phone,
-                              '+1 201 351 4000',
-                              redAccent,
-                            ),
-                            Gap(4.h),
-                            _buildContactInfo(
-                              Icons.email,
-                              'www.eclixtech.com',
-                              redAccent,
-                            ),
-                            Gap(4.h),
-                            _buildContactInfo(
-                              Icons.language,
-                              'www.eclixtech.com',
-                              redAccent,
-                            ),
-                            Gap(4.h),
-                            _buildContactInfo(
-                              Icons.location_on,
-                              'Street Address Here Singapore',
-                              redAccent,
-                            ),
-                          ],
-                        ),
-                      ),
-                      Gap(16.w),
-                      // Right Side - QR Code
-                      Container(
-                        width: 80.w,
-                        height: 80.w,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: redAccent,
-                            width: 2,
-                          ),
-                        ),
-                        child: Center(
-                          child: Icon(
-                            Icons.qr_code,
-                            size: 50.w,
-                            color: Colors.black,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
         ),
       ),
     );
