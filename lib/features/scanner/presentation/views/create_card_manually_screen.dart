@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:business_card_scanner/core/widgets/card_info_tile.dart';
+import 'package:business_card_scanner/core/utils/assets_path.dart';
+import 'package:business_card_scanner/core/widgets/dynamic_preview_card.dart';
 import 'package:business_card_scanner/core/widgets/inputFields/card_info_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:business_card_scanner/core/theme/app_colors.dart';
@@ -18,7 +18,6 @@ import 'package:business_card_scanner/features/network/domain/entities/network_m
 import 'package:business_card_scanner/features/network/presentation/cubit/network_cubit.dart';
 import 'package:business_card_scanner/features/network/presentation/cubit/network_state.dart';
 import 'package:business_card_scanner/features/network/data/services/firebase_storage_service.dart';
-import '../../../../core/utils/assets_path.dart';
 
 class CreateCardManuallyScreen extends StatefulWidget {
   const CreateCardManuallyScreen({super.key});
@@ -250,7 +249,18 @@ class _CreateCardManuallyScreenState extends State<CreateCardManuallyScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Card Preview Section
-            _buildCardPreview(),
+            DynamicPreviewCard(
+                screenshotController: _screenshotController,
+                network: NetworkModel(
+                    imageUrl: AssetsPath.manualCardBg,
+                    name: _nameController.text,
+                    title: _jobTitleController.text,
+                    company: _companyController.text,
+                    phone: _phoneController.text,
+                    address: _addressController.text,
+                    email: _emailController.text,
+                    website: _websiteController.text)),
+            //_buildCardPreview(),
             Gap(AppDimensions.spacing16),
 
             // Category Dropdown
@@ -265,88 +275,6 @@ class _CreateCardManuallyScreenState extends State<CreateCardManuallyScreen> {
             _buildExtractedFields(),
             Gap(AppDimensions.spacing48 * 2), // Space for bottom buttons
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCardPreview() {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Screenshot(
-        controller: _screenshotController,
-        child: Container(
-          height: 200.h,
-          width: double.infinity,
-          decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              color: Colors.white,
-              image: DecorationImage(
-                  image: AssetImage(AssetsPath.manualCardBg),
-                  fit: BoxFit.cover)),
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          _nameController.text,
-                          style: AppTextStyles.headline1
-                              .copyWith(fontSize: 16, color: Colors.white),
-                        ),
-                        Text(
-                          _jobTitleController.text,
-                          style: AppTextStyles.headline3
-                              .copyWith(fontSize: 14, color: Colors.white),
-                        ),
-                      ],
-                    ),
-                    const Spacer(),
-                    Column(
-                      children: [
-                        if (_companyController.text.isNotEmpty) ...[
-                          const Icon(
-                            Icons.domain,
-                            color: Colors.white,
-                            size: 42,
-                          ),
-                        ],
-                        Text(
-                          _companyController.text,
-                          style: AppTextStyles.headline1
-                              .copyWith(fontSize: 14, color: Colors.white),
-                        )
-                      ],
-                    )
-                  ],
-                ),
-                const Spacer(),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    CardInfoTile(
-                        icon: Icons.phone, info: _phoneController.text),
-                    const Gap(2),
-                    CardInfoTile(
-                        icon: Icons.location_on_outlined,
-                        info: _addressController.text),
-                    const Gap(2),
-                    CardInfoTile(
-                        icon: Icons.email, info: _emailController.text),
-                    const Gap(2),
-                    CardInfoTile(
-                        icon: Icons.language_outlined,
-                        info: _websiteController.text),
-                  ],
-                ),
-              ],
-            ),
-          ),
         ),
       ),
     );

@@ -6,7 +6,6 @@ import 'package:business_card_scanner/core/theme/app_text_style.dart';
 import 'package:business_card_scanner/core/theme/app_dimensions.dart';
 import 'package:business_card_scanner/core/utils/assets_path.dart';
 import 'package:screenshot/screenshot.dart';
-
 import '../../../../core/widgets/card_info_tile.dart';
 
 class EditTemplateDetails extends StatefulWidget {
