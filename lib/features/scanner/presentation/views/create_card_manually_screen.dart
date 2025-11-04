@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:business_card_scanner/core/widgets/card_info_tile.dart';
+import 'package:business_card_scanner/core/widgets/inputFields/card_info_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -381,110 +382,67 @@ class _CreateCardManuallyScreenState extends State<CreateCardManuallyScreen> {
   Widget _buildExtractedFields() {
     return Column(
       children: [
-        _buildField(
-          icon: Icons.description_outlined,
-          label: 'Where you met?',
-          controllerValue: _whereYouMetController,
-          hint: 'Where you met?',
-        ),
-        _buildField(
+        CardInfoField(
+            icon: Icons.description_outlined,
+            controller: _whereYouMetController,
+            hint: 'Where you met?'),
+        CardInfoField(
           icon: Icons.person_outline,
-          label: 'Name',
-          controllerValue: _nameController,
+          controller: _nameController,
           hint: 'Name',
+          onChanged: (value) {
+            setState(() {});
+          },
         ),
-        _buildField(
+        CardInfoField(
           icon: Icons.work,
-          label: 'Title',
-          controllerValue: _jobTitleController,
+          controller: _jobTitleController,
           hint: 'Job Title',
+          onChanged: (value) {
+            setState(() {});
+          },
         ),
-        _buildField(
+        CardInfoField(
           icon: Icons.domain,
-          label: 'Company',
-          controllerValue: _companyController,
+          controller: _companyController,
           hint: 'Company',
+          onChanged: (value) {
+            setState(() {});
+          },
         ),
-        _buildField(
+        CardInfoField(
           icon: Icons.email_outlined,
-          label: 'Email',
-          controllerValue: _emailController,
+          controller: _emailController,
           hint: 'Email',
+          onChanged: (value) {
+            setState(() {});
+          },
         ),
-        _buildField(
+        CardInfoField(
           icon: Icons.phone_outlined,
-          label: 'Phone',
-          controllerValue: _phoneController,
+          controller: _phoneController,
           hint: 'Phone',
+          onChanged: (value) {
+            setState(() {});
+          },
         ),
-        _buildField(
+        CardInfoField(
           icon: Icons.location_on_outlined,
-          label: 'Address',
-          controllerValue: _addressController,
+          controller: _addressController,
           hint: 'Address',
+          onChanged: (value) {
+            setState(() {});
+          },
         ),
-        _buildField(
+        CardInfoField(
           icon: Icons.language_outlined,
-          label: 'Website',
-          controllerValue: _websiteController,
+          controller: _websiteController,
           hint: 'Website',
+          onChanged: (value) {
+            setState(() {});
+          },
         ),
       ],
-    );
-  }
-
-  Widget _buildField({
-    required IconData icon,
-    required String label,
-    required TextEditingController controllerValue,
-    String? hint,
-  }) {
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacing16,
-        vertical: AppDimensions.spacing12,
-      ),
-      decoration: const BoxDecoration(
-        border: Border(
-          bottom: BorderSide(color: AppColors.borderColor, width: 1),
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: EdgeInsets.all(AppDimensions.spacing8),
-            decoration: BoxDecoration(
-              color: AppColors.primaryLight.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(AppDimensions.radius8),
-            ),
-            child: Icon(icon, size: 20, color: AppColors.primary),
-          ),
-          Gap(AppDimensions.spacing12),
-          Expanded(
-            child: TextField(
-              controller: controllerValue,
-              onChanged: (value) {
-                setState(() {});
-              },
-              cursorColor: AppColors.primary,
-              style: AppTextStyles.bodySmall.copyWith(color: Colors.black),
-              decoration: InputDecoration(
-                filled: false,
-                fillColor: Colors.transparent,
-                hintText: hint,
-                hintStyle: AppTextStyles.hintText,
-                border: InputBorder.none,
-                enabledBorder: InputBorder.none,
-                focusedBorder: InputBorder.none,
-                disabledBorder: InputBorder.none,
-                errorBorder: InputBorder.none,
-                focusedErrorBorder: InputBorder.none,
-                contentPadding: EdgeInsets.zero,
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 
