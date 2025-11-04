@@ -273,10 +273,10 @@ class _CreateCardManuallyScreenState extends State<CreateCardManuallyScreen> {
       padding: const EdgeInsets.all(16.0),
       child: Screenshot(
         controller: _screenshotController,
-        child: Container(
-          height: 200.h,
-          width: double.infinity,
-          decoration: BoxDecoration(
+      child: Container(
+        height: 200.h,
+        width: double.infinity,
+        decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
               color: Colors.white,
               image: DecorationImage(
@@ -485,7 +485,7 @@ class _CreateCardManuallyScreenState extends State<CreateCardManuallyScreen> {
 
   Widget _cardInfoTile(IconData icon, String info) {
     return Row(
-      children: [
+        children: [
         if (info.isNotEmpty) ...[
           Icon(
             icon,

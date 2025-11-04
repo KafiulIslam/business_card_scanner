@@ -84,7 +84,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
         return;
       }
 
-      // Create NetworkCard entity with uploaded image URL and createdAt
+      // Create NetworkModel entity with uploaded image URL and createdAt
       final networkCard = NetworkModel(
         cardId: cardId,
         uid: user.uid,
@@ -105,7 +105,6 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
       // Save to Firestore - this will emit success state
       // Don't set loading state again since we're already managing it
       await cubit.saveNetworkCard(networkCard, setLoadingState: false);
-      // final user = FirebaseAuth.instance.currentUser;
       await cubit.fetchNetworkCards(user.uid);
 
     } catch (e) {
@@ -450,6 +449,29 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
     );
   }
 
+  Widget _buildHighlightedText(String text, String? highlightText) {
+    if (highlightText == null || !text.contains(highlightText)) {
+      return Text(text, style: AppTextStyles.bodyMedium);
+    }
+
+    final parts = text.split(highlightText);
+    return RichText(
+      text: TextSpan(
+        children: [
+          TextSpan(text: parts[0], style: AppTextStyles.bodyMedium),
+          TextSpan(
+            text: highlightText,
+            style: AppTextStyles.bodyMedium.copyWith(
+              backgroundColor: AppColors.success.withOpacity(0.3),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          if (parts.length > 1)
+            TextSpan(text: parts[1], style: AppTextStyles.bodyMedium),
+        ],
+      ),
+    );
+  }
 
 
 }
