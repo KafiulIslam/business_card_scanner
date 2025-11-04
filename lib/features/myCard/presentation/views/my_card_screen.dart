@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
@@ -6,17 +8,83 @@ import 'package:business_card_scanner/core/theme/app_colors.dart';
 import 'package:business_card_scanner/core/theme/app_text_style.dart';
 import 'package:business_card_scanner/core/theme/app_dimensions.dart';
 import 'package:business_card_scanner/core/routes/routes.dart';
+import '../cubit/my_card_cubit.dart';
+import '../cubit/my_card_state.dart';
+import '../widgets/my_card_list_item.dart';
 
-class MyCardScreen extends StatelessWidget {
+class MyCardScreen extends StatefulWidget {
   const MyCardScreen({super.key});
 
   @override
+  State<MyCardScreen> createState() => _MyCardScreenState();
+}
+
+class _MyCardScreenState extends State<MyCardScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _fetchMyCards();
+  }
+
+  void _fetchMyCards() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      context.read<MyCardCubit>().fetchMyCards(user.uid);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: AppDimensions.spacing16),
-          child: _buildCreateCardWidget(context),
+    return SafeArea(
+      child: Scaffold(
+        body: BlocBuilder<MyCardCubit, MyCardState>(
+          builder: (context, state) {
+            if (state.isLoading && state.cards.isEmpty) {
+              return const Center(
+                child: CircularProgressIndicator(
+                  color: AppColors.primary,
+                ),
+              );
+            }
+      
+            // Show create card widget if no cards
+            if (state.cards.isEmpty) {
+              return Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: AppDimensions.spacing16),
+                  child: _buildCreateCardWidget(context),
+                ),
+              );
+            }
+      
+            // Show cards list
+            return RefreshIndicator(
+              onRefresh: () async {
+                _fetchMyCards();
+              },
+              color: AppColors.primary,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: ListView.separated(
+                  padding: EdgeInsets.zero,
+                  itemCount: state.cards.length,
+                  separatorBuilder: (context, index) => Gap(AppDimensions.spacing16),
+                  itemBuilder: (context, index) {
+                    final card = state.cards[index];
+                    return MyCardListItem(
+                      card: card,
+                      onTap: () {
+                        // TODO: Navigate to card details
+                      },
+                      onMoreTap: () {
+                        // TODO: Show card options
+                      },
+                    );
+                  },
+                ),
+              ),
+            );
+          },
         ),
       ),
     );
