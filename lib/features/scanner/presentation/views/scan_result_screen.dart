@@ -14,6 +14,7 @@ import 'package:business_card_scanner/features/network/domain/entities/network_m
 import 'package:business_card_scanner/features/network/presentation/cubit/network_cubit.dart';
 import 'package:business_card_scanner/features/network/presentation/cubit/network_state.dart';
 import 'package:business_card_scanner/features/network/data/services/firebase_storage_service.dart';
+import '../../../../core/widgets/buttons/save_icon_button.dart';
 import '../../../../core/widgets/inputFields/card_info_field.dart';
 
 class ScanResultScreen extends StatefulWidget {
@@ -173,35 +174,13 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
             },
             child: BlocBuilder<NetworkCubit, NetworkState>(
               builder: (context, state) {
-                return InkWell(
-                  onTap: state.isLoading ? null : _saveCard,
-                  child: Container(
-                    margin: const EdgeInsets.only(right: 16),
-                    height: 36,
-                    width: 36,
-                    decoration: BoxDecoration(
-                      color: state.isLoading
-                          ? AppColors.gray400
-                          : AppColors.primary,
-                      borderRadius:
-                          BorderRadius.circular(AppDimensions.radius8),
-                    ),
-                    child: state.isLoading
-                        ? const Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: SizedBox(
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: AppColors.primary,
-                              ),
-                            ),
-                          )
-                        : const Icon(
-                            Icons.save_as_outlined,
-                            color: Colors.white,
-                          ),
-                  ),
-                );
+                return SaveIconButton(
+                    isLoading: state.isLoading,
+                    onTap: () {
+                      if (!state.isLoading) {
+                        _saveCard();
+                      }
+                    });
               },
             ),
           ),

@@ -7,6 +7,8 @@ import 'package:business_card_scanner/core/theme/app_dimensions.dart';
 import 'package:business_card_scanner/core/utils/assets_path.dart';
 import 'package:screenshot/screenshot.dart';
 import '../../../../core/widgets/card_info_tile.dart';
+import '../../../../core/widgets/dynamic_preview_card.dart';
+import '../../../network/domain/entities/network_model.dart';
 
 class EditTemplateDetails extends StatefulWidget {
   final String imagePath;
@@ -80,48 +82,30 @@ class _EditTemplateDetailsState extends State<EditTemplateDetails>
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
         title: Text(
           'Edit Details',
-          style: AppTextStyles.headline4.copyWith(color: Colors.black),
+          style: AppTextStyles.headline4,
         ),
-        centerTitle: true,
       ),
       body: Column(
         children: [
           // Card Preview Section
-          _buildCardPreview(),
+          DynamicPreviewCard(
+              screenshotController: _screenshotController,
+              network: NetworkModel(
+                  imageUrl: widget.imagePath,
+                  name: _nameController.text,
+                  title: _jobTitleController.text,
+                  company: _companyController.text,
+                  phone: _phoneController.text,
+                  address: _addressController.text,
+                  email: _emailController.text,
+                  website: _websiteController.text)),
           Gap(AppDimensions.spacing16),
 
-          // Tab Bar
-          _buildTabBar(),
-          Gap(AppDimensions.spacing16),
-
-          // Tab Content
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _buildDesignTab(),
-                _buildDetailsTab(),
-              ],
-            ),
-          ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Handle save action
-          Navigator.of(context).pop();
-        },
-        backgroundColor: AppColors.secondary,
-        child: const Icon(Icons.check, color: Colors.white),
-      ),
+
     );
   }
 
@@ -286,10 +270,9 @@ class _EditTemplateDetailsState extends State<EditTemplateDetails>
                     width: 80.w,
                     margin: EdgeInsets.only(right: AppDimensions.spacing12),
                     decoration: BoxDecoration(
-                      color: isSelected
-                          ? AppColors.gray300
-                          : AppColors.gray100,
-                      borderRadius: BorderRadius.circular(AppDimensions.radius8),
+                      color: isSelected ? AppColors.gray300 : AppColors.gray100,
+                      borderRadius:
+                          BorderRadius.circular(AppDimensions.radius8),
                       border: Border.all(
                         color: isSelected
                             ? AppColors.secondary
@@ -376,7 +359,8 @@ class _EditTemplateDetailsState extends State<EditTemplateDetails>
                     width: 80.w,
                     margin: EdgeInsets.only(right: AppDimensions.spacing12),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(AppDimensions.radius8),
+                      borderRadius:
+                          BorderRadius.circular(AppDimensions.radius8),
                       border: Border.all(
                         color: isSelected
                             ? AppColors.secondary
@@ -385,7 +369,8 @@ class _EditTemplateDetailsState extends State<EditTemplateDetails>
                       ),
                     ),
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(AppDimensions.radius8),
+                      borderRadius:
+                          BorderRadius.circular(AppDimensions.radius8),
                       child: Stack(
                         children: [
                           Image.asset(
