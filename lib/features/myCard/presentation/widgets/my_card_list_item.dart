@@ -3,6 +3,7 @@ import 'package:business_card_scanner/features/myCard/presentation/cubit/my_card
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:share_plus/share_plus.dart';
 
 class MyCardListItem extends StatelessWidget {
   final MyCardModel card;
@@ -71,9 +72,15 @@ class MyCardListItem extends StatelessWidget {
                         _showDeleteConfirmationDialog(context);
                       });
                     },
-                    child: Text('Delete'),
+                    child: const Text('Delete'),
                   ),
-                  const PopupMenuItem(child: Text('Share')),
+                  PopupMenuItem(
+                      onTap: () {
+                        SharePlus.instance.share(ShareParams(
+                            text:
+                                'Check out & download ${card.name}\'s digital business card - ${card.imageUrl}'));
+                      },
+                      child: const Text('Share')),
                 ],
               ),
             ),
