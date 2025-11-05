@@ -55,7 +55,7 @@ class _EditTemplateDetailsState extends State<EditTemplateDetails> {
     final cubit = context.read<MyCardCubit>();
 
     try {
-      cubit.reset();
+      // Don't reset here - it clears the cards. Just set loading state
       cubit.setLoading(true);
 
       // Wait for widget to be fully rendered before capturing
@@ -100,6 +100,7 @@ class _EditTemplateDetailsState extends State<EditTemplateDetails> {
       );
 
       await cubit.saveMyCard(myCard, setLoadingState: false);
+      // Fetch cards to update the state before navigating back
       await cubit.fetchMyCards(user.uid);
 
       // Clean up temporary file
@@ -195,11 +196,13 @@ class _EditTemplateDetailsState extends State<EditTemplateDetails> {
             listener: (context, state) {
               if (state.isSuccess) {
                 CustomSnack.success('Card saved successfully', context);
-                context.read<MyCardCubit>().reset();
+                // Clear flags but keep the cards that were just fetched
+                context.read<MyCardCubit>().clearFlags();
                 context.pop();
               } else if (state.error != null) {
                 CustomSnack.warning(state.error!, context);
-                context.read<MyCardCubit>().reset();
+                // Clear error flag but keep the cards
+                context.read<MyCardCubit>().clearFlags();
               }
             },
             child: BlocBuilder<MyCardCubit, MyCardState>(

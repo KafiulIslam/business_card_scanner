@@ -17,6 +17,7 @@ class Routes {
   //!======================== My Card Routes ========================
   static const String chooseTemplate = '/choose-template';
   static const String editTemplate = '/edit-template';
+  static const String editMyCard = '/edit-my-card';
 
 
   //!======================== User Routes ========================

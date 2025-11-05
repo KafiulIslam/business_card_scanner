@@ -80,5 +80,16 @@ class FirebaseMyCardService {
             .toList());
   }
 
+  Future<void> deleteMyCard(String cardId) async {
+    try {
+      if (cardId.isEmpty) {
+        throw Exception('Card ID is required to delete my card');
+      }
+      await _firestore.collection('my_card').doc(cardId).delete();
+    } catch (e) {
+      throw Exception('Failed to delete my card: $e');
+    }
+  }
+
 }
 

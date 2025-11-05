@@ -1,13 +1,8 @@
-import 'package:business_card_scanner/core/theme/app_colors.dart';
-import 'package:business_card_scanner/core/theme/app_dimensions.dart';
-import 'package:business_card_scanner/core/theme/app_text_style.dart';
-import 'package:business_card_scanner/core/widgets/custom_image_holder.dart';
 import 'package:business_card_scanner/features/myCard/domain/entities/my_card_model.dart';
+import 'package:business_card_scanner/features/myCard/presentation/cubit/my_card_cubit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:gap/gap.dart';
-
-import '../../../../core/widgets/card_info_tile.dart';
 
 class MyCardListItem extends StatelessWidget {
   final MyCardModel card;
@@ -70,10 +65,14 @@ class MyCardListItem extends StatelessWidget {
                   size: 18,
                 ),
                 itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                  const PopupMenuItem(
-                    child: Text('Edit'),
+                  PopupMenuItem(
+                    onTap: () {
+                      Future.microtask(() {
+                        _showDeleteConfirmationDialog(context);
+                      });
+                    },
+                    child: Text('Delete'),
                   ),
-                  const PopupMenuItem(child: Text('Delete')),
                   const PopupMenuItem(child: Text('Share')),
                 ],
               ),
@@ -83,5 +82,37 @@ class MyCardListItem extends StatelessWidget {
       ),
     );
   }
-}
 
+  void _showDeleteConfirmationDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text('Delete Card'),
+          content: const Text(
+              'Are you sure you want to delete this card? This action cannot be undone.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                if (card.cardId != null && card.cardId!.isNotEmpty) {
+                  context.read<MyCardCubit>().deleteMyCard(card.cardId!);
+                }
+              },
+              child: const Text(
+                'Delete',
+                style: TextStyle(color: Colors.red),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}

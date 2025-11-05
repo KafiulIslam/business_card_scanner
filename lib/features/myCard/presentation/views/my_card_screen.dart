@@ -9,6 +9,7 @@ import 'package:business_card_scanner/core/theme/app_colors.dart';
 import 'package:business_card_scanner/core/theme/app_text_style.dart';
 import 'package:business_card_scanner/core/theme/app_dimensions.dart';
 import 'package:business_card_scanner/core/routes/routes.dart';
+import 'package:business_card_scanner/core/utils/custom_snack.dart';
 import '../cubit/my_card_cubit.dart';
 import '../cubit/my_card_state.dart';
 import '../widgets/my_card_list_item.dart';
@@ -21,11 +22,29 @@ class MyCardScreen extends StatefulWidget {
 }
 
 class _MyCardScreenState extends State<MyCardScreen> {
+  int _previousCardCount = 0;
 
   @override
   void initState() {
     super.initState();
     _fetchMyCards();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Refresh cards when screen becomes visible again (after navigation)
+    // Only refresh if cards are empty to avoid unnecessary calls
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        final state = context.read<MyCardCubit>().state;
+        final user = FirebaseAuth.instance.currentUser;
+        // Refresh if cards are empty and we're not currently loading
+        if (user != null && state.cards.isEmpty && !state.isLoading) {
+          _fetchMyCards();
+        }
+      }
+    });
   }
 
   void _fetchMyCards() {
@@ -38,18 +57,42 @@ class _MyCardScreenState extends State<MyCardScreen> {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: BlocBuilder<MyCardCubit, MyCardState>(
-        builder: (context, state) {
-          return Scaffold(
-            body: _buildBody(state),
-            floatingActionButton: state.cards.isNotEmpty
-                ? CustomFloatingButton(
-                    icon: Icons.add,
-                    onTap: () => context.push(Routes.chooseTemplate),
-                  )
-                : null,
-          );
+      child: BlocListener<MyCardCubit, MyCardState>(
+        listenWhen: (prev, curr) =>
+            (prev.isLoading && !curr.isLoading && curr.isSuccess) ||
+            (prev.error != curr.error && curr.error != null),
+        listener: (context, state) {
+          // Show success message only when card count decreased (delete operation)
+          if (!state.isLoading && state.isSuccess) {
+            // Check if this is a delete operation (card count decreased)
+            if (_previousCardCount > 0 &&
+                state.cards.length < _previousCardCount) {
+              CustomSnack.success('Card deleted successfully', context);
+              // Only clear flags after delete, not reset entire state
+              context.read<MyCardCubit>().clearFlags();
+            }
+            // Always update the card count for tracking (including initial load and new card creation)
+            // Don't clear flags here - let the operation complete naturally
+            _previousCardCount = state.cards.length;
+          } else if (state.error != null) {
+            CustomSnack.warning(state.error!, context);
+            // Clear error flag but keep the cards
+            context.read<MyCardCubit>().clearFlags();
+          }
         },
+        child: BlocBuilder<MyCardCubit, MyCardState>(
+          builder: (context, state) {
+            return Scaffold(
+              body: _buildBody(state),
+              floatingActionButton: state.cards.isNotEmpty
+                  ? CustomFloatingButton(
+                      icon: Icons.add,
+                      onTap: () => context.push(Routes.chooseTemplate),
+                    )
+                  : null,
+            );
+          },
+        ),
       ),
     );
   }
@@ -231,5 +274,4 @@ class _MyCardScreenState extends State<MyCardScreen> {
       ),
     );
   }
-
 }

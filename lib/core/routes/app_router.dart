@@ -5,6 +5,8 @@ import 'package:business_card_scanner/features/auth/presentation/views/signUp/si
 import 'package:business_card_scanner/features/dashboard/dashboard_screen.dart';
 import 'package:business_card_scanner/features/myCard/presentation/views/choose_template_screen.dart';
 import 'package:business_card_scanner/features/myCard/presentation/views/edit_template_details.dart';
+import 'package:business_card_scanner/features/myCard/presentation/views/edit_my_card.dart';
+import 'package:business_card_scanner/features/myCard/domain/entities/my_card_model.dart';
 import 'package:business_card_scanner/features/onBoard/presentation/views/onboard_screen.dart';
 import 'package:business_card_scanner/features/scanner/presentation/views/create_card_manually_screen.dart';
 import 'package:business_card_scanner/features/scanner/presentation/views/scan_result_screen.dart';
@@ -127,6 +129,31 @@ final GoRouter router = GoRouter(
           key: state.pageKey,
           child: EditTemplateDetails(
             imagePath: imagePath,
+          ),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+        );
+      },
+    ),
+    GoRoute(
+      path: Routes.editMyCard,
+      pageBuilder: (context, state) {
+        final card = state.extra as MyCardModel?;
+        if (card == null) {
+          // Fallback - you might want to handle this differently
+          return CustomTransitionPage(
+            key: state.pageKey,
+            child: const SizedBox(),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return FadeTransition(opacity: animation, child: child);
+            },
+          );
+        }
+        return CustomTransitionPage(
+          key: state.pageKey,
+          child: EditMyCardScreen(
+            card: card,
           ),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return FadeTransition(opacity: animation, child: child);
