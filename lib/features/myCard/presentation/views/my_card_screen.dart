@@ -1,3 +1,4 @@
+import 'package:business_card_scanner/core/widgets/buttons/custom_floating_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -20,6 +21,7 @@ class MyCardScreen extends StatefulWidget {
 }
 
 class _MyCardScreenState extends State<MyCardScreen> {
+
   @override
   void initState() {
     super.initState();
@@ -36,53 +38,63 @@ class _MyCardScreenState extends State<MyCardScreen> {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: Scaffold(
-        body: BlocBuilder<MyCardCubit, MyCardState>(
-          builder: (context, state) {
-            if (state.isLoading && state.cards.isEmpty) {
-              return const Center(
-                child: CircularProgressIndicator(
-                  color: AppColors.primary,
-                ),
-              );
-            }
-      
-            // Show create card widget if no cards
-            if (state.cards.isEmpty) {
-              return Center(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: AppDimensions.spacing16),
-                  child: _buildCreateCardWidget(context),
-                ),
-              );
-            }
-      
-            // Show cards list
-            return RefreshIndicator(
-              onRefresh: () async {
-                _fetchMyCards();
+      child: BlocBuilder<MyCardCubit, MyCardState>(
+        builder: (context, state) {
+          return Scaffold(
+            body: _buildBody(state),
+            floatingActionButton: state.cards.isNotEmpty
+                ? CustomFloatingButton(
+                    icon: Icons.add,
+                    onTap: () => context.push(Routes.chooseTemplate),
+                  )
+                : null,
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildBody(MyCardState state) {
+    if (state.isLoading && state.cards.isEmpty) {
+      return const Center(
+        child: CircularProgressIndicator(
+          color: AppColors.primary,
+        ),
+      );
+    }
+
+    // Show create card widget if no cards
+    if (state.cards.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: AppDimensions.spacing16),
+          child: _buildCreateCardWidget(context),
+        ),
+      );
+    }
+
+    // Show cards list
+    return RefreshIndicator(
+      onRefresh: () async {
+        _fetchMyCards();
+      },
+      color: AppColors.primary,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: ListView.separated(
+          padding: EdgeInsets.zero,
+          itemCount: state.cards.length,
+          separatorBuilder: (context, index) => Gap(AppDimensions.spacing16),
+          itemBuilder: (context, index) {
+            final card = state.cards[index];
+            return MyCardListItem(
+              card: card,
+              onTap: () {
+                // TODO: Navigate to card details
               },
-              color: AppColors.primary,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: ListView.separated(
-                  padding: EdgeInsets.zero,
-                  itemCount: state.cards.length,
-                  separatorBuilder: (context, index) => Gap(AppDimensions.spacing16),
-                  itemBuilder: (context, index) {
-                    final card = state.cards[index];
-                    return MyCardListItem(
-                      card: card,
-                      onTap: () {
-                        // TODO: Navigate to card details
-                      },
-                      onMoreTap: () {
-                        // TODO: Show card options
-                      },
-                    );
-                  },
-                ),
-              ),
+              onMoreTap: () {
+                // TODO: Show card options
+              },
             );
           },
         ),
@@ -219,4 +231,5 @@ class _MyCardScreenState extends State<MyCardScreen> {
       ),
     );
   }
+
 }

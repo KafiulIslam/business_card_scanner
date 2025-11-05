@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 
+import '../../../../core/widgets/card_info_tile.dart';
+
 class MyCardListItem extends StatelessWidget {
   final MyCardModel card;
   final VoidCallback? onTap;
@@ -42,103 +44,41 @@ class MyCardListItem extends StatelessWidget {
       dateText = '${date.day} ${months[date.month - 1]}, ${date.year}';
     }
 
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.all(
-          AppDimensions.spacing12,
-        ),
-        decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(AppDimensions.radius12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.05),
-                offset: const Offset(0.2, 0.4),
-                blurRadius: 30.0,
-                spreadRadius: 0.0,
-              ),
-            ]),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            // Business Card Thumbnail
-            CustomImageHolder(
-              imageUrl: card.imageUrl ?? '',
-              isCircle: false,
-              height: 90.h,
-              width: 100.w,
-              errorWidget: const Icon(
-                Icons.contact_mail_sharp,
-                color: AppColors.iconColor,
-              ),
-              fitType: BoxFit.fill,
-            ),
-            Gap(AppDimensions.spacing8),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Name
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          card.name ?? 'Unknown',
-                          style: AppTextStyles.bodySmall.copyWith(
-                              fontWeight: FontWeight.bold, color: Colors.black),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      Icon(
-                        Icons.more_horiz,
-                        color: AppColors.primary,
-                        size: 18.w,
-                      )
-                    ],
+    return Container(
+      height: 200.h,
+      width: double.infinity,
+      decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          color: Colors.white,
+          image: DecorationImage(
+              image: NetworkImage(card.imageUrl ?? ''), fit: BoxFit.cover)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Align(
+          alignment: Alignment.bottomRight,
+          child: Container(
+            height: 36,
+            width: 36,
+            decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white)),
+            child: Center(
+              child: PopupMenuButton(
+                icon: const Icon(
+                  Icons.more_horiz,
+                  color: Colors.white,
+                  size: 18,
+                ),
+                itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                  const PopupMenuItem(
+                    child: Text('Edit'),
                   ),
-                  const Gap(2),
-                  // Title
-                  if (card.title != null && card.title!.isNotEmpty)
-                    Text(
-                      card.title!,
-                      style: AppTextStyles.labelSmall,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  const Gap(2),
-                  //Company
-                  if (card.company != null && card.company!.isNotEmpty)
-                    Text(
-                      card.company!,
-                      style: AppTextStyles.labelSmall,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  const Gap(2),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.calendar_month_outlined,
-                        size: 14.w,
-                        color: AppColors.gray600,
-                      ),
-                      Gap(AppDimensions.spacing4),
-                      Text(
-                        dateText,
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.gray600,
-                          fontSize: 12.sp,
-                        ),
-                      ),
-                    ],
-                  ),
+                  const PopupMenuItem(child: Text('Delete')),
+                  const PopupMenuItem(child: Text('Share')),
                 ],
               ),
             ),
-          ],
+          ),
         ),
       ),
     );
