@@ -1,13 +1,12 @@
 import 'package:business_card_scanner/core/theme/app_colors.dart';
 import 'package:business_card_scanner/core/theme/app_dimensions.dart';
 import 'package:business_card_scanner/core/theme/app_text_style.dart';
+import 'package:business_card_scanner/core/widgets/custom_image_holder.dart';
 import 'package:business_card_scanner/features/network/domain/entities/network_model.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
-import 'package:go_router/go_router.dart';
 //import 'package:url_launcher/url_launcher.dart';
 
 class NetworkDetailsScreen extends StatelessWidget {
@@ -88,38 +87,26 @@ class NetworkDetailsScreen extends StatelessWidget {
         // ],
       ),
       body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Business Card Image
-            if (network.imageUrl != null && network.imageUrl!.isNotEmpty)
-              Padding(
-                padding: EdgeInsets.all(AppDimensions.spacing16),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(AppDimensions.radius12),
-                  child: CachedNetworkImage(
-                    imageUrl: network.imageUrl!,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => Container(
-                      height: 200.h,
-                      color: AppColors.gray200,
-                      child: const Center(child: CircularProgressIndicator()),
-                    ),
-                    errorWidget: (context, url, error) => Container(
-                      height: 200.h,
-                      color: AppColors.gray200,
-                      child: const Icon(Icons.error),
-                    ),
-                  ),
-                ),
-              ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Business Card Image
+              CustomImageHolder(
+                  imageUrl: network.imageUrl ?? '',
+                  isCircle: false,
+                  height: 200.h,
+                  width: double.infinity,
+                  fitType: (network.isCameraScanned == true)
+                      ? BoxFit.cover
+                      : BoxFit.fill,
+                  errorWidget: const Icon(Icons.image,
+                      size: 64, color: AppColors.iconColor)),
+              Gap(AppDimensions.spacing16),
 
-            // Action Buttons Row
-            Padding(
-              padding:
-                  EdgeInsets.symmetric(horizontal: AppDimensions.spacing16),
-              child: Row(
+              // Action Buttons Row
+              Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   _buildActionButton(
@@ -127,14 +114,14 @@ class NetworkDetailsScreen extends StatelessWidget {
                     label: 'Call',
                     onTap: () {},
                   ),
-                  _buildActionButton(
-                    icon: Icons.message,
-                    label: 'SMS',
-                    onTap: () {},
-                  ),
+                  // _buildActionButton(
+                  //   icon: Icons.message,
+                  //   label: 'SMS',
+                  //   onTap: () {},
+                  // ),
                   _buildActionButton(
                     icon: Icons.chat,
-                    label: 'What',
+                    label: 'WhatsApp',
                     onTap: () {},
                   ),
                   _buildActionButton(
@@ -149,15 +136,10 @@ class NetworkDetailsScreen extends StatelessWidget {
                   ),
                 ],
               ),
-            ),
+              Gap(AppDimensions.spacing16),
 
-            Gap(AppDimensions.spacing16),
-
-            // Customer Dropdown/Tag
-            Padding(
-              padding:
-                  EdgeInsets.symmetric(horizontal: AppDimensions.spacing16),
-              child: Container(
+              // Customer Dropdown/Tag
+              Container(
                 padding: EdgeInsets.symmetric(
                   horizontal: AppDimensions.spacing12,
                   vertical: AppDimensions.spacing8,
@@ -167,160 +149,112 @@ class NetworkDetailsScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(AppDimensions.radius8),
                   border: Border.all(color: AppColors.primaryLight),
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
+                child: Text(
+                  network.category ?? 'Customer',
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: AppColors.primary,
+                  ),
+                ),
+              ),
+              Gap(AppDimensions.spacing16),
+
+              // Contact Information List
+              Padding(
+                padding:
+                    EdgeInsets.symmetric(horizontal: AppDimensions.spacing16),
+                child: Column(
                   children: [
-                    Text(
-                      network.category ?? 'Customer',
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.primary,
+                    // Card Name
+                    if (network.name != null && network.name!.isNotEmpty)
+                      _buildContactItem(
+                        icon: Icons.description_outlined,
+                        label: '${network.name} Card',
+                        value: network.name,
                       ),
-                    ),
-                    Gap(AppDimensions.spacing8),
-                    Icon(
-                      Icons.arrow_drop_down,
-                      color: AppColors.primary,
-                      size: AppDimensions.icon20,
-                    ),
+
+                    // Name with Social Icons
+                    if (network.name != null && network.name!.isNotEmpty)
+                      _buildContactItem(
+                        icon: Icons.person_outline,
+                        label: network.name!,
+                        value: network.name,
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            _buildSocialIcon('in', () {
+                              // TODO: Open LinkedIn
+                            }),
+                            Gap(AppDimensions.spacing8),
+                            _buildSocialIcon('f', () {
+                              // TODO: Open Facebook
+                            }),
+                          ],
+                        ),
+                      ),
+
+                    // Title
+                    if (network.title != null && network.title!.isNotEmpty)
+                      _buildContactItem(
+                        icon: Icons.work_outline,
+                        label: network.title!,
+                        value: network.title,
+                      ),
+
+                    // Company
+                    if (network.company != null && network.company!.isNotEmpty)
+                      _buildContactItem(
+                        icon: Icons.business_outlined,
+                        label: network.company!,
+                        value: network.company,
+                      ),
+
+                    // Email
+                    if (network.email != null && network.email!.isNotEmpty)
+                      _buildContactItem(
+                        icon: Icons.alternate_email,
+                        label: network.email!,
+                        value: network.email,
+                      ),
+
+                    // Phone
+                    if (network.phone != null && network.phone!.isNotEmpty)
+                      _buildContactItem(
+                        icon: Icons.phone_outlined,
+                        label: network.phone!,
+                        value: network.phone,
+                      ),
+
+                    // Address
+                    if (network.address != null && network.address!.isNotEmpty)
+                      _buildContactItem(
+                        icon: Icons.location_on_outlined,
+                        label: network.address!,
+                        value: network.address,
+                      ),
+
+                    // Website
+                    if (network.website != null && network.website!.isNotEmpty)
+                      _buildContactItem(
+                        icon: Icons.language,
+                        label: network.website!,
+                        value: network.website,
+                        onTap: () async {
+                          // final url = network.website!.startsWith('http')
+                          //     ? network.website!
+                          //     : 'https://${network.website}';
+                          // final uri = Uri.parse(url);
+                          // if (await canLaunchUrl(uri)) {
+                          //   await launchUrl(uri,
+                          //       mode: LaunchMode.externalApplication);
+                          // }
+                        },
+                      ),
                   ],
                 ),
               ),
-            ),
-
-            Gap(AppDimensions.spacing16),
-
-            // Add Tags Section
-            Padding(
-              padding:
-                  EdgeInsets.symmetric(horizontal: AppDimensions.spacing16),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.local_offer_outlined,
-                    color: AppColors.iconColor,
-                    size: AppDimensions.icon20,
-                  ),
-                  Gap(AppDimensions.spacing8),
-                  Text(
-                    'Add Tags Here...',
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: AppColors.iconColor,
-                    ),
-                  ),
-                  const Spacer(),
-                  IconButton(
-                    icon: Icon(
-                      Icons.add_circle,
-                      color: AppColors.primary,
-                      size: AppDimensions.icon24,
-                    ),
-                    onPressed: () {
-                      // TODO: Implement add tag functionality
-                    },
-                  ),
-                ],
-              ),
-            ),
-
-            Gap(AppDimensions.spacing16),
-
-            // Contact Information List
-            Padding(
-              padding:
-                  EdgeInsets.symmetric(horizontal: AppDimensions.spacing16),
-              child: Column(
-                children: [
-                  // Card Name
-                  if (network.name != null && network.name!.isNotEmpty)
-                    _buildContactItem(
-                      icon: Icons.description_outlined,
-                      label: '${network.name} Card',
-                      value: network.name,
-                    ),
-
-                  // Name with Social Icons
-                  if (network.name != null && network.name!.isNotEmpty)
-                    _buildContactItem(
-                      icon: Icons.person_outline,
-                      label: network.name!,
-                      value: network.name,
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          _buildSocialIcon('in', () {
-                            // TODO: Open LinkedIn
-                          }),
-                          Gap(AppDimensions.spacing8),
-                          _buildSocialIcon('f', () {
-                            // TODO: Open Facebook
-                          }),
-                        ],
-                      ),
-                    ),
-
-                  // Title
-                  if (network.title != null && network.title!.isNotEmpty)
-                    _buildContactItem(
-                      icon: Icons.work_outline,
-                      label: network.title!,
-                      value: network.title,
-                    ),
-
-                  // Company
-                  if (network.company != null && network.company!.isNotEmpty)
-                    _buildContactItem(
-                      icon: Icons.business_outlined,
-                      label: network.company!,
-                      value: network.company,
-                    ),
-
-                  // Email
-                  if (network.email != null && network.email!.isNotEmpty)
-                    _buildContactItem(
-                      icon: Icons.alternate_email,
-                      label: network.email!,
-                      value: network.email,
-                    ),
-
-                  // Phone
-                  if (network.phone != null && network.phone!.isNotEmpty)
-                    _buildContactItem(
-                      icon: Icons.phone_outlined,
-                      label: network.phone!,
-                      value: network.phone,
-                    ),
-
-                  // Address
-                  if (network.address != null && network.address!.isNotEmpty)
-                    _buildContactItem(
-                      icon: Icons.location_on_outlined,
-                      label: network.address!,
-                      value: network.address,
-                    ),
-
-                  // Website
-                  if (network.website != null && network.website!.isNotEmpty)
-                    _buildContactItem(
-                      icon: Icons.language,
-                      label: network.website!,
-                      value: network.website,
-                      onTap: () async {
-                        // final url = network.website!.startsWith('http')
-                        //     ? network.website!
-                        //     : 'https://${network.website}';
-                        // final uri = Uri.parse(url);
-                        // if (await canLaunchUrl(uri)) {
-                        //   await launchUrl(uri,
-                        //       mode: LaunchMode.externalApplication);
-                        // }
-                      },
-                    ),
-                ],
-              ),
-            ),
-
-            Gap(AppDimensions.spacing32),
-          ],
+              Gap(AppDimensions.spacing32),
+            ],
+          ),
         ),
       ),
     );
@@ -340,12 +274,12 @@ class NetworkDetailsScreen extends StatelessWidget {
             width: 56.w,
             height: 56.w,
             decoration: BoxDecoration(
-              color: AppColors.secondary,
+              color: AppColors.primaryLight.withOpacity(0.2),
               shape: BoxShape.circle,
             ),
             child: Icon(
               icon,
-              color: Colors.white,
+              color: AppColors.primary,
               size: AppDimensions.icon24,
             ),
           ),
@@ -353,7 +287,7 @@ class NetworkDetailsScreen extends StatelessWidget {
           Text(
             label,
             style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.gray700,
+              color: Colors.black,
             ),
           ),
         ],
@@ -375,10 +309,16 @@ class NetworkDetailsScreen extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(
-              icon,
-              color: AppColors.iconColor,
-              size: AppDimensions.icon20,
+            CircleAvatar(
+              radius: 16,
+              backgroundColor: AppColors.primaryLight.withOpacity(0.2),
+              child: Center(
+                child: Icon(
+                  icon,
+                  color: AppColors.primary,
+                  size: AppDimensions.icon16,
+                ),
+              ),
             ),
             Gap(AppDimensions.spacing12),
             Expanded(
@@ -400,7 +340,7 @@ class NetworkDetailsScreen extends StatelessWidget {
       child: Container(
         width: 24.w,
         height: 24.w,
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           color: AppColors.secondary,
           shape: BoxShape.circle,
         ),
