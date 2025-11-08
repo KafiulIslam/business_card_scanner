@@ -11,6 +11,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../../../core/routes/routes.dart';
 
 class NetworkScreen extends StatefulWidget {
   const NetworkScreen({super.key});
@@ -75,7 +78,6 @@ class _NetworkScreenState extends State<NetworkScreen> {
             child: const Icon(
               Icons.person,
               color: AppColors.primary,
-
             ),
           ),
         ),
@@ -112,7 +114,7 @@ class _NetworkScreenState extends State<NetworkScreen> {
       body: Column(
         children: [
           // Header with Profile, Search, and Filter
-         // _buildHeader(),
+          // _buildHeader(),
           // Cards List
           Expanded(
             child: BlocBuilder<NetworkCubit, NetworkState>(
@@ -143,14 +145,16 @@ class _NetworkScreenState extends State<NetworkScreen> {
                     child: ListView.separated(
                       padding: EdgeInsets.zero,
                       itemCount: filteredCards.length,
-                      separatorBuilder: (context, index) => Gap(AppDimensions.spacing16),
+                      separatorBuilder: (context, index) =>
+                          Gap(AppDimensions.spacing16),
                       itemBuilder: (context, index) {
                         final card = filteredCards[index];
                         return NetworkCardListItem(
                           card: card,
-                          onTap: () {
-                            // TODO: Navigate to card details
-                          },
+                          onTap: () => context.push(
+                            Routes.networkDetails,
+                            extra: card,
+                          ),
                           onMoreTap: () {
                             _showCardOptions(context, card);
                           },

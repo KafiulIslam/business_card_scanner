@@ -7,6 +7,8 @@ import 'package:business_card_scanner/features/myCard/presentation/views/choose_
 import 'package:business_card_scanner/features/myCard/presentation/views/edit_template_details.dart';
 import 'package:business_card_scanner/features/myCard/presentation/views/edit_my_card.dart';
 import 'package:business_card_scanner/features/myCard/domain/entities/my_card_model.dart';
+import 'package:business_card_scanner/features/network/domain/entities/network_model.dart';
+import 'package:business_card_scanner/features/network/presentation/views/network_details_screen.dart';
 import 'package:business_card_scanner/features/onBoard/presentation/views/onboard_screen.dart';
 import 'package:business_card_scanner/features/scanner/presentation/views/create_card_manually_screen.dart';
 import 'package:business_card_scanner/features/scanner/presentation/views/scan_result_screen.dart';
@@ -67,6 +69,7 @@ final GoRouter router = GoRouter(
         },
       ),
     ),
+
     //!======================== Dashboard Routes ========================
     GoRoute(
       path: Routes.dashboard,
@@ -78,6 +81,36 @@ final GoRouter router = GoRouter(
         },
       ),
     ),
+
+    //!======================== Network Routes ========================
+    GoRoute(
+      path: Routes.networkDetails,
+      pageBuilder: (context, state) {
+        final network = state.extra as NetworkModel?;
+        if (network == null) {
+          // Fallback - you might want to handle this differently
+          return CustomTransitionPage(
+            key: state.pageKey,
+            child: const SizedBox(),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              return FadeTransition(opacity: animation, child: child);
+            },
+          );
+        }
+        return CustomTransitionPage(
+          key: state.pageKey,
+          child: NetworkDetailsScreen(
+            network: network,
+          ),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+        );
+      },
+    ),
+
+    //!======================== Scan & Create card ========================
     GoRoute(
       path: Routes.scanResult,
       pageBuilder: (context, state) {
@@ -108,6 +141,7 @@ final GoRouter router = GoRouter(
         );
       },
     ),
+
     //!======================== My Card Routes ========================
     GoRoute(
       path: Routes.chooseTemplate,
@@ -145,7 +179,8 @@ final GoRouter router = GoRouter(
           return CustomTransitionPage(
             key: state.pageKey,
             child: const SizedBox(),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
               return FadeTransition(opacity: animation, child: child);
             },
           );
@@ -161,118 +196,7 @@ final GoRouter router = GoRouter(
         );
       },
     ),
-    // GoRoute(
-    //   path: Routes.userForgetPassword,
-    //   pageBuilder: (context, state) => CustomTransitionPage(
-    //     key: state.pageKey,
-    //     child: ForgetPassPage(),
-    //     transitionsBuilder: (context, animation, secondaryAnimation, child) {
-    //       return FadeTransition(opacity: animation, child: child);
-    //     },
-    //   ),
-    // ),
-    // GoRoute(
-    //   path: Routes.welcome,
-    //   pageBuilder: (context, state) => CustomTransitionPage(
-    //     key: state.pageKey,
-    //     child: const WelcomeScreen(),
-    //     transitionsBuilder: (context, animation, secondaryAnimation, child) {
-    //       return FadeTransition(opacity: animation, child: child);
-    //     },
-    //   ),
-    // ),
-    // GoRoute(
-    //   path: Routes.userRegisterPersonalInfo,
-    //   pageBuilder: (context, state) => CustomTransitionPage(
-    //     key: state.pageKey,
-    //     child: const PlayerRegisterView(),
-    //     transitionsBuilder: (context, animation, secondaryAnimation, child) {
-    //       return FadeTransition(opacity: animation, child: child);
-    //     },
-    //   ),
-    // ),
-    // GoRoute(
-    //   path: Routes.userRegisterHealthInfo,
-    //   pageBuilder: (context, state) => CustomTransitionPage(
-    //     key: state.pageKey,
-    //     child: const RegisterHealthInfoScreen(),
-    //     transitionsBuilder: (context, animation, secondaryAnimation, child) {
-    //       return FadeTransition(opacity: animation, child: child);
-    //     },
-    //   ),
-    // ),
-    // GoRoute(
-    //   path: Routes.userResetPassword,
-    //   pageBuilder: (context, state) => CustomTransitionPage(
-    //     key: state.pageKey,
-    //     child: const ResetPasswordScreen(),
-    //     transitionsBuilder: (context, animation, secondaryAnimation, child) {
-    //       return FadeTransition(opacity: animation, child: child);
-    //     },
-    //   ),
-    // ),
-    //
-    // GoRoute(
-    //   path: Routes.userRegisterPassword,
-    //   pageBuilder: (context, state) => CustomTransitionPage(
-    //     key: state.pageKey,
-    //     child: const RegisterPasswordScreen(),
-    //     transitionsBuilder: (context, animation, secondaryAnimation, child) {
-    //       return FadeTransition(opacity: animation, child: child);
-    //     },
-    //   ),
-    // ),
-    //
-    // GoRoute(
-    //   path: Routes.userHome,
-    //   pageBuilder: (context, state) => CustomTransitionPage(
-    //     key: state.pageKey,
-    //     child: AppLayoutPage(),
-    //     transitionsBuilder: (context, animation, secondaryAnimation, child) {
-    //       return FadeTransition(opacity: animation, child: child);
-    //     },
-    //   ),
-    // ),
-    // GoRoute(
-    //   path: Routes.userNotifications,
-    //   pageBuilder: (context, state) => CustomTransitionPage(
-    //     key: state.pageKey,
-    //     child: const CustomNotifications(),
-    //     transitionsBuilder: (context, animation, secondaryAnimation, child) {
-    //       return FadeTransition(opacity: animation, child: child);
-    //     },
-    //   ),
-    // ),
-    // GoRoute(
-    //   path: Routes.userEmptyChatApp,
-    //   pageBuilder: (context, state) => CustomTransitionPage(
-    //     key: state.pageKey,
-    //     child: const EmptyChatApp(),
-    //     transitionsBuilder: (context, animation, secondaryAnimation, child) {
-    //       return FadeTransition(opacity: animation, child: child);
-    //     },
-    //   ),
-    // ),
-    // GoRoute(
-    //   path: Routes.userEmptyNotifications,
-    //   pageBuilder: (context, state) => CustomTransitionPage(
-    //     key: state.pageKey,
-    //     child: const EmptyNotificationScreen(),
-    //     transitionsBuilder: (context, animation, secondaryAnimation, child) {
-    //       return FadeTransition(opacity: animation, child: child);
-    //     },
-    //   ),
-    // ),
-    // GoRoute(
-    //   path: Routes.userChatList,
-    //   pageBuilder: (context, state) => CustomTransitionPage(
-    //     key: state.pageKey,
-    //     child: const ChatListScreen(),
-    //     transitionsBuilder: (context, animation, secondaryAnimation, child) {
-    //       return FadeTransition(opacity: animation, child: child);
-    //     },
-    //   ),
-    // ),
+
     // GoRoute(
     //   path: Routes.userChatScreen,
     //   pageBuilder: (context, state) {

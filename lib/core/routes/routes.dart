@@ -9,6 +9,9 @@ class Routes {
   //!======================== Dashboard Routes ========================
   static const String dashboard = '/dashboard';
 
+  //!======================== Network Routes ========================
+  static const String networkDetails = '/network-details';
+
   //!======================== Scanner Routes ========================
   static const String scanResult = '/scan-result';
   static const String createCardManually = '/create-card-manually';
