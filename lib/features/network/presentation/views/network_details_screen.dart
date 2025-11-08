@@ -7,21 +7,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
-//import 'package:url_launcher/url_launcher.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+import '../../../../core/utils/custom_snack.dart';
 
 class NetworkDetailsScreen extends StatelessWidget {
   final NetworkModel network;
 
   const NetworkDetailsScreen({super.key, required this.network});
 
-//   Future<void> _makePhoneCall(String? phone) async {
-//     if (phone == null || phone.isEmpty) return;
-//     final uri = Uri.parse('tel:$phone');
-//     if (await canLaunchUrl(uri)) {
-//       await launchUrl(uri);
-//     }
-//   }
-//
+  Future<void> _makePhoneCall(String? phone) async {
+    if (phone == null || phone.isEmpty) return;
+    final uri = Uri.parse('tel:$phone');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    }
+  }
+
 //   Future<void> _sendSMS(String? phone) async {
 //     if (phone == null || phone.isEmpty) return;
 //     final uri = Uri.parse('sms:$phone');
@@ -30,36 +33,35 @@ class NetworkDetailsScreen extends StatelessWidget {
 //     }
 //   }
 //
-//   Future<void> _openWhatsApp(String? phone) async {
-//     if (phone == null || phone.isEmpty) return;
-//     // Remove any non-digit characters for WhatsApp
-//     final cleanPhone = phone.replaceAll(RegExp(r'[^\d]'), '');
-//     final uri = Uri.parse('https://wa.me/$cleanPhone');
-//     if (await canLaunchUrl(uri)) {
-//       await launchUrl(uri, mode: LaunchMode.externalApplication);
-//     }
-//   }
-//
-//   Future<void> _sendEmail(String? email) async {
-//     if (email == null || email.isEmpty) return;
-//     final uri = Uri.parse('mailto:$email');
-//     if (await canLaunchUrl(uri)) {
-//       await launchUrl(uri);
-//     }
-//   }
-//
-//   Future<void> _shareCard() async {
-//     final text = '''
-// ${network.name ?? ''}
-// ${network.title ?? ''}
-// ${network.company ?? ''}
-// ${network.phone ?? ''}
-// ${network.email ?? ''}
-// ${network.address ?? ''}
-// ${network.website ?? ''}
-// ''';
-//     await Share.share(text);
-//   }
+  Future<void> _openWhatsApp(String? phone) async {
+    if (phone == null || phone.isEmpty) return;
+    // Remove any non-digit characters for WhatsApp
+    final cleanPhone = phone.replaceAll(RegExp(r'[^\d]'), '');
+    final uri = Uri.parse('https://wa.me/$cleanPhone');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  Future<void> launchWhatsApp(String url, BuildContext context) async {
+    try {
+      if (await canLaunch(url)) {
+        await launch(url);
+      } else {
+        throw 'Could not launch the url';
+      }
+    } catch (e) {
+      CustomSnack.warning(e.toString(), context);
+    }
+  }
+
+  Future<void> _sendEmail(String? email) async {
+    if (email == null || email.isEmpty) return;
+    final uri = Uri.parse('mailto:$email');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    }
+  }
 
   void _copyToClipboard(String text) {
     Clipboard.setData(ClipboardData(text: text));
@@ -112,7 +114,7 @@ class NetworkDetailsScreen extends StatelessWidget {
                   _buildActionButton(
                     icon: Icons.phone,
                     label: 'Call',
-                    onTap: () {},
+                    onTap: () => _makePhoneCall(network.phone),
                   ),
                   // _buildActionButton(
                   //   icon: Icons.message,
@@ -120,19 +122,24 @@ class NetworkDetailsScreen extends StatelessWidget {
                   //   onTap: () {},
                   // ),
                   _buildActionButton(
-                    icon: Icons.chat,
-                    label: 'WhatsApp',
-                    onTap: () {},
-                  ),
+                      icon: Icons.chat,
+                      label: 'WhatsApp',
+                      //onTap: () => _openWhatsApp(network.phone),
+                      onTap: () => launchWhatsApp(
+                          "whatsapp://send?phone=${network.phone}", context)),
                   _buildActionButton(
                     icon: Icons.email,
                     label: 'Email',
-                    onTap: () {},
+                    onTap: () => _sendEmail(network.email),
                   ),
                   _buildActionButton(
                     icon: Icons.share,
                     label: 'Share',
-                    onTap: () {},
+                    onTap: () {
+                      SharePlus.instance.share(ShareParams(
+                          text:
+                              'Check out & download ${network.name}\'s digital business card - ${network.imageUrl}'));
+                    },
                   ),
                 ],
               ),
