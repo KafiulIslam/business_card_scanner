@@ -1,6 +1,8 @@
 import 'dart:io';
-
+import 'package:business_card_scanner/core/routes/routes.dart';
+import 'package:business_card_scanner/core/widgets/buttons/primary_button.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class ScanDocumentsScreen extends StatelessWidget {
   final File imageFile;
@@ -24,6 +26,15 @@ class ScanDocumentsScreen extends StatelessWidget {
             imageFile,
             fit: BoxFit.contain,
           ),
+        ),
+      ),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 32),
+        child: PrimaryButton(
+          onTap: () {
+            context.push(Routes.scannedToText, extra: imageFile);
+          },
+          buttonTitle: 'Scan',
         ),
       ),
     );

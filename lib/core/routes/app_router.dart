@@ -14,6 +14,7 @@ import 'package:business_card_scanner/features/scanner/presentation/views/create
 import 'package:business_card_scanner/features/scanner/presentation/views/scan_result_screen.dart';
 import 'package:business_card_scanner/features/tools/presentation/views/image_to_text_screen.dart';
 import 'package:business_card_scanner/features/tools/presentation/views/scanned_documents_screen.dart';
+import 'package:business_card_scanner/features/tools/presentation/views/scanned_to_text_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import '../../splash_screen.dart';
@@ -229,6 +230,28 @@ final GoRouter router = GoRouter(
         return CustomTransitionPage(
           key: state.pageKey,
           child: ScanDocumentsScreen(imageFile: imageFile),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+        );
+      },
+    ),
+    GoRoute(
+      path: Routes.scannedToText,
+      pageBuilder: (context, state) {
+        final imageFile = state.extra as File?;
+        if (imageFile == null) {
+          return CustomTransitionPage(
+            key: state.pageKey,
+            child: const SizedBox(),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return FadeTransition(opacity: animation, child: child);
+            },
+          );
+        }
+        return CustomTransitionPage(
+          key: state.pageKey,
+          child: ScannedToTextScreen(imageFile: imageFile),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return FadeTransition(opacity: animation, child: child);
           },

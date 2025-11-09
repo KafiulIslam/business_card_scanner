@@ -26,6 +26,7 @@ class Routes {
   //!======================== Tools Routes ========================
   static const String imageToText = '/image-to-text';
   static const String scanDocuments = '/scan-documents';
+  static const String scannedToText = '/scanned-to-text';
 
 
   //!======================== User Routes ========================
