@@ -115,6 +115,30 @@ class NetworkDetailsScreen extends StatelessWidget {
     }
   }
 
+  Future<void> _openGoogleMaps(String? address, BuildContext context) async {
+    try {
+      if (address == null || address.isEmpty) {
+        CustomSnack.warning('Address is not available', context);
+        return;
+      }
+      // URL encode the address for Google Maps search
+      final encodedAddress = Uri.encodeComponent(address);
+      // Use Google Maps URL scheme - this will open the app if installed, or web version
+      final uri = Uri.parse(
+          'https://www.google.com/maps/search/?api=1&query=$encodedAddress');
+
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        throw 'Could not launch Google Maps';
+      }
+    } catch (e) {
+      print('Failed to open Google Maps: ${e.toString()}');
+      CustomSnack.warning(
+          'Failed to open Google Maps: ${e.toString()}', context);
+    }
+  }
+
   Future<void> _saveContactToDevice(BuildContext context) async {
     try {
       // Check and request contacts permission
@@ -366,10 +390,21 @@ class NetworkDetailsScreen extends StatelessWidget {
                     // Address
                     if (network.address != null && network.address!.isNotEmpty)
                       _buildContactItem(
-                        icon: Icons.location_on_outlined,
-                        label: network.address!,
-                        value: network.address,
-                      ),
+                          icon: Icons.location_on_outlined,
+                          label: network.address!,
+                          value: network.address,
+                          trailing: Padding(
+                            padding: const EdgeInsets.only(left: 4.0),
+                            child: InkWell(
+                              onTap: () =>
+                                  _openGoogleMaps(network.address, context),
+                              child: Image.asset(
+                                AssetsPath.googleMap,
+                                height: 22,
+                                width: 22,
+                              ),
+                            ),
+                          )),
 
                     // Website
                     if (network.website != null && network.website!.isNotEmpty)
