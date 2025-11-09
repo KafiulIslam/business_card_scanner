@@ -378,14 +378,14 @@ class NetworkDetailsScreen extends StatelessWidget {
                         label: network.website!,
                         value: network.website,
                         onTap: () async {
-                          // final url = network.website!.startsWith('http')
-                          //     ? network.website!
-                          //     : 'https://${network.website}';
-                          // final uri = Uri.parse(url);
-                          // if (await canLaunchUrl(uri)) {
-                          //   await launchUrl(uri,
-                          //       mode: LaunchMode.externalApplication);
-                          // }
+                          final url = network.website!.startsWith('http')
+                              ? network.website!
+                              : 'https://${network.website}';
+                          final uri = Uri.parse(url);
+                          if (await canLaunchUrl(uri)) {
+                            await launchUrl(uri,
+                                mode: LaunchMode.externalApplication);
+                          }
                         },
                       ),
                   ],
