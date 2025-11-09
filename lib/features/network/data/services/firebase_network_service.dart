@@ -79,5 +79,17 @@ class FirebaseNetworkService {
             })
             .toList());
   }
+
+  Future<void> deleteNetworkCard(String cardId) async {
+    try {
+      if (cardId.isEmpty) {
+        throw Exception('Card ID is required to delete network card');
+      }
+      await _firestore.collection('network').doc(cardId).delete();
+    } catch (e) {
+      throw Exception('Failed to delete network card: $e');
+    }
+  }
+
 }
 

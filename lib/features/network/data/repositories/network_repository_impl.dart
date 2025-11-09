@@ -16,5 +16,10 @@ class NetworkRepositoryImpl implements NetworkRepository {
   Future<List<NetworkModel>> getNetworkCardsByUid(String uid) async {
     return await _firebaseNetworkService.getNetworkCardsByUid(uid);
   }
+
+  @override
+  Future<void> deleteNetworkCard(String cardId) async {
+    await _firebaseNetworkService.deleteNetworkCard(cardId);
+  }
 }
 

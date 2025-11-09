@@ -103,11 +103,9 @@ class NetworkCardListItem extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      Icon(
-                        Icons.more_horiz,
-                        color: AppColors.primary,
-                        size: 18.w,
-                      )
+
+
+
                     ],
                   ),
                   const Gap(2),

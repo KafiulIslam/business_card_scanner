@@ -14,6 +14,7 @@ import 'package:business_card_scanner/features/network/data/repositories/network
 import 'package:business_card_scanner/features/network/domain/repositories/network_repository.dart';
 import 'package:business_card_scanner/features/network/domain/use_cases/save_network_card_use_case.dart';
 import 'package:business_card_scanner/features/network/domain/use_cases/get_network_cards_use_case.dart';
+import 'package:business_card_scanner/features/network/domain/use_cases/delete_network_card_use_case.dart';
 import 'package:business_card_scanner/features/network/presentation/cubit/network_cubit.dart';
 import 'package:business_card_scanner/features/myCard/data/services/firebase_my_card_service.dart';
 import 'package:business_card_scanner/features/myCard/data/repositories/my_card_repository_impl.dart';
@@ -60,6 +61,9 @@ class AppProviders extends StatelessWidget {
         RepositoryProvider<GetNetworkCardsUseCase>(
           create: (ctx) => GetNetworkCardsUseCase(ctx.read<NetworkRepository>()),
         ),
+        RepositoryProvider<DeleteNetworkCardUseCase>(
+          create: (ctx) => DeleteNetworkCardUseCase(ctx.read<NetworkRepository>()),
+        ),
         RepositoryProvider<FirebaseMyCardService>(
           create: (_) => FirebaseMyCardService(),
         ),
@@ -94,6 +98,7 @@ class AppProviders extends StatelessWidget {
             create: (ctx) => NetworkCubit(
               ctx.read<SaveNetworkCardUseCase>(),
               ctx.read<GetNetworkCardsUseCase>(),
+              ctx.read<DeleteNetworkCardUseCase>(),
             ),
           ),
           BlocProvider<MyCardCubit>(
