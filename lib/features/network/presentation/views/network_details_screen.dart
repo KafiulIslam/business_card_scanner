@@ -5,215 +5,130 @@ import 'package:business_card_scanner/core/utils/assets_path.dart';
 import 'package:business_card_scanner/core/widgets/custom_image_holder.dart';
 import 'package:business_card_scanner/features/network/domain/entities/network_model.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
-import 'package:share_plus/share_plus.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:flutter_contacts/flutter_contacts.dart';
-import 'package:permission_handler/permission_handler.dart';
 import '../../../../core/utils/custom_snack.dart';
+import '../../../../core/services/external_app_service.dart';
 
 class NetworkDetailsScreen extends StatelessWidget {
   final NetworkModel network;
 
   const NetworkDetailsScreen({super.key, required this.network});
 
-  Future<void> _makePhoneCall(String? phone) async {
-    if (phone == null || phone.isEmpty) return;
-    final uri = Uri.parse('tel:$phone');
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
+  Future<void> _makePhoneCall(String? phone, BuildContext context) async {
+    try {
+      final service = context.read<ExternalAppService>();
+      await service.makePhoneCall(phone);
+    } catch (e) {
+      if (context.mounted) {
+        CustomSnack.warning(e.toString(), context);
+      }
     }
   }
-
-//   Future<void> _sendSMS(String? phone) async {
-//     if (phone == null || phone.isEmpty) return;
-//     final uri = Uri.parse('sms:$phone');
-//     if (await canLaunchUrl(uri)) {
-//       await launchUrl(uri);
-//     }
-//   }
-//
 
   Future<void> _openWhatsApp(
       String whatsappNumber, BuildContext context) async {
     try {
-      if (await canLaunch("whatsapp://send?phone=$whatsappNumber")) {
-        await launch("whatsapp://send?phone=$whatsappNumber");
-      } else {
-        throw 'Could not launch the url';
-      }
+      final service = context.read<ExternalAppService>();
+      await service.openWhatsApp(whatsappNumber);
     } catch (e) {
-      CustomSnack.warning(e.toString(), context);
+      if (context.mounted) {
+        CustomSnack.warning(e.toString(), context);
+      }
     }
   }
 
   Future<void> _sendEmail(String? email, BuildContext context) async {
     try {
-      if (email == null || email.isEmpty) {
-        CustomSnack.warning('Email address is not available', context);
-        return;
-      }
-      final uri = Uri.parse('mailto:$email');
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      } else {
-        throw 'Could not launch email client';
-      }
+      final service = context.read<ExternalAppService>();
+      await service.sendEmail(email);
     } catch (e) {
-      print('Failed to open email: ${e.toString()}');
-      CustomSnack.warning('Failed to open email: ${e.toString()}', context);
+      if (context.mounted) {
+        CustomSnack.warning(e.toString(), context);
+      }
     }
   }
 
-  void _copyToClipboard(String text) {
-    Clipboard.setData(ClipboardData(text: text));
+  void _copyToClipboard(String text, BuildContext context) {
+    try {
+      final service = context.read<ExternalAppService>();
+      service.copyToClipboard(text);
+      if (context.mounted) {
+        CustomSnack.success('Copied to clipboard', context);
+      }
+    } catch (e) {
+      if (context.mounted) {
+        CustomSnack.warning('Failed to copy: ${e.toString()}', context);
+      }
+    }
   }
 
   Future<void> _openLinkedInSearch(String? name, BuildContext context) async {
     try {
-      if (name == null || name.isEmpty) {
-        CustomSnack.warning('Name is not available', context);
-        return;
-      }
-      // URL encode the name for LinkedIn search
-      final encodedName = Uri.encodeComponent(name);
-      final uri = Uri.parse(
-          'https://www.linkedin.com/search/results/people/?keywords=$encodedName');
-
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      } else {
-        throw 'Could not launch LinkedIn';
-      }
+      final service = context.read<ExternalAppService>();
+      await service.openLinkedInSearch(name);
     } catch (e) {
-      print('Failed to open LinkedIn: ${e.toString()}');
-      CustomSnack.warning('Failed to open LinkedIn: ${e.toString()}', context);
+      if (context.mounted) {
+        CustomSnack.warning(e.toString(), context);
+      }
     }
   }
 
   Future<void> _openFacebookSearch(String? name, BuildContext context) async {
     try {
-      if (name == null || name.isEmpty) {
-        CustomSnack.warning('Name is not available', context);
-        return;
-      }
-      // URL encode the name for Facebook search
-      final encodedName = Uri.encodeComponent(name);
-      final uri =
-          Uri.parse('https://www.facebook.com/search/top/?q=$encodedName');
-
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      } else {
-        throw 'Could not launch Facebook';
-      }
+      final service = context.read<ExternalAppService>();
+      await service.openFacebookSearch(name);
     } catch (e) {
-      print('Failed to open Facebook: ${e.toString()}');
-      CustomSnack.warning('Failed to open Facebook: ${e.toString()}', context);
+      if (context.mounted) {
+        CustomSnack.warning(e.toString(), context);
+      }
     }
   }
 
   Future<void> _openGoogleMaps(String? address, BuildContext context) async {
     try {
-      if (address == null || address.isEmpty) {
-        CustomSnack.warning('Address is not available', context);
-        return;
-      }
-      // URL encode the address for Google Maps search
-      final encodedAddress = Uri.encodeComponent(address);
-      // Use Google Maps URL scheme - this will open the app if installed, or web version
-      final uri = Uri.parse(
-          'https://www.google.com/maps/search/?api=1&query=$encodedAddress');
-
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      } else {
-        throw 'Could not launch Google Maps';
-      }
+      final service = context.read<ExternalAppService>();
+      await service.openGoogleMaps(address);
     } catch (e) {
-      print('Failed to open Google Maps: ${e.toString()}');
-      CustomSnack.warning(
-          'Failed to open Google Maps: ${e.toString()}', context);
+      if (context.mounted) {
+        CustomSnack.warning(e.toString(), context);
+      }
+    }
+  }
+
+  Future<void> _openWebsite(String? website, BuildContext context) async {
+    try {
+      final service = context.read<ExternalAppService>();
+      await service.openWebsite(website);
+    } catch (e) {
+      if (context.mounted) {
+        CustomSnack.warning(e.toString(), context);
+      }
     }
   }
 
   Future<void> _saveContactToDevice(BuildContext context) async {
     try {
-      // Check and request contacts permission
-      final permission = await Permission.contacts.status;
-      if (permission.isDenied) {
-        final result = await Permission.contacts.request();
-        if (result.isDenied) {
-          CustomSnack.warning(
-              'Contacts permission is required to save contact', context);
-          return;
-        }
-      }
-
-      if (permission.isPermanentlyDenied) {
-        CustomSnack.warning(
-            'Please enable contacts permission in app settings', context);
-        return;
-      }
-
-      // Create a new contact
-      final newContact = Contact(
-        name: Name(
-          first: network.name ?? '',
-          last: '',
-        ),
-      );
-
-      // Add phone number if available
-      if (network.phone != null && network.phone!.isNotEmpty) {
-        newContact.phones = [
-          Phone(network.phone!),
-        ];
-      }
-
-      // Add email if available
-      if (network.email != null && network.email!.isNotEmpty) {
-        newContact.emails = [
-          Email(network.email!),
-        ];
-      }
-
-      // Add company/organization if available
-      if (network.company != null && network.company!.isNotEmpty) {
-        newContact.organizations = [
-          Organization(
-            company: network.company!,
-            title: network.title ?? '',
-          ),
-        ];
-      }
-
-      // Add address if available
-      if (network.address != null && network.address!.isNotEmpty) {
-        newContact.addresses = [
-          Address(network.address!),
-        ];
-      }
-
-      // Add website if available
-      if (network.website != null && network.website!.isNotEmpty) {
-        newContact.websites = [
-          Website(network.website!),
-        ];
-      }
-
-      // Insert the contact
-      await FlutterContacts.insertContact(newContact);
-
+      final service = context.read<ExternalAppService>();
+      await service.saveContactToDevice(network);
       if (context.mounted) {
         CustomSnack.success('Contact saved successfully!', context);
       }
     } catch (e) {
-      print('Failed to save contact: ${e.toString()}');
       if (context.mounted) {
-        CustomSnack.warning('Failed to save contact: ${e.toString()}', context);
+        CustomSnack.warning(e.toString(), context);
+      }
+    }
+  }
+
+  Future<void> _shareNetworkCard(String text, BuildContext context) async {
+    try {
+      final service = context.read<ExternalAppService>();
+      await service.shareContent(text);
+    } catch (e) {
+      if (context.mounted) {
+        CustomSnack.warning(e.toString(), context);
       }
     }
   }
@@ -237,6 +152,7 @@ class NetworkDetailsScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+
               // Business Card Image
               CustomImageHolder(
                   imageUrl: network.imageUrl ?? '',
@@ -257,7 +173,7 @@ class NetworkDetailsScreen extends StatelessWidget {
                   _buildActionButton(
                     icon: Icons.phone,
                     label: 'Call',
-                    onTap: () => _makePhoneCall(network.phone),
+                    onTap: () => _makePhoneCall(network.phone, context),
                   ),
                   // _buildActionButton(
                   //   icon: Icons.message,
@@ -277,11 +193,9 @@ class NetworkDetailsScreen extends StatelessWidget {
                   _buildActionButton(
                     icon: Icons.share,
                     label: 'Share',
-                    onTap: () {
-                      SharePlus.instance.share(ShareParams(
-                          text:
-                              'Check out & download ${network.name}\'s digital business card - ${network.imageUrl}'));
-                    },
+                    onTap: () => _shareNetworkCard(
+                        'Check out & download ${network.name}\'s digital business card - ${network.imageUrl}',
+                        context),
                   ),
                 ],
               ),
@@ -316,6 +230,7 @@ class NetworkDetailsScreen extends StatelessWidget {
                       icon: Icons.description_outlined,
                       label: '${network.name} Card',
                       value: network.name,
+                      context: context,
                     ),
 
                   // Name with Social Icons
@@ -336,6 +251,7 @@ class NetworkDetailsScreen extends StatelessWidget {
                           }),
                         ],
                       ),
+                      context: context,
                     ),
 
                   // Title
@@ -344,6 +260,7 @@ class NetworkDetailsScreen extends StatelessWidget {
                       icon: Icons.work_outline,
                       label: network.title!,
                       value: network.title,
+                      context: context,
                     ),
 
                   // Company
@@ -352,6 +269,7 @@ class NetworkDetailsScreen extends StatelessWidget {
                       icon: Icons.business_outlined,
                       label: network.company!,
                       value: network.company,
+                      context: context,
                     ),
 
                   // Email
@@ -361,7 +279,8 @@ class NetworkDetailsScreen extends StatelessWidget {
                         label: network.email!,
                         value: network.email,
                         trailing: _buildImageIcon(AssetsPath.email,
-                            () => _sendEmail(network.email, context))),
+                            () => _sendEmail(network.email, context)),
+                        context: context),
 
                   // Phone
                   if (network.phone != null && network.phone!.isNotEmpty)
@@ -371,6 +290,7 @@ class NetworkDetailsScreen extends StatelessWidget {
                       value: network.phone,
                       trailing: _buildImageIcon(AssetsPath.saveContact,
                           () => _saveContactToDevice(context)),
+                      context: context,
                     ),
 
                   // Address
@@ -383,8 +303,9 @@ class NetworkDetailsScreen extends StatelessWidget {
                             padding: const EdgeInsets.only(left: 4.0),
                             child: _buildImageIcon(
                                 AssetsPath.googleMap,
-                                () => _openGoogleMaps(
-                                    network.address, context)))),
+                                () =>
+                                    _openGoogleMaps(network.address, context))),
+                        context: context),
 
                   // Website
                   if (network.website != null && network.website!.isNotEmpty)
@@ -394,17 +315,9 @@ class NetworkDetailsScreen extends StatelessWidget {
                       value: network.website,
                       trailing: _buildImageIcon(
                         AssetsPath.webview,
-                        () async {
-                          final url = network.website!.startsWith('http')
-                              ? network.website!
-                              : 'https://${network.website}';
-                          final uri = Uri.parse(url);
-                          if (await canLaunchUrl(uri)) {
-                            await launchUrl(uri,
-                                mode: LaunchMode.externalApplication);
-                          }
-                        },
+                        () => _openWebsite(network.website, context),
                       ),
+                      context: context,
                     ),
                 ],
               ),
@@ -457,9 +370,11 @@ class NetworkDetailsScreen extends StatelessWidget {
     String? value,
     Widget? trailing,
     VoidCallback? onTap,
+    required BuildContext context,
   }) {
     return InkWell(
-      onTap: onTap ?? (value != null ? () => _copyToClipboard(value) : null),
+      onTap: onTap ??
+          (value != null ? () => _copyToClipboard(value, context) : null),
       splashColor: Colors.transparent,
       child: Padding(
         padding: EdgeInsets.symmetric(vertical: AppDimensions.spacing12),
@@ -501,4 +416,5 @@ class NetworkDetailsScreen extends StatelessWidget {
       ),
     );
   }
+
 }

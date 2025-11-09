@@ -22,6 +22,7 @@ import 'package:business_card_scanner/features/myCard/domain/use_cases/save_my_c
 import 'package:business_card_scanner/features/myCard/domain/use_cases/get_my_cards_use_case.dart';
 import 'package:business_card_scanner/features/myCard/domain/use_cases/delete_my_card_use_case.dart';
 import 'package:business_card_scanner/features/myCard/presentation/cubit/my_card_cubit.dart';
+import 'package:business_card_scanner/core/services/external_app_service.dart';
 
 class AppProviders extends StatelessWidget {
   final Widget child;
@@ -73,6 +74,9 @@ class AppProviders extends StatelessWidget {
         ),
         RepositoryProvider<DeleteMyCardUseCase>(
           create: (ctx) => DeleteMyCardUseCase(ctx.read<MyCardRepository>()),
+        ),
+        RepositoryProvider<ExternalAppService>(
+          create: (_) => ExternalAppService(),
         ),
       ],
       child: MultiBlocProvider(
