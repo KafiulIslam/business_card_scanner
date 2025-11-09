@@ -49,5 +49,7 @@
 	<string>Camera access is required to scan business cards.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Photo library access is required to pick business card images.</string>
+	<key>NSContactsUsageDescription</key>
+	<string>Contacts access is required to save business card information to your contacts.</string>
 </dict>
 </plist>

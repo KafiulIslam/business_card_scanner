@@ -1,4 +1,3 @@
-import 'package:business_card_scanner/core/theme/app_assets.dart';
 import 'package:business_card_scanner/core/theme/app_colors.dart';
 import 'package:business_card_scanner/core/theme/app_dimensions.dart';
 import 'package:business_card_scanner/core/theme/app_text_style.dart';
@@ -11,6 +10,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_contacts/flutter_contacts.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../../../../core/utils/custom_snack.dart';
 
 class NetworkDetailsScreen extends StatelessWidget {
@@ -111,6 +112,85 @@ class NetworkDetailsScreen extends StatelessWidget {
     } catch (e) {
       print('Failed to open Facebook: ${e.toString()}');
       CustomSnack.warning('Failed to open Facebook: ${e.toString()}', context);
+    }
+  }
+
+  Future<void> _saveContactToDevice(BuildContext context) async {
+    try {
+      // Check and request contacts permission
+      final permission = await Permission.contacts.status;
+      if (permission.isDenied) {
+        final result = await Permission.contacts.request();
+        if (result.isDenied) {
+          CustomSnack.warning(
+              'Contacts permission is required to save contact', context);
+          return;
+        }
+      }
+
+      if (permission.isPermanentlyDenied) {
+        CustomSnack.warning(
+            'Please enable contacts permission in app settings', context);
+        return;
+      }
+
+      // Create a new contact
+      final newContact = Contact(
+        name: Name(
+          first: network.name ?? '',
+          last: '',
+        ),
+      );
+
+      // Add phone number if available
+      if (network.phone != null && network.phone!.isNotEmpty) {
+        newContact.phones = [
+          Phone(network.phone!),
+        ];
+      }
+
+      // Add email if available
+      if (network.email != null && network.email!.isNotEmpty) {
+        newContact.emails = [
+          Email(network.email!),
+        ];
+      }
+
+      // Add company/organization if available
+      if (network.company != null && network.company!.isNotEmpty) {
+        newContact.organizations = [
+          Organization(
+            company: network.company!,
+            title: network.title ?? '',
+          ),
+        ];
+      }
+
+      // Add address if available
+      if (network.address != null && network.address!.isNotEmpty) {
+        newContact.addresses = [
+          Address(network.address!),
+        ];
+      }
+
+      // Add website if available
+      if (network.website != null && network.website!.isNotEmpty) {
+        newContact.websites = [
+          Website(network.website!),
+        ];
+      }
+
+      // Insert the contact
+      await FlutterContacts.insertContact(newContact);
+
+      if (context.mounted) {
+        CustomSnack.success('Contact saved successfully!', context);
+      }
+    } catch (e) {
+      print('Failed to save contact: ${e.toString()}');
+      if (context.mounted) {
+        CustomSnack.warning('Failed to save contact: ${e.toString()}', context);
+      }
     }
   }
 
@@ -275,6 +355,12 @@ class NetworkDetailsScreen extends StatelessWidget {
                         icon: Icons.phone_outlined,
                         label: network.phone!,
                         value: network.phone,
+                        trailing: IconButton(
+                            onPressed: () => _saveContactToDevice(context),
+                            icon: const Icon(
+                              Icons.contact_phone_outlined,
+                              color: AppColors.primary,
+                            )),
                       ),
 
                     // Address
@@ -360,7 +446,7 @@ class NetworkDetailsScreen extends StatelessWidget {
       child: Padding(
         padding: EdgeInsets.symmetric(vertical: AppDimensions.spacing12),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             CircleAvatar(
               radius: 16,
