@@ -15,5 +15,7 @@ class AssetsPath {
   static String temp8 = "${pngAssets}temp8.png";
   static String temp9 = "${pngAssets}temp9.png";
   static String temp10 = "${pngAssets}temp10.png";
+  static String linkedIn = "${pngAssets}linkedin.png";
+  static String facebook = "${pngAssets}facebook.png";
 
 }

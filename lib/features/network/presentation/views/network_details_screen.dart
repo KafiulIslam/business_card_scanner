@@ -1,6 +1,8 @@
+import 'package:business_card_scanner/core/theme/app_assets.dart';
 import 'package:business_card_scanner/core/theme/app_colors.dart';
 import 'package:business_card_scanner/core/theme/app_dimensions.dart';
 import 'package:business_card_scanner/core/theme/app_text_style.dart';
+import 'package:business_card_scanner/core/utils/assets_path.dart';
 import 'package:business_card_scanner/core/widgets/custom_image_holder.dart';
 import 'package:business_card_scanner/features/network/domain/entities/network_model.dart';
 import 'package:flutter/material.dart';
@@ -68,6 +70,50 @@ class NetworkDetailsScreen extends StatelessWidget {
     Clipboard.setData(ClipboardData(text: text));
   }
 
+  Future<void> _openLinkedInSearch(String? name, BuildContext context) async {
+    try {
+      if (name == null || name.isEmpty) {
+        CustomSnack.warning('Name is not available', context);
+        return;
+      }
+      // URL encode the name for LinkedIn search
+      final encodedName = Uri.encodeComponent(name);
+      final uri = Uri.parse(
+          'https://www.linkedin.com/search/results/people/?keywords=$encodedName');
+
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        throw 'Could not launch LinkedIn';
+      }
+    } catch (e) {
+      print('Failed to open LinkedIn: ${e.toString()}');
+      CustomSnack.warning('Failed to open LinkedIn: ${e.toString()}', context);
+    }
+  }
+
+  Future<void> _openFacebookSearch(String? name, BuildContext context) async {
+    try {
+      if (name == null || name.isEmpty) {
+        CustomSnack.warning('Name is not available', context);
+        return;
+      }
+      // URL encode the name for Facebook search
+      final encodedName = Uri.encodeComponent(name);
+      final uri =
+          Uri.parse('https://www.facebook.com/search/top/?q=$encodedName');
+
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        throw 'Could not launch Facebook';
+      }
+    } catch (e) {
+      print('Failed to open Facebook: ${e.toString()}');
+      CustomSnack.warning('Failed to open Facebook: ${e.toString()}', context);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -129,7 +175,8 @@ class NetworkDetailsScreen extends StatelessWidget {
                   _buildActionButton(
                     icon: Icons.email,
                     label: 'Email',
-                    onTap: () => _sendEmail('kafiulislam135@gmail.com', context),
+                    onTap: () =>
+                        _sendEmail('kafiulislam135@gmail.com', context),
                   ),
                   _buildActionButton(
                     icon: Icons.share,
@@ -187,12 +234,12 @@ class NetworkDetailsScreen extends StatelessWidget {
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            _buildSocialIcon('in', () {
-                              // TODO: Open LinkedIn
+                            _buildSocialIcon(AssetsPath.linkedIn, () {
+                              _openLinkedInSearch(network.name, context);
                             }),
                             Gap(AppDimensions.spacing8),
-                            _buildSocialIcon('f', () {
-                              // TODO: Open Facebook
+                            _buildSocialIcon(AssetsPath.facebook, () {
+                              _openFacebookSearch(network.name, context);
                             }),
                           ],
                         ),
@@ -340,26 +387,13 @@ class NetworkDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSocialIcon(String text, VoidCallback onTap) {
+  Widget _buildSocialIcon(String image, VoidCallback onTap) {
     return InkWell(
       onTap: onTap,
-      child: Container(
-        width: 24.w,
-        height: 24.w,
-        decoration: const BoxDecoration(
-          color: AppColors.secondary,
-          shape: BoxShape.circle,
-        ),
-        child: Center(
-          child: Text(
-            text,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 10.sp,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
+      child: Image.asset(
+        image,
+        height: 22,
+        width: 22,
       ),
     );
   }
