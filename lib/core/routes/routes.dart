@@ -23,9 +23,17 @@ class Routes {
   static const String editMyCard = '/edit-my-card';
 
 
+  //!======================== Tools Routes ========================
+  static const String imageToText = '/image-to-text';
+  static const String scanDocuments = '/scan-documents';
+
+
   //!======================== User Routes ========================
   static const String userForgetPassword = '/user/forgetPassword';
   static const String userRegisterPersonalInfo = '/user/registerPersonalInfo';
+
+
+
 
 
 

@@ -1,6 +1,10 @@
+import 'package:business_card_scanner/core/routes/app_router.dart';
 import 'package:business_card_scanner/features/tools/presentation/widgets/tool_card.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../../../core/routes/routes.dart';
 
 
 class ToolsScreen extends StatelessWidget {
@@ -14,7 +18,9 @@ class ToolsScreen extends StatelessWidget {
           child: Column(
             children: [
               ToolCard(
-                  onTap: () {},
+                  onTap: () {
+                    context.push(Routes.imageToText);
+                  },
                   icon: Icons.document_scanner_outlined,
                   title: 'Image to Text',
                   subtitle: 'Convert image to editable text'),
