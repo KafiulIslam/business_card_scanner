@@ -230,14 +230,6 @@ class NetworkDetailsScreen extends StatelessWidget {
           style: AppTextStyles.headline4,
         ),
         centerTitle: true,
-        // actions: [
-        //   IconButton(
-        //     icon: const Icon(Icons.star_outline, color: Colors.black),
-        //     onPressed: () {
-        //       // TODO: Implement favorite functionality
-        //     },
-        //   ),
-        // ],
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -276,12 +268,12 @@ class NetworkDetailsScreen extends StatelessWidget {
                       icon: Icons.chat,
                       label: 'WhatsApp',
                       onTap: () => _openWhatsApp(network.phone ?? '', context)),
-                  _buildActionButton(
-                    icon: Icons.email,
-                    label: 'Email',
-                    onTap: () =>
-                        _sendEmail('kafiulislam135@gmail.com', context),
-                  ),
+                  // _buildActionButton(
+                  //   icon: Icons.email,
+                  //   label: 'Email',
+                  //   onTap: () =>
+                  //       _sendEmail('kafiulislam135@gmail.com', context),
+                  // ),
                   _buildActionButton(
                     icon: Icons.share,
                     label: 'Share',
@@ -316,103 +308,93 @@ class NetworkDetailsScreen extends StatelessWidget {
               Gap(AppDimensions.spacing16),
 
               // Contact Information List
-              Padding(
-                padding:
-                    EdgeInsets.symmetric(horizontal: AppDimensions.spacing16),
-                child: Column(
-                  children: [
-                    // Card Name
-                    if (network.name != null && network.name!.isNotEmpty)
-                      _buildContactItem(
-                        icon: Icons.description_outlined,
-                        label: '${network.name} Card',
-                        value: network.name,
-                      ),
+              Column(
+                children: [
+                  // Card Name
+                  if (network.name != null && network.name!.isNotEmpty)
+                    _buildContactItem(
+                      icon: Icons.description_outlined,
+                      label: '${network.name} Card',
+                      value: network.name,
+                    ),
 
-                    // Name with Social Icons
-                    if (network.name != null && network.name!.isNotEmpty)
-                      _buildContactItem(
-                        icon: Icons.person_outline,
-                        label: network.name!,
-                        value: network.name,
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            _buildSocialIcon(AssetsPath.linkedIn, () {
-                              _openLinkedInSearch(network.name, context);
-                            }),
-                            Gap(AppDimensions.spacing8),
-                            _buildSocialIcon(AssetsPath.facebook, () {
-                              _openFacebookSearch(network.name, context);
-                            }),
-                          ],
-                        ),
+                  // Name with Social Icons
+                  if (network.name != null && network.name!.isNotEmpty)
+                    _buildContactItem(
+                      icon: Icons.person_outline,
+                      label: network.name!,
+                      value: network.name,
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _buildImageIcon(AssetsPath.linkedIn, () {
+                            _openLinkedInSearch(network.name, context);
+                          }),
+                          Gap(AppDimensions.spacing8),
+                          _buildImageIcon(AssetsPath.facebook, () {
+                            _openFacebookSearch(network.name, context);
+                          }),
+                        ],
                       ),
+                    ),
 
-                    // Title
-                    if (network.title != null && network.title!.isNotEmpty)
-                      _buildContactItem(
-                        icon: Icons.work_outline,
-                        label: network.title!,
-                        value: network.title,
-                      ),
+                  // Title
+                  if (network.title != null && network.title!.isNotEmpty)
+                    _buildContactItem(
+                      icon: Icons.work_outline,
+                      label: network.title!,
+                      value: network.title,
+                    ),
 
-                    // Company
-                    if (network.company != null && network.company!.isNotEmpty)
-                      _buildContactItem(
-                        icon: Icons.business_outlined,
-                        label: network.company!,
-                        value: network.company,
-                      ),
+                  // Company
+                  if (network.company != null && network.company!.isNotEmpty)
+                    _buildContactItem(
+                      icon: Icons.business_outlined,
+                      label: network.company!,
+                      value: network.company,
+                    ),
 
-                    // Email
-                    if (network.email != null && network.email!.isNotEmpty)
-                      _buildContactItem(
+                  // Email
+                  if (network.email != null && network.email!.isNotEmpty)
+                    _buildContactItem(
                         icon: Icons.alternate_email,
                         label: network.email!,
                         value: network.email,
-                      ),
+                        trailing: _buildImageIcon(AssetsPath.email,
+                            () => _sendEmail(network.email, context))),
 
-                    // Phone
-                    if (network.phone != null && network.phone!.isNotEmpty)
-                      _buildContactItem(
-                        icon: Icons.phone_outlined,
-                        label: network.phone!,
-                        value: network.phone,
-                        trailing: IconButton(
-                            onPressed: () => _saveContactToDevice(context),
-                            icon: const Icon(
-                              Icons.contact_phone_outlined,
-                              color: AppColors.primary,
-                            )),
-                      ),
+                  // Phone
+                  if (network.phone != null && network.phone!.isNotEmpty)
+                    _buildContactItem(
+                      icon: Icons.phone_outlined,
+                      label: network.phone!,
+                      value: network.phone,
+                      trailing: _buildImageIcon(AssetsPath.saveContact,
+                          () => _saveContactToDevice(context)),
+                    ),
 
-                    // Address
-                    if (network.address != null && network.address!.isNotEmpty)
-                      _buildContactItem(
-                          icon: Icons.location_on_outlined,
-                          label: network.address!,
-                          value: network.address,
-                          trailing: Padding(
+                  // Address
+                  if (network.address != null && network.address!.isNotEmpty)
+                    _buildContactItem(
+                        icon: Icons.location_on_outlined,
+                        label: network.address!,
+                        value: network.address,
+                        trailing: Padding(
                             padding: const EdgeInsets.only(left: 4.0),
-                            child: InkWell(
-                              onTap: () =>
-                                  _openGoogleMaps(network.address, context),
-                              child: Image.asset(
+                            child: _buildImageIcon(
                                 AssetsPath.googleMap,
-                                height: 22,
-                                width: 22,
-                              ),
-                            ),
-                          )),
+                                () => _openGoogleMaps(
+                                    network.address, context)))),
 
-                    // Website
-                    if (network.website != null && network.website!.isNotEmpty)
-                      _buildContactItem(
-                        icon: Icons.language,
-                        label: network.website!,
-                        value: network.website,
-                        onTap: () async {
+                  // Website
+                  if (network.website != null && network.website!.isNotEmpty)
+                    _buildContactItem(
+                      icon: Icons.language,
+                      label: network.website!,
+                      value: network.website,
+                      trailing: _buildImageIcon(
+                        AssetsPath.webview,
+                        () async {
                           final url = network.website!.startsWith('http')
                               ? network.website!
                               : 'https://${network.website}';
@@ -423,8 +405,8 @@ class NetworkDetailsScreen extends StatelessWidget {
                           }
                         },
                       ),
-                  ],
-                ),
+                    ),
+                ],
               ),
               Gap(AppDimensions.spacing32),
             ],
@@ -478,6 +460,7 @@ class NetworkDetailsScreen extends StatelessWidget {
   }) {
     return InkWell(
       onTap: onTap ?? (value != null ? () => _copyToClipboard(value) : null),
+      splashColor: Colors.transparent,
       child: Padding(
         padding: EdgeInsets.symmetric(vertical: AppDimensions.spacing12),
         child: Row(
@@ -508,13 +491,13 @@ class NetworkDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSocialIcon(String image, VoidCallback onTap) {
+  Widget _buildImageIcon(String image, VoidCallback onTap) {
     return InkWell(
       onTap: onTap,
       child: Image.asset(
         image,
-        height: 22,
-        width: 22,
+        height: 24,
+        width: 24,
       ),
     );
   }
