@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -5,13 +6,11 @@ import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../features/network/domain/entities/network_model.dart';
 
-/// Service for handling external app integrations
-/// This service provides methods to interact with external applications
-/// like phone dialer, WhatsApp, email, social media, maps, and contacts
+
 class ExternalAppService {
-  /// Makes a phone call using the device's dialer
-  ///
-  /// Throws [Exception] if phone number is invalid or cannot launch dialer
+
+
+  // make direct phone call with card phone number
   Future<void> makePhoneCall(String? phone) async {
     if (phone == null || phone.isEmpty) {
       throw Exception('Phone number is not available');
@@ -24,9 +23,8 @@ class ExternalAppService {
     }
   }
 
-  /// Opens WhatsApp with the specified phone number
-  ///
-  /// Throws [Exception] if WhatsApp cannot be launched
+
+  // find card phone number in whatsapp
   Future<void> openWhatsApp(String whatsappNumber) async {
     try {
       if (await canLaunch("whatsapp://send?phone=$whatsappNumber")) {
@@ -39,9 +37,8 @@ class ExternalAppService {
     }
   }
 
-  /// Opens the default email client with the specified email address
-  ///
-  /// Throws [Exception] if email is invalid or email client cannot be launched
+
+  // Send email
   Future<void> sendEmail(String? email) async {
     if (email == null || email.isEmpty) {
       throw Exception('Email address is not available');
@@ -54,9 +51,8 @@ class ExternalAppService {
     }
   }
 
-  /// Opens LinkedIn search with the specified name
-  ///
-  /// Throws [Exception] if name is invalid or LinkedIn cannot be launched
+
+  // Search Card holder name in LinkedIn
   Future<void> openLinkedInSearch(String? name) async {
     if (name == null || name.isEmpty) {
       throw Exception('Name is not available');
@@ -73,9 +69,8 @@ class ExternalAppService {
     }
   }
 
-  /// Opens Facebook search with the specified name
-  ///
-  /// Throws [Exception] if name is invalid or Facebook cannot be launched
+
+  // Search Card holder name in facebook
   Future<void> openFacebookSearch(String? name) async {
     if (name == null || name.isEmpty) {
       throw Exception('Name is not available');
@@ -92,9 +87,8 @@ class ExternalAppService {
     }
   }
 
-  /// Opens Google Maps with the specified address
-  ///
-  /// Throws [Exception] if address is invalid or Google Maps cannot be launched
+
+  // Open address in Google Map
   Future<void> openGoogleMaps(String? address) async {
     if (address == null || address.isEmpty) {
       throw Exception('Address is not available');
@@ -112,9 +106,8 @@ class ExternalAppService {
     }
   }
 
-  /// Opens a website URL in external browser
-  ///
-  /// Throws [Exception] if URL is invalid or cannot be launched
+
+  // Open website
   Future<void> openWebsite(String? website) async {
     if (website == null || website.isEmpty) {
       throw Exception('Website URL is not available');
@@ -128,9 +121,8 @@ class ExternalAppService {
     }
   }
 
-  /// Saves a contact to the device's contact list
-  ///
-  /// Throws [Exception] if permission is denied or contact cannot be saved
+
+  // Save business card's phone number to phone contact
   Future<void> saveContactToDevice(NetworkModel network) async {
     // Check and request contacts permission
     final permission = await Permission.contacts.status;
@@ -195,14 +187,14 @@ class ExternalAppService {
     await FlutterContacts.insertContact(newContact);
   }
 
-  /// Copies text to clipboard
+
+  // Copy text to clipboard
   void copyToClipboard(String text) {
     Clipboard.setData(ClipboardData(text: text));
   }
 
-  /// Shares content using the device's share functionality
-  /// 
-  /// Throws [Exception] if sharing fails
+
+  // Share text, images or other content
   Future<void> shareContent(String text) async {
     try {
       if (text.isEmpty) {
@@ -211,6 +203,27 @@ class ExternalAppService {
       await SharePlus.instance.share(ShareParams(text: text));
     } catch (e) {
       throw Exception('Failed to share content: ${e.toString()}');
+    }
+  }
+
+
+  // Export text to a file and share it
+  Future<void> exportTextToFile(String text, {String? fileName}) async {
+    try {
+      if (text.isEmpty) {
+        throw Exception('Export content cannot be empty');
+      }
+      // Create a temporary file in the system temp directory
+      final tempDir = Directory.systemTemp;
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final file = File('${tempDir.path}/${fileName ?? 'scanned_text'}_$timestamp.txt');
+      await file.writeAsString(text);
+
+      // Share the file
+      final xFile = XFile(file.path);
+      await Share.shareXFiles([xFile], text: 'Scanned Text Export');
+    } catch (e) {
+      throw Exception('Failed to export text: ${e.toString()}');
     }
   }
 

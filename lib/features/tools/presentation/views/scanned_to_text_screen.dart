@@ -9,10 +9,8 @@ import 'package:business_card_scanner/core/widgets/error_widget.dart';
 import 'package:business_card_scanner/core/widgets/popup_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
-import 'package:share_plus/share_plus.dart';
 
 class ScannedToTextScreen extends StatefulWidget {
   final File imageFile;
@@ -75,7 +73,9 @@ class _ScannedToTextScreenState extends State<ScannedToTextScreen> {
   Future<void> _copyText() async {
     final text = _currentText;
     if (text.isEmpty) {
-      CustomSnack.warning('No text to copy', context);
+      if (mounted) {
+        CustomSnack.warning('No text to copy', context);
+      }
       return;
     }
 
@@ -95,12 +95,15 @@ class _ScannedToTextScreenState extends State<ScannedToTextScreen> {
   Future<void> _shareText() async {
     final text = _currentText;
     if (text.isEmpty) {
-      CustomSnack.warning('No text to share', context);
+      if (mounted) {
+        CustomSnack.warning('No text to share', context);
+      }
       return;
     }
 
     try {
-      await Share.share(text);
+      final service = context.read<ExternalAppService>();
+      await service.shareContent(text);
     } catch (e) {
       if (mounted) {
         CustomSnack.warning('Failed to share: ${e.toString()}', context);
@@ -111,21 +114,15 @@ class _ScannedToTextScreenState extends State<ScannedToTextScreen> {
   Future<void> _exportText() async {
     final text = _currentText;
     if (text.isEmpty) {
-      CustomSnack.warning('No text to export', context);
+      if (mounted) {
+        CustomSnack.warning('No text to export', context);
+      }
       return;
     }
 
     try {
-      // Create a temporary file in the system temp directory
-      final tempDir = Directory.systemTemp;
-      final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final file = File('${tempDir.path}/scanned_text_$timestamp.txt');
-      await file.writeAsString(text);
-
-      // Share the file
-      final xFile = XFile(file.path);
-      await Share.shareXFiles([xFile], text: 'Scanned Text Export');
-
+      final service = context.read<ExternalAppService>();
+      await service.exportTextToFile(text);
       if (mounted) {
         CustomSnack.success('Text exported successfully', context);
       }
@@ -148,27 +145,15 @@ class _ScannedToTextScreenState extends State<ScannedToTextScreen> {
               icon: const Icon(Icons.more_horiz),
               itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
                 PopupMenuItem(
-                  onTap: () {
-                    Future.microtask(() {
-                      // _showDeleteConfirmationDialog(context);
-                    });
-                  },
+                  onTap: () => _copyText(),
                   child: const CustomPopupItem(icon: Icons.copy, title: 'Copy'),
                 ),
                 PopupMenuItem(
-                    onTap: () {
-                      // SharePlus.instance.share(ShareParams(
-                      //     text:
-                      //     'Check out & download ${card.name}\'s digital business card - ${card.imageUrl}'));
-                    },
+                    onTap: () => _shareText(),
                     child: const CustomPopupItem(
                         icon: Icons.share_outlined, title: 'Share')),
                 PopupMenuItem(
-                    onTap: () {
-                      // SharePlus.instance.share(ShareParams(
-                      //     text:
-                      //     'Check out & download ${card.name}\'s digital business card - ${card.imageUrl}'));
-                    },
+                    onTap: () => _exportText(),
                     child: const CustomPopupItem(
                         icon: Icons.download_outlined, title: 'Export')),
               ],
@@ -260,92 +245,6 @@ class _ScannedToTextScreenState extends State<ScannedToTextScreen> {
                     ],
                   ),
                 ),
-      bottomNavigationBar: _isProcessing || _errorMessage != null
-          ? null
-          : Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 8,
-                    offset: const Offset(0, -2),
-                  ),
-                ],
-              ),
-              child: SafeArea(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: AppDimensions.spacing16,
-                    vertical: AppDimensions.spacing12,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _buildActionButton(
-                        icon: Icons.copy,
-                        label: 'Copy',
-                        onTap: _copyText,
-                      ),
-                      Container(
-                        width: 1,
-                        height: 40.h,
-                        color: AppColors.borderColor,
-                      ),
-                      _buildActionButton(
-                        icon: Icons.share,
-                        label: 'Share',
-                        onTap: _shareText,
-                      ),
-                      Container(
-                        width: 1,
-                        height: 40.h,
-                        color: AppColors.borderColor,
-                      ),
-                      _buildActionButton(
-                        icon: Icons.download,
-                        label: 'Export',
-                        onTap: _exportText,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-    );
-  }
-
-  Widget _buildActionButton({
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(AppDimensions.radius8),
-      child: Padding(
-        padding: EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacing16,
-          vertical: AppDimensions.spacing8,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              color: AppColors.gray800,
-              size: AppDimensions.icon24,
-            ),
-            Gap(4.h),
-            Text(
-              label,
-              style: AppTextStyles.labelSmall.copyWith(
-                color: AppColors.gray800,
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
