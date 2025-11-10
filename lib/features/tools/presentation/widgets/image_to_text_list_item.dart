@@ -44,6 +44,14 @@ class ImageToTextListItem extends StatelessWidget {
     return text;
   }
 
+  String _getTitle() {
+    final title = item.title?.trim();
+    if (title == null || title.isEmpty) {
+      return 'Untitled Document';
+    }
+    return title;
+  }
+
   @override
   Widget build(BuildContext context) {
     return InkWell(
@@ -69,7 +77,7 @@ class ImageToTextListItem extends StatelessWidget {
             CustomImageHolder(
               imageUrl: item.imageUrl ?? '',
               isCircle: false,
-              height: 90.h,
+              height: 110.h,
               width: 100.w,
               errorWidget: const Icon(
                 Icons.document_scanner_outlined,
@@ -82,6 +90,18 @@ class ImageToTextListItem extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // title
+                  Text(
+                    _getTitle(),
+                    style: AppTextStyles.bodySmall.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.gray900,
+                      fontSize: 16.sp,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Gap(AppDimensions.spacing8),
                   // Preview Text
                   Text(
                     _getPreviewText(item.scannedText),
@@ -89,7 +109,7 @@ class ImageToTextListItem extends StatelessWidget {
                       fontWeight: FontWeight.w500,
                       color: Colors.black,
                     ),
-                    maxLines: 3,
+                    maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                   Gap(AppDimensions.spacing8),
@@ -120,4 +140,3 @@ class ImageToTextListItem extends StatelessWidget {
     );
   }
 }
-

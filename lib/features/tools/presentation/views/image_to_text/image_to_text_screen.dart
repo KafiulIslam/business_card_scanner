@@ -74,74 +74,6 @@ class _ImageToTextScreenState extends State<ImageToTextScreen> {
     }
   }
 
-  void _showItemDetails(item) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: AppColors.surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppDimensions.radius20),
-        ),
-      ),
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.7,
-        minChildSize: 0.5,
-        maxChildSize: 0.95,
-        expand: false,
-        builder: (context, scrollController) => SingleChildScrollView(
-          controller: scrollController,
-          padding: EdgeInsets.all(AppDimensions.spacing16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 40.w,
-                  height: 4.h,
-                  decoration: BoxDecoration(
-                    color: AppColors.gray300,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              Gap(AppDimensions.spacing16),
-              Text(
-                'Scanned Text',
-                style: AppTextStyles.headline4,
-              ),
-              Gap(AppDimensions.spacing12),
-              if (item.imageUrl != null)
-                Container(
-                  height: 200.h,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(AppDimensions.radius12),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(AppDimensions.radius12),
-                    child: Image.network(
-                      item.imageUrl!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Container(
-                        color: AppColors.gray100,
-                        child: const Icon(Icons.image_not_supported),
-                      ),
-                    ),
-                  ),
-                ),
-              Gap(AppDimensions.spacing16),
-              Text(
-                item.scannedText ?? 'No text',
-                style: AppTextStyles.bodyMedium,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -221,7 +153,10 @@ class _ImageToTextScreenState extends State<ImageToTextScreen> {
                   final item = state.items[index];
                   return ImageToTextListItem(
                     item: item,
-                    onTap: () => _showItemDetails(item),
+                    onTap: () => context.push(
+                      Routes.imageToTextDetails,
+                      extra: item,
+                    ),
                   );
                 },
               ),

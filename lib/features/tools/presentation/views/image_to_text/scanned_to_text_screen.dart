@@ -10,12 +10,14 @@ import 'package:business_card_scanner/core/widgets/error_widget.dart';
 import 'package:business_card_scanner/core/widgets/popup_item.dart';
 import 'package:business_card_scanner/features/network/data/services/firebase_storage_service.dart';
 import 'package:business_card_scanner/features/tools/data/services/firebase_image_to_text_service.dart';
+import 'package:business_card_scanner/features/tools/presentation/cubit/image_to_text_cubit.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+import 'package:path/path.dart' as p;
 
 import '../../../../../core/routes/routes.dart';
 
@@ -38,11 +40,15 @@ class _ScannedToTextScreenState extends State<ScannedToTextScreen> {
   bool _isSaving = false;
   String? _errorMessage;
   late TextEditingController _textController;
+  late TextEditingController _titleController;
 
   @override
   void initState() {
     super.initState();
     _textController = TextEditingController();
+    _titleController = TextEditingController(
+      text: _generateDefaultTitle(),
+    );
     _initializeAndRecognize();
   }
 
@@ -73,10 +79,20 @@ class _ScannedToTextScreenState extends State<ScannedToTextScreen> {
   void dispose() {
     _textRecognizer?.close();
     _textController.dispose();
+    _titleController.dispose();
     super.dispose();
   }
 
   String get _currentText => _textController.text;
+  String get _currentTitle => _titleController.text.trim();
+
+  String _generateDefaultTitle() {
+    final fileName = p.basenameWithoutExtension(widget.imageFile.path);
+    if (fileName.isEmpty) {
+      return 'Scanned Document';
+    }
+    return fileName;
+  }
 
   Future<void> _copyText() async {
     final text = _currentText;
@@ -150,6 +166,14 @@ class _ScannedToTextScreenState extends State<ScannedToTextScreen> {
       return;
     }
 
+    final title = _currentTitle;
+    if (title.isEmpty) {
+      if (mounted) {
+        CustomSnack.warning('Please enter a title', context);
+      }
+      return;
+    }
+
     final text = _currentText;
     if (text.isEmpty) {
       if (mounted) {
@@ -192,6 +216,7 @@ class _ScannedToTextScreenState extends State<ScannedToTextScreen> {
       final imageToTextService = context.read<FirebaseImageToTextService>();
       await imageToTextService.saveImageToText(
         imageUrl: imageUrl,
+        title: title,
         scannedText: text,
       );
 
@@ -199,8 +224,12 @@ class _ScannedToTextScreenState extends State<ScannedToTextScreen> {
         setState(() {
           _isSaving = false;
         });
-        context.go(Routes.imageToText);
+        context
+            .read<ImageToTextCubit>()
+            .fetchImageToTextList(user.uid);
         CustomSnack.success('Saved successfully', context);
+        context.go(Routes.imageToText);
+
       }
     } catch (e) {
       if (mounted) {
@@ -251,6 +280,8 @@ class _ScannedToTextScreenState extends State<ScannedToTextScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      _buildTitleField(),
+                      Gap(AppDimensions.spacing24),
                       // Preview Section
                       _buildPreview(),
                       // Result Section
@@ -348,5 +379,37 @@ class _ScannedToTextScreenState extends State<ScannedToTextScreen> {
       ],
     );
   }
-}
 
+  Widget _buildTitleField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Title',
+          style: AppTextStyles.headline4,
+        ),
+        Gap(AppDimensions.spacing12),
+        TextField(
+          controller: _titleController,
+          textInputAction: TextInputAction.done,
+          decoration: InputDecoration(
+            hintText: 'Enter document title',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppDimensions.radius12),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppDimensions.radius12),
+              borderSide: const BorderSide(
+                color: AppColors.primary,
+              ),
+            ),
+            contentPadding: EdgeInsets.symmetric(
+              horizontal: AppDimensions.spacing16,
+              vertical: AppDimensions.spacing12,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}

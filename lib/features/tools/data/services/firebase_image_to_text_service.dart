@@ -14,6 +14,7 @@ class FirebaseImageToTextService {
 
   Future<void> saveImageToText({
     required String imageUrl,
+    required String title,
     required String scannedText,
   }) async {
     try {
@@ -28,6 +29,7 @@ class FirebaseImageToTextService {
       // Prepare data
       final data = {
         'image_url': imageUrl,
+        'title': title,
         'scanned_text': scannedText,
         'uid': user.uid,
         'created_at': Timestamp.fromDate(DateTime.now()),
@@ -40,6 +42,22 @@ class FirebaseImageToTextService {
           .set(data);
     } catch (e) {
       throw Exception('Failed to save image to text: ${e.toString()}');
+    }
+  }
+
+  Future<void> updateImageToText({
+    required String documentId,
+    required String title,
+    required String scannedText,
+  }) async {
+    try {
+      final data = {
+        'title': title,
+        'scanned_text': scannedText,
+      };
+      await _firestore.collection('image_to_text').doc(documentId).update(data);
+    } catch (e) {
+      throw Exception('Failed to update image to text: ${e.toString()}');
     }
   }
 

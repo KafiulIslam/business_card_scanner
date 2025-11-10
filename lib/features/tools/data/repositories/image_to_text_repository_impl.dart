@@ -10,10 +10,25 @@ class ImageToTextRepositoryImpl implements ImageToTextRepository {
   @override
   Future<void> saveImageToText({
     required String imageUrl,
+    required String title,
     required String scannedText,
   }) async {
     await _firebaseImageToTextService.saveImageToText(
       imageUrl: imageUrl,
+      title: title,
+      scannedText: scannedText,
+    );
+  }
+
+  @override
+  Future<void> updateImageToText({
+    required String documentId,
+    required String title,
+    required String scannedText,
+  }) async {
+    await _firebaseImageToTextService.updateImageToText(
+      documentId: documentId,
+      title: title,
       scannedText: scannedText,
     );
   }
