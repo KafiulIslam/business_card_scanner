@@ -14,7 +14,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+
+import '../../../../../core/routes/routes.dart';
 
 class ScannedToTextScreen extends StatefulWidget {
   final File imageFile;
@@ -196,6 +199,7 @@ class _ScannedToTextScreenState extends State<ScannedToTextScreen> {
         setState(() {
           _isSaving = false;
         });
+        context.go(Routes.imageToText);
         CustomSnack.success('Saved successfully', context);
       }
     } catch (e) {

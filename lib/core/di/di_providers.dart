@@ -25,6 +25,10 @@ import 'package:business_card_scanner/features/myCard/domain/use_cases/delete_my
 import 'package:business_card_scanner/features/myCard/presentation/cubit/my_card_cubit.dart';
 import 'package:business_card_scanner/core/services/external_app_service.dart';
 import 'package:business_card_scanner/features/tools/data/services/firebase_image_to_text_service.dart';
+import 'package:business_card_scanner/features/tools/data/repositories/image_to_text_repository_impl.dart';
+import 'package:business_card_scanner/features/tools/domain/repositories/image_to_text_repository.dart';
+import 'package:business_card_scanner/features/tools/domain/use_cases/get_image_to_text_list_use_case.dart';
+import 'package:business_card_scanner/features/tools/presentation/cubit/image_to_text_cubit.dart';
 
 class AppProviders extends StatelessWidget {
   final Widget child;
@@ -86,6 +90,12 @@ class AppProviders extends StatelessWidget {
         RepositoryProvider<FirebaseImageToTextService>(
           create: (_) => FirebaseImageToTextService(),
         ),
+        RepositoryProvider<ImageToTextRepository>(
+          create: (ctx) => ImageToTextRepositoryImpl(ctx.read<FirebaseImageToTextService>()),
+        ),
+        RepositoryProvider<GetImageToTextListUseCase>(
+          create: (ctx) => GetImageToTextListUseCase(ctx.read<ImageToTextRepository>()),
+        ),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -110,6 +120,11 @@ class AppProviders extends StatelessWidget {
               ctx.read<SaveMyCardUseCase>(),
               ctx.read<GetMyCardsUseCase>(),
               ctx.read<DeleteMyCardUseCase>(),
+            ),
+          ),
+          BlocProvider<ImageToTextCubit>(
+            create: (ctx) => ImageToTextCubit(
+              ctx.read<GetImageToTextListUseCase>(),
             ),
           ),
         ],

@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
+import '../../domain/entities/image_to_text_model.dart';
 
 class FirebaseImageToTextService {
   final FirebaseFirestore _firestore;
@@ -39,6 +40,44 @@ class FirebaseImageToTextService {
           .set(data);
     } catch (e) {
       throw Exception('Failed to save image to text: ${e.toString()}');
+    }
+  }
+
+  Future<List<ImageToTextModel>> getImageToTextListByUid(String uid) async {
+    try {
+      QuerySnapshot snapshot;
+      try {
+        // Try with orderBy first
+        snapshot = await _firestore
+            .collection('image_to_text')
+            .where('uid', isEqualTo: uid)
+            .orderBy('created_at', descending: true)
+            .get();
+      } catch (e) {
+        // If orderBy fails (index not created), fetch without orderBy
+        snapshot = await _firestore
+            .collection('image_to_text')
+            .where('uid', isEqualTo: uid)
+            .get();
+      }
+
+      final items = snapshot.docs
+          .map((doc) {
+            final data = doc.data() as Map<String, dynamic>;
+            return ImageToTextModel.fromMap(data, doc.id);
+          })
+          .toList();
+
+      // Sort manually if orderBy wasn't used
+      items.sort((a, b) {
+        final aDate = a.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+        final bDate = b.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+        return bDate.compareTo(aDate);
+      });
+
+      return items;
+    } catch (e) {
+      throw Exception('Failed to fetch image to text list: ${e.toString()}');
     }
   }
 }
