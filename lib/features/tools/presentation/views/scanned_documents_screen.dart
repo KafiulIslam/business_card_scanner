@@ -19,12 +19,15 @@ class ScanDocumentsScreen extends StatelessWidget {
         title: const Text('Scanned Documents'),
       ),
       body: Center(
-        child: InteractiveViewer(
-          minScale: 0.5,
-          maxScale: 4.0,
-          child: Image.file(
-            imageFile,
-            fit: BoxFit.contain,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: InteractiveViewer(
+            minScale: 0.5,
+            maxScale: 4.0,
+            child: Image.file(
+              imageFile,
+              fit: BoxFit.contain,
+            ),
           ),
         ),
       ),

@@ -1,10 +1,10 @@
 import 'dart:io';
-
 import 'package:business_card_scanner/core/services/external_app_service.dart';
 import 'package:business_card_scanner/core/theme/app_colors.dart';
 import 'package:business_card_scanner/core/theme/app_dimensions.dart';
 import 'package:business_card_scanner/core/theme/app_text_style.dart';
 import 'package:business_card_scanner/core/utils/custom_snack.dart';
+import 'package:business_card_scanner/core/widgets/popup_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -139,6 +139,40 @@ class _ScannedToTextScreenState extends State<ScannedToTextScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Scanned To Text'),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16.0),
+            child: PopupMenuButton(
+              icon: const Icon(Icons.more_horiz),
+              itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                PopupMenuItem(
+                  onTap: () {
+                    Future.microtask(() {
+                      // _showDeleteConfirmationDialog(context);
+                    });
+                  },
+                  child: const CustomPopupItem(icon: Icons.copy, title: 'Copy'),
+                ),
+                PopupMenuItem(
+                    onTap: () {
+                      // SharePlus.instance.share(ShareParams(
+                      //     text:
+                      //     'Check out & download ${card.name}\'s digital business card - ${card.imageUrl}'));
+                    },
+                    child: const CustomPopupItem(
+                        icon: Icons.share_outlined, title: 'Share')),
+                PopupMenuItem(
+                    onTap: () {
+                      // SharePlus.instance.share(ShareParams(
+                      //     text:
+                      //     'Check out & download ${card.name}\'s digital business card - ${card.imageUrl}'));
+                    },
+                    child: const CustomPopupItem(
+                        icon: Icons.download_outlined, title: 'Export')),
+              ],
+            ),
+          )
+        ],
       ),
       body: _isProcessing
           ? const Center(
