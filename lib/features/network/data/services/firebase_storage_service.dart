@@ -93,5 +93,46 @@ class FirebaseStorageService {
 
     return downloadUrl.toString();
   }
+
+  Future<String> uploadImageToTextImage(File imageFile, String documentId) async {
+    if (!await imageFile.exists()) {
+      throw Exception('Image file does not exist');
+    }
+
+    final fileSize = await imageFile.length();
+    if (fileSize == 0) {
+      throw Exception('Image file is empty');
+    }
+
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw Exception('User not authenticated');
+    }
+
+    // Read file bytes and use putData (avoids file access issues)
+    final imageBytes = await imageFile.readAsBytes();
+
+    // Detect content type based on file extension
+    final fileExtension = imageFile.path.toLowerCase().split('.').last;
+    final contentType = fileExtension == 'png' ? 'image/png' : 'image/jpeg';
+    final storageExtension = fileExtension == 'png' ? 'png' : 'jpg';
+
+    // Upload to: image_to_text/{userId}/{documentId}.{extension}
+    final ref = _storage
+        .ref()
+        .child('image_to_text')
+        .child(user.uid)
+        .child('$documentId.$storageExtension');
+
+    final metadata = SettableMetadata(
+      contentType: contentType,
+      cacheControl: 'max-age=3600',
+    );
+
+    final snapshot = await ref.putData(imageBytes, metadata);
+    final downloadUrl = await snapshot.ref.getDownloadURL();
+
+    return downloadUrl.toString();
+  }
 }
 

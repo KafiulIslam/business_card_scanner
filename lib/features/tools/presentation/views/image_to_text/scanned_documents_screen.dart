@@ -43,3 +43,4 @@ class ScanDocumentsScreen extends StatelessWidget {
     );
   }
 }
+

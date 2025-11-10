@@ -24,6 +24,7 @@ import 'package:business_card_scanner/features/myCard/domain/use_cases/get_my_ca
 import 'package:business_card_scanner/features/myCard/domain/use_cases/delete_my_card_use_case.dart';
 import 'package:business_card_scanner/features/myCard/presentation/cubit/my_card_cubit.dart';
 import 'package:business_card_scanner/core/services/external_app_service.dart';
+import 'package:business_card_scanner/features/tools/data/services/firebase_image_to_text_service.dart';
 
 class AppProviders extends StatelessWidget {
   final Widget child;
@@ -81,6 +82,9 @@ class AppProviders extends StatelessWidget {
         ),
         RepositoryProvider<ExternalAppService>(
           create: (_) => ExternalAppService(),
+        ),
+        RepositoryProvider<FirebaseImageToTextService>(
+          create: (_) => FirebaseImageToTextService(),
         ),
       ],
       child: MultiBlocProvider(

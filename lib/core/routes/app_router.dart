@@ -12,9 +12,9 @@ import 'package:business_card_scanner/features/network/presentation/views/networ
 import 'package:business_card_scanner/features/onBoard/presentation/views/onboard_screen.dart';
 import 'package:business_card_scanner/features/scanner/presentation/views/create_card_manually_screen.dart';
 import 'package:business_card_scanner/features/scanner/presentation/views/scan_result_screen.dart';
-import 'package:business_card_scanner/features/tools/presentation/views/image_to_text_screen.dart';
-import 'package:business_card_scanner/features/tools/presentation/views/scanned_documents_screen.dart';
-import 'package:business_card_scanner/features/tools/presentation/views/scanned_to_text_screen.dart';
+import 'package:business_card_scanner/features/tools/presentation/views/image_to_text/image_to_text_screen.dart';
+import 'package:business_card_scanner/features/tools/presentation/views/image_to_text/scanned_documents_screen.dart';
+import 'package:business_card_scanner/features/tools/presentation/views/image_to_text/scanned_to_text_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import '../../splash_screen.dart';

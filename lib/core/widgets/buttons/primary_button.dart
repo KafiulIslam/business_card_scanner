@@ -37,7 +37,8 @@ class PrimaryButton extends StatelessWidget {
                 buttonTitle,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: AppTextStyles.bodyMedium.copyWith(color: Colors.white),
+                style: AppTextStyles.headline2
+                    .copyWith(color: Colors.white, fontSize: 16),
               ),
       ),
     );

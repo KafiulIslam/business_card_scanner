@@ -105,3 +105,4 @@ class _ImageToTextScreenState extends State<ImageToTextScreen> {
     );
   }
 }
+
