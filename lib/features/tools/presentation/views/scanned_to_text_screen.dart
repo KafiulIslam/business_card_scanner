@@ -4,6 +4,8 @@ import 'package:business_card_scanner/core/theme/app_colors.dart';
 import 'package:business_card_scanner/core/theme/app_dimensions.dart';
 import 'package:business_card_scanner/core/theme/app_text_style.dart';
 import 'package:business_card_scanner/core/utils/custom_snack.dart';
+import 'package:business_card_scanner/core/widgets/custom_loader.dart';
+import 'package:business_card_scanner/core/widgets/error_widget.dart';
 import 'package:business_card_scanner/core/widgets/popup_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -175,35 +177,11 @@ class _ScannedToTextScreenState extends State<ScannedToTextScreen> {
         ],
       ),
       body: _isProcessing
-          ? const Center(
-              child: CircularProgressIndicator(
-                color: AppColors.primary,
-              ),
-            )
+          ? const CustomLoader()
           : _errorMessage != null
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.error_outline,
-                        size: 64.w,
-                        color: AppColors.error,
-                      ),
-                      Gap(AppDimensions.spacing16),
-                      Text(
-                        'Error processing image',
-                        style: AppTextStyles.headline4,
-                      ),
-                      Gap(AppDimensions.spacing8),
-                      Text(
-                        _errorMessage!,
-                        style: AppTextStyles.bodyMedium,
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                )
+              ? CustomErrorWidget(
+                  errorTitle: 'Error processing image',
+                  errorMessage: _errorMessage ?? '')
               : SingleChildScrollView(
                   padding: EdgeInsets.all(AppDimensions.spacing16),
                   child: Column(
