@@ -11,6 +11,7 @@ abstract class ImageToTextRepository {
     required String title,
     required String scannedText,
   });
+  Future<void> deleteImageToText(String documentId);
   Future<List<ImageToTextModel>> getImageToTextListByUid(String uid);
 }
 

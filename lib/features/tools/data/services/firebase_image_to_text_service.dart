@@ -61,6 +61,14 @@ class FirebaseImageToTextService {
     }
   }
 
+  Future<void> deleteImageToText(String documentId) async {
+    try {
+      await _firestore.collection('image_to_text').doc(documentId).delete();
+    } catch (e) {
+      throw Exception('Failed to delete image to text: ${e.toString()}');
+    }
+  }
+
   Future<List<ImageToTextModel>> getImageToTextListByUid(String uid) async {
     try {
       QuerySnapshot snapshot;

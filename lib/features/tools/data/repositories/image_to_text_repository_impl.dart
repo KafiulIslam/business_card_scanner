@@ -34,6 +34,11 @@ class ImageToTextRepositoryImpl implements ImageToTextRepository {
   }
 
   @override
+  Future<void> deleteImageToText(String documentId) async {
+    await _firebaseImageToTextService.deleteImageToText(documentId);
+  }
+
+  @override
   Future<List<ImageToTextModel>> getImageToTextListByUid(String uid) async {
     return await _firebaseImageToTextService.getImageToTextListByUid(uid);
   }

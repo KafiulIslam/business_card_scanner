@@ -12,7 +12,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
@@ -31,7 +30,7 @@ class _ImageToTextScreenState extends State<ImageToTextScreen> {
   @override
   void initState() {
     super.initState();
-    //_fetchImageToTextList();
+    _fetchImageToTextList();
   }
 
   void _fetchImageToTextList() {
@@ -56,9 +55,9 @@ class _ImageToTextScreenState extends State<ImageToTextScreen> {
         // Navigate to ScanDocumentsScreen with the picked image
         await context.push(Routes.scanDocuments, extra: imageFile);
         // Refresh list when coming back
-        if (mounted) {
-          _fetchImageToTextList();
-        }
+        // if (mounted) {
+        //   _fetchImageToTextList();
+        // }
       }
     } catch (e) {
       if (mounted) {
@@ -124,10 +123,12 @@ class _ImageToTextScreenState extends State<ImageToTextScreen> {
                   final item = state.items[index];
                   return ImageToTextListItem(
                     item: item,
-                    onTap: () => context.push(
-                      Routes.imageToTextDetails,
-                      extra: item,
-                    ),
+                    onTap: () async {
+                      await context.push(
+                        Routes.imageToTextDetails,
+                        extra: item,
+                      );
+                    },
                   );
                 },
               ),

@@ -12,6 +12,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../../core/routes/routes.dart';
 import '../../../../../core/widgets/popup_item.dart';
 
 class ImageToTextDetailsScreen extends StatefulWidget {
@@ -34,15 +36,14 @@ class _ImageToTextDetailsScreenState extends State<ImageToTextDetailsScreen> {
   late String _initialText;
   bool _hasChanges = false;
   bool _isSubmitting = false;
+  bool _isDeleting = false;
 
-  String get _title => _currentTitle.isNotEmpty
-      ? _currentTitle
-      : 'Untitled Document';
+  String get _title =>
+      _currentTitle.isNotEmpty ? _currentTitle : 'Untitled Document';
 
   String get _currentTitle => _titleController.text.trim();
 
   String get _text => _textController.text;
-
 
   void _copyText(BuildContext context) {
     if (_text.trim().isEmpty) {
@@ -121,11 +122,11 @@ class _ImageToTextDetailsScreenState extends State<ImageToTextDetailsScreen> {
 
     try {
       await context.read<ImageToTextCubit>().updateImageToText(
-        documentId: documentId,
-        title: currentTitle,
-        scannedText: rawText,
-        uid: user.uid,
-      );
+            documentId: documentId,
+            title: currentTitle,
+            scannedText: rawText,
+            uid: user.uid,
+          );
       if (!mounted) return;
       CustomSnack.success('Document updated successfully', context);
       setState(() {
@@ -140,6 +141,47 @@ class _ImageToTextDetailsScreenState extends State<ImageToTextDetailsScreen> {
         _isSubmitting = false;
       });
       CustomSnack.warning('Failed to update: $e', context);
+    }
+  }
+
+  Future<void> _confirmDelete(BuildContext context) async {
+    if (_isDeleting) return;
+
+    final documentId = widget.item.documentId;
+    if (documentId == null || documentId.isEmpty) {
+      CustomSnack.warning('Document reference not found', context);
+      return;
+    }
+
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      CustomSnack.warning('Please login to delete', context);
+      return;
+    }
+
+    setState(() {
+      _isDeleting = true;
+    });
+
+    try {
+      await context.read<ImageToTextCubit>().deleteImageToText(
+            documentId: documentId,
+            uid: user.uid,
+          );
+      if (!mounted) return;
+      await context.read<ImageToTextCubit>().fetchImageToTextList(user.uid);
+      if (!mounted) return;
+      setState(() {
+        _isDeleting = false;
+      });
+      CustomSnack.success('Document deleted successfully', context);
+      context.push(Routes.imageToText);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isDeleting = false;
+      });
+      CustomSnack.warning('Failed to delete: $e', context);
     }
   }
 
@@ -164,8 +206,7 @@ class _ImageToTextDetailsScreenState extends State<ImageToTextDetailsScreen> {
   }
 
   void _handleFieldChange() {
-    final hasChanges =
-        _titleController.text.trim() != _initialTitle ||
+    final hasChanges = _titleController.text.trim() != _initialTitle ||
         _textController.text != _initialText;
     if (hasChanges != _hasChanges) {
       setState(() {
@@ -191,8 +232,7 @@ class _ImageToTextDetailsScreenState extends State<ImageToTextDetailsScreen> {
                       _copyText(context);
                     });
                   },
-                  child:
-                      const CustomPopupItem(icon: Icons.copy, title: 'Copy'),
+                  child: const CustomPopupItem(icon: Icons.copy, title: 'Copy'),
                 ),
                 PopupMenuItem(
                     onTap: () {
@@ -210,6 +250,14 @@ class _ImageToTextDetailsScreenState extends State<ImageToTextDetailsScreen> {
                     },
                     child: const CustomPopupItem(
                         icon: Icons.download_outlined, title: 'Export')),
+                PopupMenuItem(
+                    onTap: () {
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        _confirmDelete(context);
+                      });
+                    },
+                    child: const CustomPopupItem(
+                        icon: Icons.delete_forever_outlined, title: 'Delete')),
               ],
             ),
           ),
@@ -310,8 +358,8 @@ class _ImageToTextDetailsScreenState extends State<ImageToTextDetailsScreen> {
   }
 
   Widget _buildUpdateButton() {
-    final hasDocumentId = widget.item.documentId != null &&
-        widget.item.documentId!.isNotEmpty;
+    final hasDocumentId =
+        widget.item.documentId != null && widget.item.documentId!.isNotEmpty;
     final isEnabled = hasDocumentId && _hasChanges && !_isSubmitting;
 
     return IgnorePointer(
@@ -326,6 +374,4 @@ class _ImageToTextDetailsScreenState extends State<ImageToTextDetailsScreen> {
       ),
     );
   }
-
-
 }
