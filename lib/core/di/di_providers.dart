@@ -31,6 +31,12 @@ import 'package:business_card_scanner/features/tools/domain/use_cases/get_image_
 import 'package:business_card_scanner/features/tools/domain/use_cases/update_image_to_text_use_case.dart';
 import 'package:business_card_scanner/features/tools/domain/use_cases/delete_image_to_text_use_case.dart';
 import 'package:business_card_scanner/features/tools/presentation/cubit/image_to_text_cubit.dart';
+import 'package:business_card_scanner/features/tools/data/services/firebase_pdf_service.dart';
+import 'package:business_card_scanner/features/tools/data/repositories/pdf_repository_impl.dart';
+import 'package:business_card_scanner/features/tools/domain/repositories/pdf_repository.dart';
+import 'package:business_card_scanner/features/tools/domain/use_cases/get_pdf_documents_use_case.dart';
+import 'package:business_card_scanner/features/tools/domain/use_cases/upload_pdf_document_use_case.dart';
+import 'package:business_card_scanner/features/tools/presentation/cubit/convert_pdf_cubit.dart';
 
 class AppProviders extends StatelessWidget {
   final Widget child;
@@ -95,6 +101,12 @@ class AppProviders extends StatelessWidget {
         RepositoryProvider<ImageToTextRepository>(
           create: (ctx) => ImageToTextRepositoryImpl(ctx.read<FirebaseImageToTextService>()),
         ),
+        RepositoryProvider<FirebasePdfService>(
+          create: (_) => FirebasePdfService(),
+        ),
+        RepositoryProvider<PdfRepository>(
+          create: (ctx) => PdfRepositoryImpl(ctx.read<FirebasePdfService>()),
+        ),
         RepositoryProvider<GetImageToTextListUseCase>(
           create: (ctx) => GetImageToTextListUseCase(ctx.read<ImageToTextRepository>()),
         ),
@@ -103,6 +115,12 @@ class AppProviders extends StatelessWidget {
         ),
         RepositoryProvider<DeleteImageToTextUseCase>(
           create: (ctx) => DeleteImageToTextUseCase(ctx.read<ImageToTextRepository>()),
+        ),
+        RepositoryProvider<GetPdfDocumentsUseCase>(
+          create: (ctx) => GetPdfDocumentsUseCase(ctx.read<PdfRepository>()),
+        ),
+        RepositoryProvider<UploadPdfDocumentUseCase>(
+          create: (ctx) => UploadPdfDocumentUseCase(ctx.read<PdfRepository>()),
         ),
       ],
       child: MultiBlocProvider(
@@ -135,6 +153,12 @@ class AppProviders extends StatelessWidget {
               ctx.read<GetImageToTextListUseCase>(),
               ctx.read<UpdateImageToTextUseCase>(),
               ctx.read<DeleteImageToTextUseCase>(),
+            ),
+          ),
+          BlocProvider<ConvertPdfCubit>(
+            create: (ctx) => ConvertPdfCubit(
+              ctx.read<GetPdfDocumentsUseCase>(),
+              ctx.read<UploadPdfDocumentUseCase>(),
             ),
           ),
         ],
