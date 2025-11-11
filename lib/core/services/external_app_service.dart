@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -8,7 +9,24 @@ import '../../features/network/domain/entities/network_model.dart';
 
 
 class ExternalAppService {
+  final _imagePicker = ImagePicker();
 
+  // Pick image from camera or gallery
+  Future<File?> pickImage(ImageSource source, {int imageQuality = 85}) async {
+    try {
+      final XFile? pickedFile = await _imagePicker.pickImage(
+        source: source,
+        imageQuality: imageQuality,
+      );
+
+      if (pickedFile != null) {
+        return File(pickedFile.path);
+      }
+      return null;
+    } catch (e) {
+      throw Exception('Failed to pick image: ${e.toString()}');
+    }
+  }
 
   // make direct phone call with card phone number
   Future<void> makePhoneCall(String? phone) async {

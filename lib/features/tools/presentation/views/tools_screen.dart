@@ -16,15 +16,13 @@ class ToolsScreen extends StatelessWidget {
           child: Column(
             children: [
               ToolCard(
-                  onTap: () {
-                    context.push(Routes.imageToText);
-                  },
+                  onTap: () => context.push(Routes.imageToText),
                   icon: Icons.document_scanner_outlined,
                   title: 'Image to Text',
                   subtitle: 'Convert image to editable text'),
               const Gap(16),
               ToolCard(
-                  onTap: () {},
+                  onTap: () => context.push(Routes.convertPdf),
                   icon: Icons.picture_as_pdf_outlined,
                   title: 'Convert PDF',
                   subtitle: 'Convert documents into PDFs'),

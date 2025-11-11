@@ -12,6 +12,7 @@ import 'package:business_card_scanner/features/network/presentation/views/networ
 import 'package:business_card_scanner/features/onBoard/presentation/views/onboard_screen.dart';
 import 'package:business_card_scanner/features/scanner/presentation/views/create_card_manually_screen.dart';
 import 'package:business_card_scanner/features/scanner/presentation/views/scan_result_screen.dart';
+import 'package:business_card_scanner/features/tools/presentation/views/convertPdf/convert_pdf_screen.dart';
 import 'package:business_card_scanner/features/tools/presentation/views/image_to_text/image_to_text_screen.dart';
 import 'package:business_card_scanner/features/tools/presentation/views/image_to_text/scanned_documents_screen.dart';
 import 'package:business_card_scanner/features/tools/presentation/views/image_to_text/scanned_to_text_screen.dart';
@@ -280,6 +281,18 @@ final GoRouter router = GoRouter(
           child: ImageToTextDetailsScreen(item: item),
           transitionsBuilder:
               (context, animation, secondaryAnimation, child) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+        );
+      },
+    ),
+    GoRoute(
+      path: Routes.convertPdf,
+      pageBuilder: (context, state) {
+        return CustomTransitionPage(
+          key: state.pageKey,
+          child: const ConvertPdfScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return FadeTransition(opacity: animation, child: child);
           },
         );
