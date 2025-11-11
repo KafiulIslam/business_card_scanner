@@ -29,6 +29,7 @@ class Routes {
   static const String scannedToText = '/scanned-to-text';
   static const String imageToTextDetails = '/image-to-text-details';
   static const String convertPdf = '/convert-pdf';
+  static const String signDocument = '/sign-doc';
 
 
   //!======================== User Routes ========================

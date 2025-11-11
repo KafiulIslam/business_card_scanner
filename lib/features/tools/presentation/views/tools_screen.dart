@@ -28,7 +28,7 @@ class ToolsScreen extends StatelessWidget {
                   subtitle: 'Convert documents into PDFs'),
               const Gap(16),
               ToolCard(
-                  onTap: () {},
+                  onTap: () => context.push(Routes.signDocument),
                   icon: Icons.edit_note_outlined,
                   title: 'Sign Document',
                   subtitle: 'Sign documents digitally'),
