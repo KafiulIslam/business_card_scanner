@@ -145,31 +145,29 @@ class _SignCanvasScreenState extends State<SignCanvasScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.scaffoldBG,
       appBar: AppBar(
-        backgroundColor: AppColors.surface,
         elevation: 0,
         title: Text(
           widget.documentTitle,
           style: AppTextStyles.headline4.copyWith(color: AppColors.gray900),
         ),
         actions: [
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: AppDimensions.spacing8),
-            child: Center(
-              child: Text(
-                '${widget.currentPage}/$_totalPages',
-                style: AppTextStyles.bodyMedium.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.gray700,
-                ),
-              ),
-            ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.check, color: AppColors.secondary),
-            onPressed: _finishSigning,
-          ),
+          // Padding(
+          //   padding: EdgeInsets.symmetric(horizontal: AppDimensions.spacing8),
+          //   child: Center(
+          //     child: Text(
+          //       '${widget.currentPage}/$_totalPages',
+          //       style: AppTextStyles.bodyMedium.copyWith(
+          //         fontWeight: FontWeight.w600,
+          //         color: AppColors.gray700,
+          //       ),
+          //     ),
+          //   ),
+          // ),
+          // IconButton(
+          //   icon: const Icon(Icons.check, color: AppColors.secondary),
+          //   onPressed: _finishSigning,
+          // ),
         ],
       ),
       body: Padding(
@@ -183,6 +181,7 @@ class _SignCanvasScreenState extends State<SignCanvasScreen> {
                 aspectRatio: 3 / 4,
                 child: Stack(
                   children: [
+                    // pdf preview
                     Container(
                       decoration: BoxDecoration(
                         color: Colors.white,
@@ -212,6 +211,7 @@ class _SignCanvasScreenState extends State<SignCanvasScreen> {
                       ),
                     ),
                     if (_signatureImage != null)
+                      // signature
                       _DraggableResizableSignature(
                         signatureBytes: _signatureImage!,
                         position: _signaturePosition,
@@ -253,6 +253,21 @@ class _SignCanvasScreenState extends State<SignCanvasScreen> {
                               );
                             }
                           });
+                        },
+                        onClear: () {
+                          setState(() {
+                            _signatureImage = null;
+                            _signaturePosition = Offset.zero;
+                            _signatureScale = 1.0;
+                            _baseSignatureWidth = 0.0;
+                          });
+                          // Show options to add new signature
+                          _addSignature();
+                        },
+                        onConfirm: () {
+                          // Signature is confirmed/selected
+                          // You can add any confirmation logic here if needed
+                          CustomSnack.success('Signature confirmed', context);
                         },
                       ),
                   ],
@@ -580,6 +595,8 @@ class _DraggableResizableSignature extends StatefulWidget {
   final ValueChanged<Offset> onPositionChanged;
   final ValueChanged<double> onScaleChanged;
   final ValueChanged<double> onInitialized;
+  final VoidCallback? onClear;
+  final VoidCallback? onConfirm;
 
   const _DraggableResizableSignature({
     required this.signatureBytes,
@@ -590,6 +607,8 @@ class _DraggableResizableSignature extends StatefulWidget {
     required this.onPositionChanged,
     required this.onScaleChanged,
     required this.onInitialized,
+    this.onClear,
+    this.onConfirm,
   });
 
   @override
@@ -627,17 +646,44 @@ class _DraggableResizableSignatureState
   }
 
   Offset _clampPosition(Offset position, double width, double height) {
-    final maxX = widget.containerSize.width - width;
-    final maxY = widget.containerSize.height - height;
+    // Ensure signature doesn't go beyond PDF preview boundaries
+    // Clamp width and height to container size first
+    final clampedWidth = width.clamp(0.0, widget.containerSize.width);
+    final clampedHeight = height.clamp(0.0, widget.containerSize.height);
 
+    // Calculate maximum allowed position
+    final maxX = widget.containerSize.width - clampedWidth;
+    final maxY = widget.containerSize.height - clampedHeight;
+
+    // Clamp position to ensure signature stays within bounds
     return Offset(
-      position.dx.clamp(0.0, maxX),
-      position.dy.clamp(0.0, maxY),
+      position.dx.clamp(0.0, maxX.clamp(0.0, widget.containerSize.width)),
+      position.dy.clamp(0.0, maxY.clamp(0.0, widget.containerSize.height)),
     );
   }
 
   double _clampScale(double scale) {
-    return scale.clamp(0.3, 3.0); // Min 30%, Max 300%
+    // Calculate maximum scale based on PDF preview size
+    // Signature should never exceed PDF preview dimensions
+    final baseWidth = widget.baseWidth;
+    if (baseWidth <= 0)
+      return scale.clamp(0.3, 3.0); // Fallback if baseWidth not set
+
+    final baseHeight = baseWidth * 0.5; // Approximate aspect ratio
+
+    // Calculate max scale that fits within PDF preview area
+    // Use the smaller constraint to ensure signature fits both width and height
+    final maxScaleByWidth = widget.containerSize.width / baseWidth;
+    final maxScaleByHeight = widget.containerSize.height / baseHeight;
+    final maxScale = (maxScaleByWidth < maxScaleByHeight
+        ? maxScaleByWidth
+        : maxScaleByHeight);
+
+    // Ensure max scale is at least 0.3 (30%) - this ensures signature can always be resized
+    final clampedMaxScale = maxScale < 0.3 ? 0.3 : maxScale;
+
+    // Clamp scale between 30% and the calculated maximum
+    return scale.clamp(0.3, clampedMaxScale);
   }
 
   void _onScaleStart(ScaleStartDetails details) {
@@ -670,10 +716,11 @@ class _DraggableResizableSignatureState
       final dy =
           focalPoint.dy - (focalPoint.dy - _initialPosition.dy) * scaleFactor;
 
+      // Ensure signature doesn't exceed canvas bounds after scaling
       final newPosition = _clampPosition(
         Offset(dx, dy),
-        newWidth,
-        newHeight,
+        newWidth.clamp(0.0, widget.containerSize.width),
+        newHeight.clamp(0.0, widget.containerSize.height),
       );
 
       setState(() {
@@ -691,10 +738,11 @@ class _DraggableResizableSignatureState
       final currentWidth = widget.baseWidth * _currentScale;
       final currentHeight = currentWidth * 0.5;
 
+      // Ensure signature doesn't exceed canvas bounds during dragging
       final clampedPosition = _clampPosition(
         newPosition,
-        currentWidth,
-        currentHeight,
+        currentWidth.clamp(0.0, widget.containerSize.width),
+        currentHeight.clamp(0.0, widget.containerSize.height),
       );
 
       setState(() {
@@ -714,6 +762,7 @@ class _DraggableResizableSignatureState
   @override
   Widget build(BuildContext context) {
     final currentWidth = widget.baseWidth * _currentScale;
+    final currentHeight = currentWidth * 0.5; // Approximate aspect ratio
 
     // Initialize position callback
     if (!_isInitialized && currentWidth > 0 && widget.baseWidth > 0) {
@@ -749,20 +798,132 @@ class _DraggableResizableSignatureState
     return Positioned(
       left: displayPosition.dx,
       top: displayPosition.dy,
-      child: GestureDetector(
-        onScaleStart: _onScaleStart,
-        onScaleUpdate: _onScaleUpdate,
-        onScaleEnd: _onScaleEnd,
-        child: Transform.scale(
-          scale: _currentScale,
-          child: SizedBox(
-            width: widget.baseWidth,
-            child: Image.memory(
-              widget.signatureBytes,
-              fit: BoxFit.contain,
+      child: Stack(
+        children: [
+          // Signature with border
+          Container(
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: AppColors.primary,
+                width: 1,
+              ),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: GestureDetector(
+              onScaleStart: _onScaleStart,
+              onScaleUpdate: _onScaleUpdate,
+              onScaleEnd: _onScaleEnd,
+              child: Transform.scale(
+                scale: _currentScale,
+                child: SizedBox(
+                  width: widget.baseWidth,
+                  child: Image.memory(
+                    widget.signatureBytes,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              ),
             ),
           ),
-        ),
+          // Control buttons
+          // Top-left: Resize handle
+          Positioned(
+            // left: -12,
+            // top: -12,
+            left: 0,
+            top: 0,
+            child: GestureDetector(
+              onPanUpdate: (details) {
+                // Handle resize from top-left corner
+                final delta = details.delta;
+                final scaleDelta =
+                    1.0 + (delta.dx + delta.dy) / (currentWidth * 2);
+                final newScale = _currentScale * scaleDelta;
+                final clampedScale = _clampScale(newScale);
+
+                // Adjust position to keep bottom-right corner fixed
+                final newWidth = widget.baseWidth * clampedScale;
+                final newHeight = newWidth * 0.5;
+
+                final newPosition = Offset(
+                  displayPosition.dx + (currentWidth - newWidth),
+                  displayPosition.dy + (currentHeight - newHeight),
+                );
+
+                final clampedPosition = _clampPosition(
+                  newPosition,
+                  newWidth,
+                  newHeight,
+                );
+
+                setState(() {
+                  _currentScale = clampedScale;
+                  _currentPosition = clampedPosition;
+                });
+
+                widget.onScaleChanged(clampedScale);
+                widget.onPositionChanged(clampedPosition);
+              },
+              child: Container(
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    //shape: BoxShape.circle,
+                    borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(4),
+                        bottomRight: Radius.circular(4))),
+                child: const Icon(
+                  Icons.open_in_full,
+                  color: Colors.white,
+                  size: 14,
+                ),
+              ),
+            ),
+          ),
+          // Top-right: Confirm button
+          Positioned(
+            right: -12,
+            top: -12,
+            child: GestureDetector(
+              onTap: widget.onConfirm,
+              child: Container(
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.check,
+                  color: Colors.white,
+                  size: 14,
+                ),
+              ),
+            ),
+          ),
+          // Bottom-right: Clear button
+          Positioned(
+            right: -12,
+            bottom: -12,
+            child: GestureDetector(
+              onTap: widget.onClear,
+              child: Container(
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.close,
+                  color: Colors.white,
+                  size: 14,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
