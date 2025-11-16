@@ -82,10 +82,10 @@ class _SignCanvasScreenState extends State<SignCanvasScreen> {
     if (signatureBytes != null && mounted) {
       setState(() {
         _signatureImage = signatureBytes;
-        // Reset position and scale when new signature is added
-        _signaturePosition = Offset.zero;
         _signatureScale = 1.0;
         _baseSignatureWidth = 0.0; // Reset to recalculate initial position
+        _signaturePosition =
+            Offset.zero; // Will be set in onInitialized callback
       });
       CustomSnack.success('Signature added', context);
     }
@@ -234,22 +234,25 @@ class _SignCanvasScreenState extends State<SignCanvasScreen> {
                           });
                         },
                         onInitialized: (width) {
-                          if (_baseSignatureWidth == 0) {
-                            setState(() {
+                          setState(() {
+                            if (_baseSignatureWidth == 0) {
                               _baseSignatureWidth = width;
-                              // Set initial position to bottom-right if not set
-                              if (_signaturePosition == Offset.zero) {
-                                _signaturePosition = Offset(
-                                  constraints.maxWidth -
-                                      width -
-                                      AppDimensions.spacing32,
-                                  constraints.maxHeight -
-                                      (width * 0.5) -
-                                      AppDimensions.spacing32,
-                                );
-                              }
-                            });
-                          }
+                            }
+                            // Set initial position to bottom-right
+                            if (_signaturePosition == Offset.zero) {
+                              final signatureHeight = width * 0.5;
+                              _signaturePosition = Offset(
+                                (constraints.maxWidth -
+                                        width -
+                                        AppDimensions.spacing32)
+                                    .clamp(0.0, double.infinity),
+                                (constraints.maxHeight -
+                                        signatureHeight -
+                                        AppDimensions.spacing32)
+                                    .clamp(0.0, double.infinity),
+                              );
+                            }
+                          });
                         },
                       ),
                   ],
@@ -522,19 +525,19 @@ class _SignaturePadSheetState extends State<_SignaturePadSheet> {
             textAlign: TextAlign.center,
           ),
           SizedBox(height: AppDimensions.spacing16),
-          RepaintBoundary(
-            key: _signatureKey,
-            child: Container(
-              height: 200,
-              decoration: BoxDecoration(
-                color: AppColors.gray100,
-                borderRadius: BorderRadius.circular(AppDimensions.radius16),
-                border: Border.all(color: AppColors.gray300),
-              ),
-              child: GestureDetector(
-                onPanStart: (details) => _addPoint(details.localPosition),
-                onPanUpdate: (details) => _addPoint(details.localPosition),
-                onPanEnd: (_) => _endStroke(),
+          Container(
+            height: 200,
+            decoration: BoxDecoration(
+              color: AppColors.gray100,
+              borderRadius: BorderRadius.circular(AppDimensions.radius16),
+              border: Border.all(color: AppColors.gray300),
+            ),
+            child: GestureDetector(
+              onPanStart: (details) => _addPoint(details.localPosition),
+              onPanUpdate: (details) => _addPoint(details.localPosition),
+              onPanEnd: (_) => _endStroke(),
+              child: RepaintBoundary(
+                key: _signatureKey,
                 child: CustomPaint(
                   painter: _SignaturePainter(points: _points),
                   size: Size.infinite,
@@ -712,7 +715,8 @@ class _DraggableResizableSignatureState
   Widget build(BuildContext context) {
     final currentWidth = widget.baseWidth * _currentScale;
 
-    if (!_isInitialized && currentWidth > 0) {
+    // Initialize position callback
+    if (!_isInitialized && currentWidth > 0 && widget.baseWidth > 0) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           widget.onInitialized(currentWidth);
@@ -723,27 +727,36 @@ class _DraggableResizableSignatureState
       });
     }
 
+    // Sync position from widget if it changed
+    if (widget.position != _currentPosition && widget.position != Offset.zero) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() {
+            _currentPosition = widget.position;
+            _initialPosition = widget.position;
+          });
+        }
+      });
+    }
+
+    // Use widget position if current is zero, otherwise use current
+    final displayPosition = _currentPosition == Offset.zero
+        ? (widget.position != Offset.zero
+            ? widget.position
+            : const Offset(100, 100))
+        : _currentPosition;
+
     return Positioned(
-      left: _currentPosition.dx,
-      top: _currentPosition.dy,
+      left: displayPosition.dx,
+      top: displayPosition.dy,
       child: GestureDetector(
         onScaleStart: _onScaleStart,
         onScaleUpdate: _onScaleUpdate,
         onScaleEnd: _onScaleEnd,
         child: Transform.scale(
           scale: _currentScale,
-          child: Container(
+          child: SizedBox(
             width: widget.baseWidth,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(4),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
             child: Image.memory(
               widget.signatureBytes,
               fit: BoxFit.contain,
