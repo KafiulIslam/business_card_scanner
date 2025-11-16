@@ -30,6 +30,7 @@ class Routes {
   static const String imageToTextDetails = '/image-to-text-details';
   static const String convertPdf = '/convert-pdf';
   static const String signDocument = '/sign-doc';
+  static const String signCanvas = '/sign-canvas';
 
 
   //!======================== User Routes ========================

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:image_picker/image_picker.dart';
@@ -25,6 +26,40 @@ class ExternalAppService {
       return null;
     } catch (e) {
       throw Exception('Failed to pick image: ${e.toString()}');
+    }
+  }
+
+  // Pick PDF file
+  Future<PdfPickResult?> pickPdfFile() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf'],
+        allowMultiple: false,
+      );
+
+      if (result == null || result.files.single.path == null) {
+        return null;
+      }
+
+      final pickedPath = result.files.single.path!;
+      final extension = result.files.single.extension?.toLowerCase() ?? '';
+
+      if (extension != 'pdf') {
+        throw Exception('Please select a PDF file.');
+      }
+
+      final pdfFile = File(pickedPath);
+      if (!await pdfFile.exists()) {
+        throw Exception('Selected file does not exist.');
+      }
+
+      return PdfPickResult(
+        file: pdfFile,
+        fileName: result.files.single.name,
+      );
+    } catch (e) {
+      throw Exception('Failed to pick PDF file: ${e.toString()}');
     }
   }
 
@@ -244,5 +279,15 @@ class ExternalAppService {
       throw Exception('Failed to export text: ${e.toString()}');
     }
   }
+}
 
+// Result class for PDF file picking
+class PdfPickResult {
+  final File file;
+  final String fileName;
+
+  PdfPickResult({
+    required this.file,
+    required this.fileName,
+  });
 }

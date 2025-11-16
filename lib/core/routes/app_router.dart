@@ -19,6 +19,7 @@ import 'package:business_card_scanner/features/tools/presentation/views/image_to
 import 'package:business_card_scanner/features/tools/presentation/views/image_to_text/image_to_text_details_screen.dart';
 import 'package:business_card_scanner/features/tools/domain/entities/image_to_text_model.dart';
 import 'package:business_card_scanner/features/tools/presentation/views/sign_document/sign_document_screen.dart';
+import 'package:business_card_scanner/features/tools/presentation/views/sign_document/sign_canvas_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import '../../splash_screen.dart';
@@ -304,6 +305,32 @@ final GoRouter router = GoRouter(
         return CustomTransitionPage(
           key: state.pageKey,
           child: const SignDocumentScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+        );
+      },
+    ),
+    GoRoute(
+      path: Routes.signCanvas,
+      pageBuilder: (context, state) {
+        final args = state.extra as Map<String, dynamic>?;
+        if (args == null) {
+          return CustomTransitionPage(
+            key: state.pageKey,
+            child: const SizedBox(),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              return FadeTransition(opacity: animation, child: child);
+            },
+          );
+        }
+        return CustomTransitionPage(
+          key: state.pageKey,
+          child: SignCanvasScreen(
+            documentTitle: args['documentTitle'] as String? ?? 'Sign Document',
+            pdfFilePath: args['pdfFilePath'] as String?,
+          ),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return FadeTransition(opacity: animation, child: child);
           },

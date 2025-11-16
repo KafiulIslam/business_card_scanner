@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -7,12 +8,14 @@ import 'package:business_card_scanner/core/theme/app_text_style.dart';
 import 'package:business_card_scanner/core/utils/custom_snack.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
 class SignCanvasScreen extends StatefulWidget {
   final String documentTitle;
   final int currentPage;
   final int totalPages;
   final Widget? preview;
+  final String? pdfFilePath;
 
   const SignCanvasScreen({
     super.key,
@@ -20,6 +23,7 @@ class SignCanvasScreen extends StatefulWidget {
     this.currentPage = 1,
     this.totalPages = 1,
     this.preview,
+    this.pdfFilePath,
   });
 
   @override
@@ -28,6 +32,19 @@ class SignCanvasScreen extends StatefulWidget {
 
 class _SignCanvasScreenState extends State<SignCanvasScreen> {
   Uint8List? _signatureImage;
+  int _totalPages = 1;
+
+  @override
+  void initState() {
+    super.initState();
+    _totalPages = widget.totalPages;
+  }
+
+  void _onDocumentLoaded(PdfDocumentLoadedDetails details) {
+    setState(() {
+      _totalPages = details.document.pages.count;
+    });
+  }
 
   Future<void> _addSignature() async {
     final signature = await showModalBottomSheet<Uint8List>(
@@ -72,7 +89,7 @@ class _SignCanvasScreenState extends State<SignCanvasScreen> {
             padding: EdgeInsets.symmetric(horizontal: AppDimensions.spacing8),
             child: Center(
               child: Text(
-                '${widget.currentPage}/${widget.totalPages}',
+                '${widget.currentPage}/$_totalPages',
                 style: AppTextStyles.bodyMedium.copyWith(
                   fontWeight: FontWeight.w600,
                   color: AppColors.gray700,
@@ -102,8 +119,8 @@ class _SignCanvasScreenState extends State<SignCanvasScreen> {
                             Container(
                               decoration: BoxDecoration(
                                 color: Colors.white,
-                                borderRadius:
-                                    BorderRadius.circular(AppDimensions.radius24),
+                                borderRadius: BorderRadius.circular(
+                                    AppDimensions.radius24),
                                 boxShadow: [
                                   BoxShadow(
                                     color: Colors.black.withOpacity(0.05),
@@ -114,11 +131,17 @@ class _SignCanvasScreenState extends State<SignCanvasScreen> {
                               ),
                               padding: EdgeInsets.all(AppDimensions.spacing24),
                               child: ClipRRect(
-                                borderRadius:
-                                    BorderRadius.circular(AppDimensions.radius20),
+                                borderRadius: BorderRadius.circular(
+                                    AppDimensions.radius20),
                                 child: Container(
                                   color: AppColors.surface,
-                                  child: widget.preview ?? _DefaultDocumentPreview(),
+                                  child: widget.pdfFilePath != null
+                                      ? _PdfPreview(
+                                          pdfFilePath: widget.pdfFilePath!,
+                                          onDocumentLoaded: _onDocumentLoaded,
+                                        )
+                                      : (widget.preview ??
+                                          _DefaultDocumentPreview()),
                                 ),
                               ),
                             ),
@@ -154,13 +177,16 @@ class _SignCanvasScreenState extends State<SignCanvasScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.secondary,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(AppDimensions.radius16),
+                      borderRadius:
+                          BorderRadius.circular(AppDimensions.radius16),
                     ),
                   ),
                   onPressed: _addSignature,
                   icon: const Icon(Icons.add, color: Colors.white),
                   label: Text(
-                    _signatureImage == null ? 'Add Signature' : 'Replace Signature',
+                    _signatureImage == null
+                        ? 'Add Signature'
+                        : 'Replace Signature',
                     style: AppTextStyles.buttonMedium,
                   ),
                 ),
@@ -169,6 +195,28 @@ class _SignCanvasScreenState extends State<SignCanvasScreen> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _PdfPreview extends StatelessWidget {
+  final String pdfFilePath;
+  final Function(PdfDocumentLoadedDetails)? onDocumentLoaded;
+
+  const _PdfPreview({
+    required this.pdfFilePath,
+    this.onDocumentLoaded,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SfPdfViewer.file(
+      File(pdfFilePath),
+      onDocumentLoaded: onDocumentLoaded,
+      enableDoubleTapZooming: true,
+      enableTextSelection: false,
+      canShowScrollHead: false,
+      canShowScrollStatus: false,
     );
   }
 }
@@ -196,7 +244,8 @@ class _DefaultDocumentPreview extends StatelessWidget {
                     padding: EdgeInsets.only(bottom: AppDimensions.spacing12),
                     child: Text(
                       'This is a sample paragraph demonstrating how the document preview will appear. Replace this with actual document content.',
-                      style: AppTextStyles.bodyMedium.copyWith(color: AppColors.gray700),
+                      style: AppTextStyles.bodyMedium
+                          .copyWith(color: AppColors.gray700),
                     ),
                   ),
                 ),
@@ -244,8 +293,8 @@ class _SignaturePadSheetState extends State<_SignaturePadSheet> {
       return;
     }
 
-    final boundary =
-        _signatureKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+    final boundary = _signatureKey.currentContext?.findRenderObject()
+        as RenderRepaintBoundary?;
     if (boundary == null) {
       Navigator.of(context).pop();
       return;
