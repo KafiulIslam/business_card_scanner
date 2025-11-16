@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
-
 import 'package:business_card_scanner/core/theme/app_colors.dart';
 import 'package:business_card_scanner/core/theme/app_dimensions.dart';
 import 'package:business_card_scanner/core/theme/app_text_style.dart';
@@ -75,10 +74,6 @@ class _SignCanvasScreenState extends State<SignCanvasScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.surface,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).maybePop(),
-        ),
         title: Text(
           widget.documentTitle,
           style: AppTextStyles.headline4.copyWith(color: AppColors.gray900),
@@ -103,96 +98,86 @@ class _SignCanvasScreenState extends State<SignCanvasScreen> {
           ),
         ],
       ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: Padding(
-                padding: EdgeInsets.all(AppDimensions.spacing20),
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    return Center(
-                      child: AspectRatio(
-                        aspectRatio: 3 / 4,
-                        child: Stack(
-                          children: [
-                            Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(
-                                    AppDimensions.radius24),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.05),
-                                    blurRadius: 20,
-                                    offset: const Offset(0, 10),
-                                  ),
-                                ],
-                              ),
-                              padding: EdgeInsets.all(AppDimensions.spacing24),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(
-                                    AppDimensions.radius20),
-                                child: Container(
-                                  color: AppColors.surface,
-                                  child: widget.pdfFilePath != null
-                                      ? _PdfPreview(
-                                          pdfFilePath: widget.pdfFilePath!,
-                                          onDocumentLoaded: _onDocumentLoaded,
-                                        )
-                                      : (widget.preview ??
-                                          _DefaultDocumentPreview()),
-                                ),
-                              ),
-                            ),
-                            if (_signatureImage != null)
-                              Positioned(
-                                bottom: AppDimensions.spacing32,
-                                right: AppDimensions.spacing32,
-                                child: Image.memory(
-                                  _signatureImage!,
-                                  width: constraints.maxWidth * 0.35,
-                                  fit: BoxFit.contain,
-                                ),
-                              ),
-                          ],
+      body: Padding(
+        padding: EdgeInsets.symmetric(
+            horizontal: AppDimensions.spacing16,
+            vertical: AppDimensions.spacing8),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return Center(
+              child: AspectRatio(
+                aspectRatio: 3 / 4,
+                child: Stack(
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius:
+                            BorderRadius.circular(AppDimensions.radius24),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 20,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
+                      ),
+                      // padding: EdgeInsets.all(AppDimensions.spacing24),
+                      child: ClipRRect(
+                        borderRadius:
+                            BorderRadius.circular(AppDimensions.radius20),
+                        child: Container(
+                          color: AppColors.surface,
+                          child: widget.pdfFilePath != null
+                              ? _PdfPreview(
+                                  pdfFilePath: widget.pdfFilePath!,
+                                  onDocumentLoaded: _onDocumentLoaded,
+                                )
+                              : (widget.preview ?? _DefaultDocumentPreview()),
                         ),
                       ),
-                    );
-                  },
-                ),
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.fromLTRB(
-                AppDimensions.spacing20,
-                0,
-                AppDimensions.spacing20,
-                AppDimensions.spacing24,
-              ),
-              child: SizedBox(
-                width: double.infinity,
-                height: AppDimensions.buttonHeight56,
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.secondary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(AppDimensions.radius16),
                     ),
-                  ),
-                  onPressed: _addSignature,
-                  icon: const Icon(Icons.add, color: Colors.white),
-                  label: Text(
-                    _signatureImage == null
-                        ? 'Add Signature'
-                        : 'Replace Signature',
-                    style: AppTextStyles.buttonMedium,
-                  ),
+                    if (_signatureImage != null)
+                      Positioned(
+                        bottom: AppDimensions.spacing32,
+                        right: AppDimensions.spacing32,
+                        child: Image.memory(
+                          _signatureImage!,
+                          width: constraints.maxWidth * 0.35,
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                  ],
                 ),
               ),
+            );
+          },
+        ),
+      ),
+      bottomNavigationBar: Padding(
+        padding: EdgeInsets.fromLTRB(
+          AppDimensions.spacing20,
+          0,
+          AppDimensions.spacing20,
+          AppDimensions.spacing24,
+        ),
+        child: SizedBox(
+          width: double.infinity,
+          height: AppDimensions.buttonHeight56,
+          child: ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.secondary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppDimensions.radius16),
+              ),
             ),
-          ],
+            onPressed: _addSignature,
+            icon: const Icon(Icons.add, color: Colors.white),
+            label: Text(
+              _signatureImage == null ? 'Add Signature' : 'Replace Signature',
+              style: AppTextStyles.buttonMedium,
+            ),
+          ),
         ),
       ),
     );
