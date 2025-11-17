@@ -3,6 +3,7 @@ import 'package:business_card_scanner/core/routes/routes.dart';
 import 'package:business_card_scanner/features/auth/presentation/views/login/login_screen.dart';
 import 'package:business_card_scanner/features/auth/presentation/views/signUp/sign_up_screen.dart';
 import 'package:business_card_scanner/features/dashboard/dashboard_screen.dart';
+import 'package:business_card_scanner/features/menu/presentation/views/privacy_policy_screen.dart';
 import 'package:business_card_scanner/features/myCard/presentation/views/choose_template_screen.dart';
 import 'package:business_card_scanner/features/myCard/presentation/views/edit_template_details.dart';
 import 'package:business_card_scanner/features/myCard/presentation/views/edit_my_card.dart';
@@ -331,6 +332,20 @@ final GoRouter router = GoRouter(
             documentTitle: args['documentTitle'] as String? ?? 'Sign Document',
             pdfFilePath: args['pdfFilePath'] as String?,
           ),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+        );
+      },
+    ),
+
+    //!======================== Menu Routes =======================
+    GoRoute(
+      path: Routes.privacyPolicy,
+      pageBuilder: (context, state) {
+        return CustomTransitionPage(
+          key: state.pageKey,
+          child: const PrivacyPolicyScreen(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return FadeTransition(opacity: animation, child: child);
           },

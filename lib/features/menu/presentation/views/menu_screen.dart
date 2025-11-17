@@ -1,3 +1,4 @@
+import 'package:business_card_scanner/core/routes/app_router.dart';
 import 'package:business_card_scanner/core/theme/app_colors.dart';
 import 'package:business_card_scanner/core/theme/app_dimensions.dart';
 import 'package:business_card_scanner/core/theme/app_text_style.dart';
@@ -5,6 +6,9 @@ import 'package:business_card_scanner/features/menu/presentation/widgets/menu_ti
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../../../core/routes/routes.dart';
 
 class MenuScreen extends StatelessWidget {
   const MenuScreen({super.key});
@@ -34,8 +38,10 @@ class MenuScreen extends StatelessWidget {
               ),
               Gap(AppDimensions.spacing32),
               // privacy
-              const MenuTile(
-                  icon: Icons.privacy_tip_outlined, title: 'Privacy Policy'),
+              MenuTile(
+                  onTap: () => context.push(Routes.privacyPolicy),
+                  icon: Icons.privacy_tip_outlined,
+                  title: 'Privacy Policy'),
               Gap(AppDimensions.spacing16),
               // Terms
               const MenuTile(icon: Icons.rule, title: 'Terms of Services'),

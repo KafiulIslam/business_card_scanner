@@ -33,13 +33,7 @@ class Routes {
   static const String signCanvas = '/sign-canvas';
 
 
-  //!======================== User Routes ========================
-  static const String userForgetPassword = '/user/forgetPassword';
-  static const String userRegisterPersonalInfo = '/user/registerPersonalInfo';
-
-
-
-
-
+  //!======================== Menu Routes ========================
+  static const String privacyPolicy = '/privacy-policy';
 
 }
