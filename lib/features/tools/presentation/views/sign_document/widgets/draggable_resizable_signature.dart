@@ -38,6 +38,7 @@ class _DraggableResizableSignatureState
   Offset _currentPosition = Offset.zero;
   double _currentScale = 1.0;
   bool _isInitialized = false;
+  bool _isLocked = false; // Track if signature is locked
 
   // Store initial values for scale gesture
   Offset _initialPosition = Offset.zero;
@@ -105,6 +106,9 @@ class _DraggableResizableSignatureState
   }
 
   void _onScaleStart(ScaleStartDetails details) {
+    // Don't allow gestures when locked
+    if (_isLocked) return;
+    
     // Store initial values when gesture starts
     _initialPosition = _currentPosition;
     _initialScale = _currentScale;
@@ -112,6 +116,9 @@ class _DraggableResizableSignatureState
   }
 
   void _onScaleUpdate(ScaleUpdateDetails details) {
+    // Don't allow gestures when locked
+    if (_isLocked) return;
+    
     // Handle both panning (when scale is close to 1.0) and scaling
     final scaleDelta = details.scale;
     final isScaling =
@@ -217,95 +224,116 @@ class _DraggableResizableSignatureState
       top: displayPosition.dy,
       child: Stack(
         children: [
-          // Signature with border
-          Container(
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: AppColors.primary,
-                width: 1,
-              ),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: GestureDetector(
-              onScaleStart: _onScaleStart,
-              onScaleUpdate: _onScaleUpdate,
-              onScaleEnd: _onScaleEnd,
-              child: Transform.scale(
-                scale: _currentScale,
-                child: SizedBox(
-                  width: widget.baseWidth,
-                  child: Image.memory(
-                    widget.signatureBytes,
-                    fit: BoxFit.contain,
+          // Signature with conditional border
+          GestureDetector(
+            onDoubleTap: () {
+              // Double-tap to unlock
+              setState(() {
+                _isLocked = false;
+              });
+            },
+            child: Container(
+              decoration: _isLocked
+                  ? null
+                  : BoxDecoration(
+                      border: Border.all(
+                        color: AppColors.primary,
+                        width: 1,
+                      ),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+              child: GestureDetector(
+                onScaleStart: _onScaleStart,
+                onScaleUpdate: _onScaleUpdate,
+                onScaleEnd: _onScaleEnd,
+                child: Transform.scale(
+                  scale: _currentScale,
+                  child: SizedBox(
+                    width: widget.baseWidth,
+                    child: Image.memory(
+                      widget.signatureBytes,
+                      fit: BoxFit.contain,
+                    ),
                   ),
                 ),
               ),
             ),
           ),
-          // Control buttons
-          // Top-left: Increase size button
-          Positioned(
-            left: 0,
-            top: 0,
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () {
-                // Increase signature size by 5px
-                final currentWidth = widget.baseWidth * _currentScale;
-                final newWidth = currentWidth + 5.0;
-                final newScale = newWidth / widget.baseWidth;
-                final clampedScale = _clampScale(newScale);
+          // Control buttons - only show when not locked
+          if (!_isLocked) ...[
+            // Top-left: Increase size button
+            Positioned(
+              left: 0,
+              top: 0,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () {
+                  // Increase signature size by 5px
+                  final currentWidth = widget.baseWidth * _currentScale;
+                  final newWidth = currentWidth + 5.0;
+                  final newScale = newWidth / widget.baseWidth;
+                  final clampedScale = _clampScale(newScale);
 
-                // Calculate new dimensions
-                final finalWidth = widget.baseWidth * clampedScale;
-                final finalHeight = finalWidth * 0.5;
+                  // Calculate new dimensions
+                  final finalWidth = widget.baseWidth * clampedScale;
+                  final finalHeight = finalWidth * 0.5;
 
-                // Calculate old dimensions
-                final oldWidth = widget.baseWidth * _currentScale;
-                final oldHeight = oldWidth * 0.5;
+                  // Calculate old dimensions
+                  final oldWidth = widget.baseWidth * _currentScale;
+                  final oldHeight = oldWidth * 0.5;
 
-                // Adjust position to keep bottom-right corner fixed
-                final newPosition = Offset(
-                  _currentPosition.dx + (oldWidth - finalWidth),
-                  _currentPosition.dy + (oldHeight - finalHeight),
-                );
+                  // Adjust position to keep bottom-right corner fixed
+                  final newPosition = Offset(
+                    _currentPosition.dx + (oldWidth - finalWidth),
+                    _currentPosition.dy + (oldHeight - finalHeight),
+                  );
 
-                final clampedPosition = _clampPosition(
-                  newPosition,
-                  finalWidth,
-                  finalHeight,
-                );
+                  final clampedPosition = _clampPosition(
+                    newPosition,
+                    finalWidth,
+                    finalHeight,
+                  );
 
-                setState(() {
-                  _currentScale = clampedScale;
-                  _currentPosition = clampedPosition;
-                });
+                  setState(() {
+                    _currentScale = clampedScale;
+                    _currentPosition = clampedPosition;
+                  });
 
-                widget.onScaleChanged(clampedScale);
-                widget.onPositionChanged(clampedPosition);
-              },
-              child: Container(
-                width: 20,
-                height: 20,
-                decoration: const BoxDecoration(
-                    color: AppColors.primary,
-                    borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(4),
-                        bottomRight: Radius.circular(4))),
-                child: const Icon(
-                  Icons.add,
-                  color: Colors.white,
-                  size: 10,
+                  widget.onScaleChanged(clampedScale);
+                  widget.onPositionChanged(clampedPosition);
+                },
+                child: Container(
+                  width: 20,
+                  height: 20,
+                  decoration: const BoxDecoration(
+                      color: AppColors.primary,
+                      borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(4),
+                          bottomRight: Radius.circular(4))),
+                  child: const Icon(
+                    Icons.add,
+                    color: Colors.white,
+                    size: 10,
+                  ),
                 ),
               ),
             ),
-          ),
-          // Top-right: Confirm button
-          Positioned(
-            right: 0,
-            top: 0,
-            child: GestureDetector(
-                onTap: widget.onConfirm,
+            // Top-right: Lock/Confirm button
+            Positioned(
+              right: 0,
+              top: 0,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () {
+                  // Lock the signature
+                  setState(() {
+                    _isLocked = true;
+                  });
+                  // Also call the onConfirm callback if provided
+                  if (widget.onConfirm != null) {
+                    widget.onConfirm!();
+                  }
+                },
                 child: Container(
                   width: 20,
                   height: 20,
@@ -319,87 +347,90 @@ class _DraggableResizableSignatureState
                     color: Colors.white,
                     size: 10,
                   ),
-                )),
-          ),
-          // Bottom-right: Decrease size button
-          Positioned(
-            right: 0,
-            bottom: 0,
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () {
-                // Decrease signature size by 5px
-                final currentWidth = widget.baseWidth * _currentScale;
-                final newWidth = (currentWidth - 5.0).clamp(1.0, double.infinity);
-                final newScale = newWidth / widget.baseWidth;
-                final clampedScale = _clampScale(newScale);
-
-                // Calculate new dimensions
-                final finalWidth = widget.baseWidth * clampedScale;
-                final finalHeight = finalWidth * 0.5;
-
-                // Calculate old dimensions
-                final oldWidth = widget.baseWidth * _currentScale;
-                final oldHeight = oldWidth * 0.5;
-
-                // Adjust position to keep bottom-right corner fixed
-                final newPosition = Offset(
-                  _currentPosition.dx + (oldWidth - finalWidth),
-                  _currentPosition.dy + (oldHeight - finalHeight),
-                );
-
-                final clampedPosition = _clampPosition(
-                  newPosition,
-                  finalWidth,
-                  finalHeight,
-                );
-
-                setState(() {
-                  _currentScale = clampedScale;
-                  _currentPosition = clampedPosition;
-                });
-
-                widget.onScaleChanged(clampedScale);
-                widget.onPositionChanged(clampedPosition);
-              },
-              child: Container(
-                width: 20,
-                height: 20,
-                decoration: const BoxDecoration(
-                    color: AppColors.primary,
-                    borderRadius: BorderRadius.only(
-                        bottomRight: Radius.circular(4),
-                        topLeft: Radius.circular(4))),
-                child: const Icon(
-                  Icons.remove,
-                  color: Colors.white,
-                  size: 10,
                 ),
               ),
             ),
-          ),
-          // Bottom-left: Clear button
-          Positioned(
-            left: 0,
-            bottom: 0,
-            child: GestureDetector(
-              onTap: widget.onClear,
-              child: Container(
-                width: 20,
-                height: 20,
-                decoration: const BoxDecoration(
-                    color: AppColors.primary,
-                    borderRadius: BorderRadius.only(
-                        bottomLeft: Radius.circular(4),
-                        topRight: Radius.circular(4))),
-                child: const Icon(
-                  Icons.clear,
-                  color: Colors.white,
-                  size: 10,
+            // Bottom-right: Decrease size button
+            Positioned(
+              right: 0,
+              bottom: 0,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () {
+                  // Decrease signature size by 5px
+                  final currentWidth = widget.baseWidth * _currentScale;
+                  final newWidth = (currentWidth - 5.0).clamp(1.0, double.infinity);
+                  final newScale = newWidth / widget.baseWidth;
+                  final clampedScale = _clampScale(newScale);
+
+                  // Calculate new dimensions
+                  final finalWidth = widget.baseWidth * clampedScale;
+                  final finalHeight = finalWidth * 0.5;
+
+                  // Calculate old dimensions
+                  final oldWidth = widget.baseWidth * _currentScale;
+                  final oldHeight = oldWidth * 0.5;
+
+                  // Adjust position to keep bottom-right corner fixed
+                  final newPosition = Offset(
+                    _currentPosition.dx + (oldWidth - finalWidth),
+                    _currentPosition.dy + (oldHeight - finalHeight),
+                  );
+
+                  final clampedPosition = _clampPosition(
+                    newPosition,
+                    finalWidth,
+                    finalHeight,
+                  );
+
+                  setState(() {
+                    _currentScale = clampedScale;
+                    _currentPosition = clampedPosition;
+                  });
+
+                  widget.onScaleChanged(clampedScale);
+                  widget.onPositionChanged(clampedPosition);
+                },
+                child: Container(
+                  width: 20,
+                  height: 20,
+                  decoration: const BoxDecoration(
+                      color: AppColors.primary,
+                      borderRadius: BorderRadius.only(
+                          bottomRight: Radius.circular(4),
+                          topLeft: Radius.circular(4))),
+                  child: const Icon(
+                    Icons.remove,
+                    color: Colors.white,
+                    size: 10,
+                  ),
                 ),
               ),
             ),
-          ),
+            // Bottom-left: Clear button
+            Positioned(
+              left: 0,
+              bottom: 0,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: widget.onClear,
+                child: Container(
+                  width: 20,
+                  height: 20,
+                  decoration: const BoxDecoration(
+                      color: AppColors.primary,
+                      borderRadius: BorderRadius.only(
+                          bottomLeft: Radius.circular(4),
+                          topRight: Radius.circular(4))),
+                  child: const Icon(
+                    Icons.clear,
+                    color: Colors.white,
+                    size: 10,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
