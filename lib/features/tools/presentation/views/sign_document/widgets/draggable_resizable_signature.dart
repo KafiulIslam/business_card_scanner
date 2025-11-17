@@ -108,7 +108,7 @@ class _DraggableResizableSignatureState
   void _onScaleStart(ScaleStartDetails details) {
     // Don't allow gestures when locked
     if (_isLocked) return;
-    
+
     // Store initial values when gesture starts
     _initialPosition = _currentPosition;
     _initialScale = _currentScale;
@@ -118,7 +118,7 @@ class _DraggableResizableSignatureState
   void _onScaleUpdate(ScaleUpdateDetails details) {
     // Don't allow gestures when locked
     if (_isLocked) return;
-    
+
     // Handle both panning (when scale is close to 1.0) and scaling
     final scaleDelta = details.scale;
     final isScaling =
