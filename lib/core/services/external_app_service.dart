@@ -279,6 +279,20 @@ class ExternalAppService {
       throw Exception('Failed to export text: ${e.toString()}');
     }
   }
+
+  // Future<void> shareText(String text, {String? subject}) async {
+  //   if (text.isEmpty) {
+  //     throw Exception('Nothing to share.');
+  //   }
+  //   try {
+  //     await Share.share(
+  //       text,
+  //       subject: subject,
+  //     );
+  //   } catch (e) {
+  //     throw Exception('Failed to share: ${e.toString()}');
+  //   }
+  // }
 }
 
 // Result class for PDF file picking

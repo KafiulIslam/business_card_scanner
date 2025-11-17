@@ -7,6 +7,7 @@ class DraggableResizableSignature extends StatefulWidget {
   final Offset position;
   final double scale;
   final double baseWidth;
+  final double imageAspectRatio;
   final Size containerSize;
   final ValueChanged<Offset> onPositionChanged;
   final ValueChanged<double> onScaleChanged;
@@ -20,6 +21,7 @@ class DraggableResizableSignature extends StatefulWidget {
     required this.position,
     required this.scale,
     required this.baseWidth,
+    required this.imageAspectRatio,
     required this.containerSize,
     required this.onPositionChanged,
     required this.onScaleChanged,
@@ -44,6 +46,9 @@ class _DraggableResizableSignatureState
   Offset _initialPosition = Offset.zero;
   double _initialScale = 1.0;
   Offset _initialFocalPoint = Offset.zero;
+
+  double get _aspectRatio =>
+      widget.imageAspectRatio > 0 ? widget.imageAspectRatio : 0.5;
 
 
   @override
@@ -88,7 +93,7 @@ class _DraggableResizableSignatureState
     if (baseWidth <= 0)
       return scale.clamp(0.3, 3.0); // Fallback if baseWidth not set
 
-    final baseHeight = baseWidth * 0.5; // Approximate aspect ratio
+    final baseHeight = baseWidth * _aspectRatio; // Actual aspect ratio
 
     // Calculate max scale that fits within PDF preview area
     // Use the smaller constraint to ensure signature fits both width and height
@@ -133,7 +138,7 @@ class _DraggableResizableSignatureState
       final focalPoint = details.localFocalPoint;
 
       final newWidth = widget.baseWidth * clampedScale;
-      final newHeight = newWidth * 0.5;
+      final newHeight = newWidth * _aspectRatio;
 
       // Calculate new position to keep focal point fixed during scaling
       final dx =
@@ -161,7 +166,7 @@ class _DraggableResizableSignatureState
       final newPosition = _initialPosition + delta;
 
       final currentWidth = widget.baseWidth * _currentScale;
-      final currentHeight = currentWidth * 0.5;
+      final currentHeight = currentWidth * _aspectRatio;
 
       // Ensure signature doesn't exceed canvas bounds during dragging
       final clampedPosition = _clampPosition(
@@ -276,11 +281,11 @@ class _DraggableResizableSignatureState
 
                   // Calculate new dimensions
                   final finalWidth = widget.baseWidth * clampedScale;
-                  final finalHeight = finalWidth * 0.5;
+                final finalHeight = finalWidth * _aspectRatio;
 
                   // Calculate old dimensions
                   final oldWidth = widget.baseWidth * _currentScale;
-                  final oldHeight = oldWidth * 0.5;
+                final oldHeight = oldWidth * _aspectRatio;
 
                   // Adjust position to keep bottom-right corner fixed
                   final newPosition = Offset(
@@ -365,11 +370,11 @@ class _DraggableResizableSignatureState
 
                   // Calculate new dimensions
                   final finalWidth = widget.baseWidth * clampedScale;
-                  final finalHeight = finalWidth * 0.5;
+                final finalHeight = finalWidth * _aspectRatio;
 
                   // Calculate old dimensions
                   final oldWidth = widget.baseWidth * _currentScale;
-                  final oldHeight = oldWidth * 0.5;
+                final oldHeight = oldWidth * _aspectRatio;
 
                   // Adjust position to keep bottom-right corner fixed
                   final newPosition = Offset(

@@ -6,11 +6,17 @@ import 'package:business_card_scanner/core/theme/app_colors.dart';
 import 'package:business_card_scanner/core/theme/app_dimensions.dart';
 import 'package:business_card_scanner/core/theme/app_text_style.dart';
 import 'package:business_card_scanner/core/utils/custom_snack.dart';
+import 'package:business_card_scanner/core/widgets/popup_item.dart';
 import 'package:business_card_scanner/features/tools/presentation/views/sign_document/widgets/draggable_resizable_signature.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fb;
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:syncfusion_flutter_pdf/pdf.dart' as sfpdf;
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
 class SignCanvasScreen extends StatefulWidget {
@@ -35,24 +41,13 @@ class SignCanvasScreen extends StatefulWidget {
 
 class _SignCanvasScreenState extends State<SignCanvasScreen> {
   Uint8List? _signatureImage;
-  int _totalPages = 1;
-
   // Signature position and scale state
   Offset _signaturePosition = Offset.zero;
   double _signatureScale = 1.0;
   double _baseSignatureWidth = 0.0;
-
-  @override
-  void initState() {
-    super.initState();
-    _totalPages = widget.totalPages;
-  }
-
-  void _onDocumentLoaded(PdfDocumentLoadedDetails details) {
-    setState(() {
-      _totalPages = details.document.pages.count;
-    });
-  }
+  double _signatureAspectRatio = 0.5;
+  Size _pdfCanvasSize = Size.zero;
+  bool _isSavingSignedPdf = false;
 
   Future<void> _addSignature() async {
     // Show bottom sheet with signature options
@@ -81,8 +76,11 @@ class _SignCanvasScreenState extends State<SignCanvasScreen> {
     }
 
     if (signatureBytes != null && mounted) {
+      final aspectRatio = await _getImageAspectRatio(signatureBytes);
+      if (!mounted) return;
       setState(() {
         _signatureImage = signatureBytes;
+        _signatureAspectRatio = aspectRatio;
         _signatureScale = 1.0;
         _baseSignatureWidth = 0.0; // Reset to recalculate initial position
         _signaturePosition =
@@ -101,6 +99,21 @@ class _SignCanvasScreenState extends State<SignCanvasScreen> {
         return const _SignaturePadSheet();
       },
     );
+  }
+
+  Future<double> _getImageAspectRatio(Uint8List bytes) async {
+    try {
+      final codec = await ui.instantiateImageCodec(bytes);
+      final frame = await codec.getNextFrame();
+      final image = frame.image;
+      final ratio = image.width == 0
+          ? 0.5
+          : image.height.toDouble() / image.width.toDouble();
+      image.dispose();
+      return ratio.isFinite && ratio > 0 ? ratio : 0.5;
+    } catch (_) {
+      return 0.5;
+    }
   }
 
   Future<Uint8List?> _pickSignatureFromCamera() async {
@@ -143,6 +156,202 @@ class _SignCanvasScreenState extends State<SignCanvasScreen> {
     Navigator.of(context).pop(_signatureImage);
   }
 
+  Future<void> _onSignatureMenuSelected(_SignatureMenuAction action) async {
+    switch (action) {
+      case _SignatureMenuAction.save:
+        await _saveSignedPdf();
+        break;
+      case _SignatureMenuAction.download:
+        await _downloadSignedPdf();
+        break;
+    }
+  }
+
+  Future<Uint8List?> _generateSignedPdfBytes() async {
+    if (widget.pdfFilePath == null) {
+      CustomSnack.warning('No PDF file available to download.', context);
+      return null;
+    }
+    if (_signatureImage == null) {
+      CustomSnack.warning('Please add a signature before proceeding.', context);
+      return null;
+    }
+    if (_pdfCanvasSize == Size.zero) {
+      CustomSnack.warning(
+        'Signature size information is missing. Please adjust the signature and try again.',
+        context,
+      );
+      return null;
+    }
+
+    sfpdf.PdfDocument? document;
+    try {
+      final originalFile = File(widget.pdfFilePath!);
+      if (!await originalFile.exists()) {
+        CustomSnack.warning('Original PDF file not found.', context);
+        return null;
+      }
+
+      final bytes = await originalFile.readAsBytes();
+      document = sfpdf.PdfDocument(inputBytes: bytes);
+      if (document.pages.count == 0) {
+        CustomSnack.warning('PDF has no pages to sign.', context);
+        return null;
+      }
+
+      final page = document.pages[0];
+      final pageSize = page.getClientSize();
+
+      final previewWidth = _pdfCanvasSize.width;
+      final previewHeight = _pdfCanvasSize.height;
+      if (previewWidth == 0 || previewHeight == 0) {
+        CustomSnack.warning('Unable to determine preview size.', context);
+        return null;
+      }
+
+      final fallbackWidth = _pdfCanvasSize.width * 0.35;
+      final baseWidth =
+          _baseSignatureWidth > 0 ? _baseSignatureWidth : fallbackWidth;
+      final signatureWidthPreview = baseWidth * _signatureScale;
+      final signatureHeightPreview =
+          signatureWidthPreview * _signatureAspectRatio;
+
+      final scaleX = pageSize.width / previewWidth;
+      final scaleY = pageSize.height / previewHeight;
+
+      final pdfX = _signaturePosition.dx * scaleX;
+      final pdfY = _signaturePosition.dy * scaleY;
+      final pdfWidth = signatureWidthPreview * scaleX;
+      final pdfHeight = signatureHeightPreview * scaleY;
+
+      final pdfImage = sfpdf.PdfBitmap(_signatureImage!);
+      page.graphics.drawImage(
+        pdfImage,
+        ui.Rect.fromLTWH(pdfX, pdfY, pdfWidth, pdfHeight),
+      );
+
+      final outputBytes = await document.save();
+      return Uint8List.fromList(outputBytes);
+    } catch (e) {
+      if (mounted) {
+        CustomSnack.warning('Failed to prepare signed PDF: $e', context);
+      }
+      return null;
+    } finally {
+      document?.dispose();
+    }
+  }
+
+  Future<void> _downloadSignedPdf() async {
+    final outputBytes = await _generateSignedPdfBytes();
+    if (outputBytes == null) {
+      return;
+    }
+
+    try {
+      final directory = await _resolveDownloadDirectory();
+      final signedFile = File('${directory.path}/${_generateSignedFileName()}');
+      await signedFile.writeAsBytes(outputBytes, flush: true);
+
+      if (!mounted) return;
+      CustomSnack.success(
+        'Signed PDF downloaded to ${signedFile.path}',
+        context,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      CustomSnack.warning('Failed to download PDF: $e', context);
+    }
+  }
+
+  Future<void> _saveSignedPdf() async {
+    if (_isSavingSignedPdf) {
+      CustomSnack.warning(
+          'Please wait, saving is already in progress.', context);
+      return;
+    }
+
+    final user = fb.FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      CustomSnack.warning(
+          'Please login to save your signed document.', context);
+      return;
+    }
+
+    setState(() {
+      _isSavingSignedPdf = true;
+    });
+
+    try {
+      final outputBytes = await _generateSignedPdfBytes();
+      if (outputBytes == null) {
+        return;
+      }
+
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final storageRef = FirebaseStorage.instance
+          .ref()
+          .child('signed_docs')
+          .child(user.uid)
+          .child('signed_$timestamp.pdf');
+
+      final metadata = SettableMetadata(contentType: 'application/pdf');
+      await storageRef.putData(outputBytes, metadata);
+      final downloadUrl = await storageRef.getDownloadURL();
+
+      await FirebaseFirestore.instance.collection('signed_docs').add({
+        'title': widget.documentTitle,
+        'pdf_url': downloadUrl,
+        'uid': user.uid,
+        'created_at': Timestamp.fromDate(DateTime.now()),
+      });
+
+      if (mounted) {
+        CustomSnack.success('Signed PDF saved successfully.', context);
+      }
+    } catch (e) {
+      if (mounted) {
+        CustomSnack.warning('Failed to save signed PDF: $e', context);
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSavingSignedPdf = false;
+        });
+      }
+    }
+  }
+
+  Future<Directory> _resolveDownloadDirectory() async {
+    if (Platform.isAndroid) {
+      final directories =
+          await getExternalStorageDirectories(type: StorageDirectory.downloads);
+      if (directories != null && directories.isNotEmpty) {
+        return directories.first;
+      }
+      final fallback = await getExternalStorageDirectory();
+      if (fallback != null) {
+        return fallback;
+      }
+    } else if (Platform.isIOS) {
+      return await getApplicationDocumentsDirectory();
+    } else {
+      final downloadsDirectory = await getDownloadsDirectory();
+      if (downloadsDirectory != null) {
+        return downloadsDirectory;
+      }
+    }
+
+    return await getApplicationDocumentsDirectory();
+  }
+
+  String _generateSignedFileName() {
+    final sanitized =
+        widget.documentTitle.replaceAll(RegExp(r'[^a-zA-Z0-9_\-]'), '_').trim();
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    return '${sanitized.isEmpty ? 'document' : sanitized}_signed_$timestamp.pdf';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -153,6 +362,46 @@ class _SignCanvasScreenState extends State<SignCanvasScreen> {
           style: AppTextStyles.headline4.copyWith(color: AppColors.gray900),
         ),
         actions: [
+          if (_signatureImage != null) ...[
+            Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Container(
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.black),
+                ),
+                child: Center(
+                  child: PopupMenuButton<_SignatureMenuAction>(
+                    onSelected: _onSignatureMenuSelected,
+                    icon: const Icon(
+                      Icons.more_horiz_rounded,
+                      color: Colors.black,
+                      size: 14,
+                    ),
+                    itemBuilder: (BuildContext context) =>
+                        <PopupMenuEntry<_SignatureMenuAction>>[
+                      const PopupMenuItem(
+                        value: _SignatureMenuAction.save,
+                        child: CustomPopupItem(
+                          icon: Icons.save,
+                          title: 'Save',
+                        ),
+                      ),
+                      const PopupMenuItem(
+                        value: _SignatureMenuAction.download,
+                        child: CustomPopupItem(
+                          icon: Icons.download_outlined,
+                          title: 'Download',
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            )
+          ]
+
           // Padding(
           //   padding: EdgeInsets.symmetric(horizontal: AppDimensions.spacing8),
           //   child: Center(
@@ -177,6 +426,9 @@ class _SignCanvasScreenState extends State<SignCanvasScreen> {
             vertical: AppDimensions.spacing8),
         child: LayoutBuilder(
           builder: (context, constraints) {
+            final canvasSize =
+                Size(constraints.maxWidth, constraints.maxHeight);
+            _pdfCanvasSize = canvasSize;
             return Center(
               child: AspectRatio(
                 aspectRatio: 3 / 4,
@@ -205,7 +457,6 @@ class _SignCanvasScreenState extends State<SignCanvasScreen> {
                           child: widget.pdfFilePath != null
                               ? _PdfPreview(
                                   pdfFilePath: widget.pdfFilePath!,
-                                  onDocumentLoaded: _onDocumentLoaded,
                                 )
                               : (widget.preview ?? _DefaultDocumentPreview()),
                         ),
@@ -220,6 +471,7 @@ class _SignCanvasScreenState extends State<SignCanvasScreen> {
                         baseWidth: _baseSignatureWidth > 0
                             ? _baseSignatureWidth
                             : constraints.maxWidth * 0.35,
+                        imageAspectRatio: _signatureAspectRatio,
                         containerSize: Size(
                           constraints.maxWidth,
                           constraints.maxHeight,
@@ -241,7 +493,8 @@ class _SignCanvasScreenState extends State<SignCanvasScreen> {
                             }
                             // Set initial position to bottom-right
                             if (_signaturePosition == Offset.zero) {
-                              final signatureHeight = width * 0.5;
+                              final signatureHeight =
+                                  width * _signatureAspectRatio;
                               _signaturePosition = Offset(
                                 (constraints.maxWidth -
                                         width -
@@ -261,6 +514,7 @@ class _SignCanvasScreenState extends State<SignCanvasScreen> {
                             _signaturePosition = Offset.zero;
                             _signatureScale = 1.0;
                             _baseSignatureWidth = 0.0;
+                            _signatureAspectRatio = 0.5;
                           });
                           // Show options to add new signature
                           _addSignature();
@@ -313,6 +567,8 @@ enum SignatureOption {
   scan,
   import,
 }
+
+enum _SignatureMenuAction { save, download }
 
 class _SignatureOptionsSheet extends StatelessWidget {
   const _SignatureOptionsSheet();
@@ -413,18 +669,15 @@ class _SignatureOptionTile extends StatelessWidget {
 
 class _PdfPreview extends StatelessWidget {
   final String pdfFilePath;
-  final Function(PdfDocumentLoadedDetails)? onDocumentLoaded;
 
   const _PdfPreview({
     required this.pdfFilePath,
-    this.onDocumentLoaded,
   });
 
   @override
   Widget build(BuildContext context) {
     return SfPdfViewer.file(
       File(pdfFilePath),
-      onDocumentLoaded: onDocumentLoaded,
       enableDoubleTapZooming: true,
       enableTextSelection: false,
       canShowScrollHead: false,
@@ -586,380 +839,6 @@ class _SignaturePadSheetState extends State<_SignaturePadSheet> {
     );
   }
 }
-
-// class _DraggableResizableSignature extends StatefulWidget {
-//   final Uint8List signatureBytes;
-//   final Offset position;
-//   final double scale;
-//   final double baseWidth;
-//   final Size containerSize;
-//   final ValueChanged<Offset> onPositionChanged;
-//   final ValueChanged<double> onScaleChanged;
-//   final ValueChanged<double> onInitialized;
-//   final VoidCallback? onClear;
-//   final VoidCallback? onConfirm;
-//
-//   const _DraggableResizableSignature({
-//     required this.signatureBytes,
-//     required this.position,
-//     required this.scale,
-//     required this.baseWidth,
-//     required this.containerSize,
-//     required this.onPositionChanged,
-//     required this.onScaleChanged,
-//     required this.onInitialized,
-//     this.onClear,
-//     this.onConfirm,
-//   });
-//
-//   @override
-//   State<_DraggableResizableSignature> createState() =>
-//       _DraggableResizableSignatureState();
-// }
-//
-// class _DraggableResizableSignatureState
-//     extends State<_DraggableResizableSignature> {
-//   Offset _currentPosition = Offset.zero;
-//   double _currentScale = 1.0;
-//   bool _isInitialized = false;
-//
-//   // Store initial values for scale gesture
-//   Offset _initialPosition = Offset.zero;
-//   double _initialScale = 1.0;
-//   Offset _initialFocalPoint = Offset.zero;
-//
-//   // Store initial values for resize handle
-//   Offset _resizeStartPosition = Offset.zero;
-//   double _resizeStartScale = 1.0;
-//   Offset _resizeStartHandlePosition = Offset.zero;
-//
-//   @override
-//   void initState() {
-//     super.initState();
-//     _currentPosition = widget.position;
-//     _currentScale = widget.scale;
-//   }
-//
-//   @override
-//   void didUpdateWidget(_DraggableResizableSignature oldWidget) {
-//     super.didUpdateWidget(oldWidget);
-//     if (widget.position != oldWidget.position) {
-//       _currentPosition = widget.position;
-//     }
-//     if (widget.scale != oldWidget.scale) {
-//       _currentScale = widget.scale;
-//     }
-//   }
-//
-//   Offset _clampPosition(Offset position, double width, double height) {
-//     // Ensure signature doesn't go beyond PDF preview boundaries
-//     // Clamp width and height to container size first
-//     final clampedWidth = width.clamp(0.0, widget.containerSize.width);
-//     final clampedHeight = height.clamp(0.0, widget.containerSize.height);
-//
-//     // Calculate maximum allowed position
-//     final maxX = widget.containerSize.width - clampedWidth;
-//     final maxY = widget.containerSize.height - clampedHeight;
-//
-//     // Clamp position to ensure signature stays within bounds
-//     return Offset(
-//       position.dx.clamp(0.0, maxX.clamp(0.0, widget.containerSize.width)),
-//       position.dy.clamp(0.0, maxY.clamp(0.0, widget.containerSize.height)),
-//     );
-//   }
-//
-//   double _clampScale(double scale) {
-//     // Calculate maximum scale based on PDF preview size
-//     // Signature should never exceed PDF preview dimensions
-//     final baseWidth = widget.baseWidth;
-//     if (baseWidth <= 0)
-//       return scale.clamp(0.3, 3.0); // Fallback if baseWidth not set
-//
-//     final baseHeight = baseWidth * 0.5; // Approximate aspect ratio
-//
-//     // Calculate max scale that fits within PDF preview area
-//     // Use the smaller constraint to ensure signature fits both width and height
-//     final maxScaleByWidth = widget.containerSize.width / baseWidth;
-//     final maxScaleByHeight = widget.containerSize.height / baseHeight;
-//     final maxScale = (maxScaleByWidth < maxScaleByHeight
-//         ? maxScaleByWidth
-//         : maxScaleByHeight);
-//
-//     // Ensure max scale is at least 0.3 (30%) - this ensures signature can always be resized
-//     final clampedMaxScale = maxScale < 0.3 ? 0.3 : maxScale;
-//
-//     // Clamp scale between 30% and the calculated maximum
-//     return scale.clamp(0.3, clampedMaxScale);
-//   }
-//
-//   void _onScaleStart(ScaleStartDetails details) {
-//     // Store initial values when gesture starts
-//     _initialPosition = _currentPosition;
-//     _initialScale = _currentScale;
-//     _initialFocalPoint = details.localFocalPoint;
-//   }
-//
-//   void _onScaleUpdate(ScaleUpdateDetails details) {
-//     // Handle both panning (when scale is close to 1.0) and scaling
-//     final scaleDelta = details.scale;
-//     final isScaling =
-//         (scaleDelta - 1.0).abs() > 0.01; // Threshold for scaling vs panning
-//
-//     if (isScaling) {
-//       // Scaling gesture - adjust both scale and position
-//       final newScale = _initialScale * scaleDelta;
-//       final clampedScale = _clampScale(newScale);
-//
-//       final scaleFactor = clampedScale / _initialScale;
-//       final focalPoint = details.localFocalPoint;
-//
-//       final newWidth = widget.baseWidth * clampedScale;
-//       final newHeight = newWidth * 0.5;
-//
-//       // Calculate new position to keep focal point fixed during scaling
-//       final dx =
-//           focalPoint.dx - (focalPoint.dx - _initialPosition.dx) * scaleFactor;
-//       final dy =
-//           focalPoint.dy - (focalPoint.dy - _initialPosition.dy) * scaleFactor;
-//
-//       // Ensure signature doesn't exceed canvas bounds after scaling
-//       final newPosition = _clampPosition(
-//         Offset(dx, dy),
-//         newWidth.clamp(0.0, widget.containerSize.width),
-//         newHeight.clamp(0.0, widget.containerSize.height),
-//       );
-//
-//       setState(() {
-//         _currentScale = clampedScale;
-//         _currentPosition = newPosition;
-//       });
-//
-//       widget.onScaleChanged(clampedScale);
-//       widget.onPositionChanged(newPosition);
-//     } else {
-//       // Panning gesture - only update position
-//       final delta = details.localFocalPoint - _initialFocalPoint;
-//       final newPosition = _initialPosition + delta;
-//
-//       final currentWidth = widget.baseWidth * _currentScale;
-//       final currentHeight = currentWidth * 0.5;
-//
-//       // Ensure signature doesn't exceed canvas bounds during dragging
-//       final clampedPosition = _clampPosition(
-//         newPosition,
-//         currentWidth.clamp(0.0, widget.containerSize.width),
-//         currentHeight.clamp(0.0, widget.containerSize.height),
-//       );
-//
-//       setState(() {
-//         _currentPosition = clampedPosition;
-//       });
-//
-//       widget.onPositionChanged(clampedPosition);
-//     }
-//   }
-//
-//   void _onScaleEnd(ScaleEndDetails details) {
-//     // Reset initial values
-//     _initialPosition = _currentPosition;
-//     _initialScale = _currentScale;
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     final currentWidth = widget.baseWidth * _currentScale;
-//
-//     // Initialize position callback
-//     if (!_isInitialized && currentWidth > 0 && widget.baseWidth > 0) {
-//       WidgetsBinding.instance.addPostFrameCallback((_) {
-//         if (mounted) {
-//           widget.onInitialized(currentWidth);
-//           setState(() {
-//             _isInitialized = true;
-//           });
-//         }
-//       });
-//     }
-//
-//     // Sync position from widget if it changed
-//     if (widget.position != _currentPosition && widget.position != Offset.zero) {
-//       WidgetsBinding.instance.addPostFrameCallback((_) {
-//         if (mounted) {
-//           setState(() {
-//             _currentPosition = widget.position;
-//             _initialPosition = widget.position;
-//           });
-//         }
-//       });
-//     }
-//
-//     // Use widget position if current is zero, otherwise use current
-//     final displayPosition = _currentPosition == Offset.zero
-//         ? (widget.position != Offset.zero
-//             ? widget.position
-//             : const Offset(100, 100))
-//         : _currentPosition;
-//
-//     return Positioned(
-//       left: displayPosition.dx,
-//       top: displayPosition.dy,
-//       child: Stack(
-//         children: [
-//           // Signature with border
-//           Container(
-//             decoration: BoxDecoration(
-//               border: Border.all(
-//                 color: AppColors.primary,
-//                 width: 1,
-//               ),
-//               borderRadius: BorderRadius.circular(4),
-//             ),
-//             child: GestureDetector(
-//               onScaleStart: _onScaleStart,
-//               onScaleUpdate: _onScaleUpdate,
-//               onScaleEnd: _onScaleEnd,
-//               child: Transform.scale(
-//                 scale: _currentScale,
-//                 child: SizedBox(
-//                   width: widget.baseWidth,
-//                   child: Image.memory(
-//                     widget.signatureBytes,
-//                     fit: BoxFit.contain,
-//                   ),
-//                 ),
-//               ),
-//             ),
-//           ),
-//           // Control buttons
-//           // Top-left: Resize handle
-//           Positioned(
-//             // left: -12,
-//             // top: -12,
-//             left: 0,
-//             top: 0,
-//             child: GestureDetector(
-//               behavior: HitTestBehavior.opaque,
-//               onPanStart: (details) {
-//                 // Store initial values when resize starts
-//                 _resizeStartPosition = _currentPosition;
-//                 _resizeStartScale = _currentScale;
-//                 _resizeStartHandlePosition = details.localPosition;
-//               },
-//               onPanUpdate: (details) {
-//                 // Handle resize from top-left corner
-//                 final handleDelta =
-//                     details.localPosition - _resizeStartHandlePosition;
-//
-//                 // Calculate scale change based on diagonal movement
-//                 // Dragging down-right increases size, dragging up-left decreases size
-//                 final diagonalDelta = handleDelta.dx + handleDelta.dy;
-//                 final baseSize = widget.baseWidth * _resizeStartScale;
-//                 // Adjust sensitivity - smaller divisor = more sensitive
-//                 final scaleChange = diagonalDelta / (baseSize * 0.3);
-//                 final newScale = _resizeStartScale * (1.0 + scaleChange);
-//                 final clampedScale = _clampScale(newScale);
-//
-//                 // Calculate new dimensions
-//                 final newWidth = widget.baseWidth * clampedScale;
-//                 final newHeight = newWidth * 0.5;
-//
-//                 // Calculate old dimensions
-//                 final oldWidth = widget.baseWidth * _resizeStartScale;
-//                 final oldHeight = oldWidth * 0.5;
-//
-//                 // Adjust position to keep bottom-right corner fixed
-//                 // When resizing from top-left, we move the top-left position
-//                 final newPosition = Offset(
-//                   _resizeStartPosition.dx + (oldWidth - newWidth),
-//                   _resizeStartPosition.dy + (oldHeight - newHeight),
-//                 );
-//
-//                 final clampedPosition = _clampPosition(
-//                   newPosition,
-//                   newWidth,
-//                   newHeight,
-//                 );
-//
-//                 setState(() {
-//                   _currentScale = clampedScale;
-//                   _currentPosition = clampedPosition;
-//                 });
-//
-//                 widget.onScaleChanged(clampedScale);
-//                 widget.onPositionChanged(clampedPosition);
-//               },
-//               onPanEnd: (details) {
-//                 // Reset resize start values
-//                 _resizeStartPosition = _currentPosition;
-//                 _resizeStartScale = _currentScale;
-//               },
-//               child: Container(
-//                 width: 20,
-//                 height: 20,
-//                 decoration: const BoxDecoration(
-//                     color: AppColors.primary,
-//                     //shape: BoxShape.circle,
-//                     borderRadius: BorderRadius.only(
-//                         topLeft: Radius.circular(4),
-//                         bottomRight: Radius.circular(4))),
-//                 child: const Icon(
-//                   Icons.open_in_full,
-//                   color: Colors.white,
-//                   size: 10,
-//                 ),
-//               ),
-//             ),
-//           ),
-//           // Top-right: Confirm button
-//           Positioned(
-//             right: 0,
-//             top: 0,
-//             child: GestureDetector(
-//                 onTap: widget.onConfirm,
-//                 child: Container(
-//                   width: 20,
-//                   height: 20,
-//                   decoration: const BoxDecoration(
-//                       color: AppColors.primary,
-//                       //shape: BoxShape.circle,
-//                       borderRadius: BorderRadius.only(
-//                           topRight: Radius.circular(4),
-//                           bottomLeft: Radius.circular(4))),
-//                   child: const Icon(
-//                     Icons.check,
-//                     color: Colors.white,
-//                     size: 10,
-//                   ),
-//                 )),
-//           ),
-//           // Bottom-right: Clear button
-//           Positioned(
-//             right: 0,
-//             bottom: 0,
-//             child: GestureDetector(
-//               onTap: widget.onClear,
-//               child: Container(
-//                 width: 20,
-//                 height: 20,
-//                 decoration: const BoxDecoration(
-//                     color: AppColors.primary,
-//                     //shape: BoxShape.circle,
-//                     borderRadius: BorderRadius.only(
-//                         bottomRight: Radius.circular(4),
-//                         topLeft: Radius.circular(4))),
-//                 child: const Icon(
-//                   Icons.clear,
-//                   color: Colors.white,
-//                   size: 10,
-//                 ),
-//               ),
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
 
 class _SignaturePainter extends CustomPainter {
   final List<Offset?> points;
