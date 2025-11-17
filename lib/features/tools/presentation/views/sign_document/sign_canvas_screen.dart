@@ -6,6 +6,7 @@ import 'package:business_card_scanner/core/theme/app_colors.dart';
 import 'package:business_card_scanner/core/theme/app_dimensions.dart';
 import 'package:business_card_scanner/core/theme/app_text_style.dart';
 import 'package:business_card_scanner/core/utils/custom_snack.dart';
+import 'package:business_card_scanner/features/tools/presentation/views/sign_document/widgets/draggable_resizable_signature.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -212,7 +213,7 @@ class _SignCanvasScreenState extends State<SignCanvasScreen> {
                     ),
                     if (_signatureImage != null)
                       // signature
-                      _DraggableResizableSignature(
+                      DraggableResizableSignature(
                         signatureBytes: _signatureImage!,
                         position: _signaturePosition,
                         scale: _signatureScale,
@@ -352,7 +353,7 @@ class _SignatureOptionsSheet extends StatelessWidget {
             onTap: () => Navigator.of(context).pop(SignatureOption.draw),
           ),
           _SignatureOptionTile(
-            icon: Icons.camera_alt_outlined,
+            icon: Icons.document_scanner_outlined,
             title: 'Scan signature',
             onTap: () => Navigator.of(context).pop(SignatureOption.scan),
           ),
@@ -392,15 +393,15 @@ class _SignatureOptionTile extends StatelessWidget {
           children: [
             Icon(
               icon,
-              size: 24,
+              size: 20,
               color: AppColors.gray900,
             ),
             SizedBox(width: AppDimensions.spacing16),
             Text(
               title,
-              style: AppTextStyles.bodyLarge.copyWith(
-                color: AppColors.gray900,
-                fontWeight: FontWeight.w500,
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ],
@@ -571,7 +572,7 @@ class _SignaturePadSheetState extends State<_SignaturePadSheet> {
               ElevatedButton(
                 onPressed: _saveSignature,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.secondary,
+                  backgroundColor: AppColors.primary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppDimensions.radius12),
                   ),
@@ -586,348 +587,379 @@ class _SignaturePadSheetState extends State<_SignaturePadSheet> {
   }
 }
 
-class _DraggableResizableSignature extends StatefulWidget {
-  final Uint8List signatureBytes;
-  final Offset position;
-  final double scale;
-  final double baseWidth;
-  final Size containerSize;
-  final ValueChanged<Offset> onPositionChanged;
-  final ValueChanged<double> onScaleChanged;
-  final ValueChanged<double> onInitialized;
-  final VoidCallback? onClear;
-  final VoidCallback? onConfirm;
-
-  const _DraggableResizableSignature({
-    required this.signatureBytes,
-    required this.position,
-    required this.scale,
-    required this.baseWidth,
-    required this.containerSize,
-    required this.onPositionChanged,
-    required this.onScaleChanged,
-    required this.onInitialized,
-    this.onClear,
-    this.onConfirm,
-  });
-
-  @override
-  State<_DraggableResizableSignature> createState() =>
-      _DraggableResizableSignatureState();
-}
-
-class _DraggableResizableSignatureState
-    extends State<_DraggableResizableSignature> {
-  Offset _currentPosition = Offset.zero;
-  double _currentScale = 1.0;
-  bool _isInitialized = false;
-
-  // Store initial values for scale gesture
-  Offset _initialPosition = Offset.zero;
-  double _initialScale = 1.0;
-  Offset _initialFocalPoint = Offset.zero;
-
-  @override
-  void initState() {
-    super.initState();
-    _currentPosition = widget.position;
-    _currentScale = widget.scale;
-  }
-
-  @override
-  void didUpdateWidget(_DraggableResizableSignature oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.position != oldWidget.position) {
-      _currentPosition = widget.position;
-    }
-    if (widget.scale != oldWidget.scale) {
-      _currentScale = widget.scale;
-    }
-  }
-
-  Offset _clampPosition(Offset position, double width, double height) {
-    // Ensure signature doesn't go beyond PDF preview boundaries
-    // Clamp width and height to container size first
-    final clampedWidth = width.clamp(0.0, widget.containerSize.width);
-    final clampedHeight = height.clamp(0.0, widget.containerSize.height);
-
-    // Calculate maximum allowed position
-    final maxX = widget.containerSize.width - clampedWidth;
-    final maxY = widget.containerSize.height - clampedHeight;
-
-    // Clamp position to ensure signature stays within bounds
-    return Offset(
-      position.dx.clamp(0.0, maxX.clamp(0.0, widget.containerSize.width)),
-      position.dy.clamp(0.0, maxY.clamp(0.0, widget.containerSize.height)),
-    );
-  }
-
-  double _clampScale(double scale) {
-    // Calculate maximum scale based on PDF preview size
-    // Signature should never exceed PDF preview dimensions
-    final baseWidth = widget.baseWidth;
-    if (baseWidth <= 0)
-      return scale.clamp(0.3, 3.0); // Fallback if baseWidth not set
-
-    final baseHeight = baseWidth * 0.5; // Approximate aspect ratio
-
-    // Calculate max scale that fits within PDF preview area
-    // Use the smaller constraint to ensure signature fits both width and height
-    final maxScaleByWidth = widget.containerSize.width / baseWidth;
-    final maxScaleByHeight = widget.containerSize.height / baseHeight;
-    final maxScale = (maxScaleByWidth < maxScaleByHeight
-        ? maxScaleByWidth
-        : maxScaleByHeight);
-
-    // Ensure max scale is at least 0.3 (30%) - this ensures signature can always be resized
-    final clampedMaxScale = maxScale < 0.3 ? 0.3 : maxScale;
-
-    // Clamp scale between 30% and the calculated maximum
-    return scale.clamp(0.3, clampedMaxScale);
-  }
-
-  void _onScaleStart(ScaleStartDetails details) {
-    // Store initial values when gesture starts
-    _initialPosition = _currentPosition;
-    _initialScale = _currentScale;
-    _initialFocalPoint = details.localFocalPoint;
-  }
-
-  void _onScaleUpdate(ScaleUpdateDetails details) {
-    // Handle both panning (when scale is close to 1.0) and scaling
-    final scaleDelta = details.scale;
-    final isScaling =
-        (scaleDelta - 1.0).abs() > 0.01; // Threshold for scaling vs panning
-
-    if (isScaling) {
-      // Scaling gesture - adjust both scale and position
-      final newScale = _initialScale * scaleDelta;
-      final clampedScale = _clampScale(newScale);
-
-      final scaleFactor = clampedScale / _initialScale;
-      final focalPoint = details.localFocalPoint;
-
-      final newWidth = widget.baseWidth * clampedScale;
-      final newHeight = newWidth * 0.5;
-
-      // Calculate new position to keep focal point fixed during scaling
-      final dx =
-          focalPoint.dx - (focalPoint.dx - _initialPosition.dx) * scaleFactor;
-      final dy =
-          focalPoint.dy - (focalPoint.dy - _initialPosition.dy) * scaleFactor;
-
-      // Ensure signature doesn't exceed canvas bounds after scaling
-      final newPosition = _clampPosition(
-        Offset(dx, dy),
-        newWidth.clamp(0.0, widget.containerSize.width),
-        newHeight.clamp(0.0, widget.containerSize.height),
-      );
-
-      setState(() {
-        _currentScale = clampedScale;
-        _currentPosition = newPosition;
-      });
-
-      widget.onScaleChanged(clampedScale);
-      widget.onPositionChanged(newPosition);
-    } else {
-      // Panning gesture - only update position
-      final delta = details.localFocalPoint - _initialFocalPoint;
-      final newPosition = _initialPosition + delta;
-
-      final currentWidth = widget.baseWidth * _currentScale;
-      final currentHeight = currentWidth * 0.5;
-
-      // Ensure signature doesn't exceed canvas bounds during dragging
-      final clampedPosition = _clampPosition(
-        newPosition,
-        currentWidth.clamp(0.0, widget.containerSize.width),
-        currentHeight.clamp(0.0, widget.containerSize.height),
-      );
-
-      setState(() {
-        _currentPosition = clampedPosition;
-      });
-
-      widget.onPositionChanged(clampedPosition);
-    }
-  }
-
-  void _onScaleEnd(ScaleEndDetails details) {
-    // Reset initial values
-    _initialPosition = _currentPosition;
-    _initialScale = _currentScale;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final currentWidth = widget.baseWidth * _currentScale;
-    final currentHeight = currentWidth * 0.5; // Approximate aspect ratio
-
-    // Initialize position callback
-    if (!_isInitialized && currentWidth > 0 && widget.baseWidth > 0) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          widget.onInitialized(currentWidth);
-          setState(() {
-            _isInitialized = true;
-          });
-        }
-      });
-    }
-
-    // Sync position from widget if it changed
-    if (widget.position != _currentPosition && widget.position != Offset.zero) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          setState(() {
-            _currentPosition = widget.position;
-            _initialPosition = widget.position;
-          });
-        }
-      });
-    }
-
-    // Use widget position if current is zero, otherwise use current
-    final displayPosition = _currentPosition == Offset.zero
-        ? (widget.position != Offset.zero
-            ? widget.position
-            : const Offset(100, 100))
-        : _currentPosition;
-
-    return Positioned(
-      left: displayPosition.dx,
-      top: displayPosition.dy,
-      child: Stack(
-        children: [
-          // Signature with border
-          Container(
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: AppColors.primary,
-                width: 1,
-              ),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: GestureDetector(
-              onScaleStart: _onScaleStart,
-              onScaleUpdate: _onScaleUpdate,
-              onScaleEnd: _onScaleEnd,
-              child: Transform.scale(
-                scale: _currentScale,
-                child: SizedBox(
-                  width: widget.baseWidth,
-                  child: Image.memory(
-                    widget.signatureBytes,
-                    fit: BoxFit.contain,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          // Control buttons
-          // Top-left: Resize handle
-          Positioned(
-            // left: -12,
-            // top: -12,
-            left: 0,
-            top: 0,
-            child: GestureDetector(
-              onPanUpdate: (details) {
-                // Handle resize from top-left corner
-                final delta = details.delta;
-                final scaleDelta =
-                    1.0 + (delta.dx + delta.dy) / (currentWidth * 2);
-                final newScale = _currentScale * scaleDelta;
-                final clampedScale = _clampScale(newScale);
-
-                // Adjust position to keep bottom-right corner fixed
-                final newWidth = widget.baseWidth * clampedScale;
-                final newHeight = newWidth * 0.5;
-
-                final newPosition = Offset(
-                  displayPosition.dx + (currentWidth - newWidth),
-                  displayPosition.dy + (currentHeight - newHeight),
-                );
-
-                final clampedPosition = _clampPosition(
-                  newPosition,
-                  newWidth,
-                  newHeight,
-                );
-
-                setState(() {
-                  _currentScale = clampedScale;
-                  _currentPosition = clampedPosition;
-                });
-
-                widget.onScaleChanged(clampedScale);
-                widget.onPositionChanged(clampedPosition);
-              },
-              child: Container(
-                width: 24,
-                height: 24,
-                decoration: BoxDecoration(
-                    color: AppColors.primary,
-                    //shape: BoxShape.circle,
-                    borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(4),
-                        bottomRight: Radius.circular(4))),
-                child: const Icon(
-                  Icons.open_in_full,
-                  color: Colors.white,
-                  size: 14,
-                ),
-              ),
-            ),
-          ),
-          // Top-right: Confirm button
-          Positioned(
-            right: -12,
-            top: -12,
-            child: GestureDetector(
-              onTap: widget.onConfirm,
-              child: Container(
-                width: 24,
-                height: 24,
-                decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.check,
-                  color: Colors.white,
-                  size: 14,
-                ),
-              ),
-            ),
-          ),
-          // Bottom-right: Clear button
-          Positioned(
-            right: -12,
-            bottom: -12,
-            child: GestureDetector(
-              onTap: widget.onClear,
-              child: Container(
-                width: 24,
-                height: 24,
-                decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.close,
-                  color: Colors.white,
-                  size: 14,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
+// class _DraggableResizableSignature extends StatefulWidget {
+//   final Uint8List signatureBytes;
+//   final Offset position;
+//   final double scale;
+//   final double baseWidth;
+//   final Size containerSize;
+//   final ValueChanged<Offset> onPositionChanged;
+//   final ValueChanged<double> onScaleChanged;
+//   final ValueChanged<double> onInitialized;
+//   final VoidCallback? onClear;
+//   final VoidCallback? onConfirm;
+//
+//   const _DraggableResizableSignature({
+//     required this.signatureBytes,
+//     required this.position,
+//     required this.scale,
+//     required this.baseWidth,
+//     required this.containerSize,
+//     required this.onPositionChanged,
+//     required this.onScaleChanged,
+//     required this.onInitialized,
+//     this.onClear,
+//     this.onConfirm,
+//   });
+//
+//   @override
+//   State<_DraggableResizableSignature> createState() =>
+//       _DraggableResizableSignatureState();
+// }
+//
+// class _DraggableResizableSignatureState
+//     extends State<_DraggableResizableSignature> {
+//   Offset _currentPosition = Offset.zero;
+//   double _currentScale = 1.0;
+//   bool _isInitialized = false;
+//
+//   // Store initial values for scale gesture
+//   Offset _initialPosition = Offset.zero;
+//   double _initialScale = 1.0;
+//   Offset _initialFocalPoint = Offset.zero;
+//
+//   // Store initial values for resize handle
+//   Offset _resizeStartPosition = Offset.zero;
+//   double _resizeStartScale = 1.0;
+//   Offset _resizeStartHandlePosition = Offset.zero;
+//
+//   @override
+//   void initState() {
+//     super.initState();
+//     _currentPosition = widget.position;
+//     _currentScale = widget.scale;
+//   }
+//
+//   @override
+//   void didUpdateWidget(_DraggableResizableSignature oldWidget) {
+//     super.didUpdateWidget(oldWidget);
+//     if (widget.position != oldWidget.position) {
+//       _currentPosition = widget.position;
+//     }
+//     if (widget.scale != oldWidget.scale) {
+//       _currentScale = widget.scale;
+//     }
+//   }
+//
+//   Offset _clampPosition(Offset position, double width, double height) {
+//     // Ensure signature doesn't go beyond PDF preview boundaries
+//     // Clamp width and height to container size first
+//     final clampedWidth = width.clamp(0.0, widget.containerSize.width);
+//     final clampedHeight = height.clamp(0.0, widget.containerSize.height);
+//
+//     // Calculate maximum allowed position
+//     final maxX = widget.containerSize.width - clampedWidth;
+//     final maxY = widget.containerSize.height - clampedHeight;
+//
+//     // Clamp position to ensure signature stays within bounds
+//     return Offset(
+//       position.dx.clamp(0.0, maxX.clamp(0.0, widget.containerSize.width)),
+//       position.dy.clamp(0.0, maxY.clamp(0.0, widget.containerSize.height)),
+//     );
+//   }
+//
+//   double _clampScale(double scale) {
+//     // Calculate maximum scale based on PDF preview size
+//     // Signature should never exceed PDF preview dimensions
+//     final baseWidth = widget.baseWidth;
+//     if (baseWidth <= 0)
+//       return scale.clamp(0.3, 3.0); // Fallback if baseWidth not set
+//
+//     final baseHeight = baseWidth * 0.5; // Approximate aspect ratio
+//
+//     // Calculate max scale that fits within PDF preview area
+//     // Use the smaller constraint to ensure signature fits both width and height
+//     final maxScaleByWidth = widget.containerSize.width / baseWidth;
+//     final maxScaleByHeight = widget.containerSize.height / baseHeight;
+//     final maxScale = (maxScaleByWidth < maxScaleByHeight
+//         ? maxScaleByWidth
+//         : maxScaleByHeight);
+//
+//     // Ensure max scale is at least 0.3 (30%) - this ensures signature can always be resized
+//     final clampedMaxScale = maxScale < 0.3 ? 0.3 : maxScale;
+//
+//     // Clamp scale between 30% and the calculated maximum
+//     return scale.clamp(0.3, clampedMaxScale);
+//   }
+//
+//   void _onScaleStart(ScaleStartDetails details) {
+//     // Store initial values when gesture starts
+//     _initialPosition = _currentPosition;
+//     _initialScale = _currentScale;
+//     _initialFocalPoint = details.localFocalPoint;
+//   }
+//
+//   void _onScaleUpdate(ScaleUpdateDetails details) {
+//     // Handle both panning (when scale is close to 1.0) and scaling
+//     final scaleDelta = details.scale;
+//     final isScaling =
+//         (scaleDelta - 1.0).abs() > 0.01; // Threshold for scaling vs panning
+//
+//     if (isScaling) {
+//       // Scaling gesture - adjust both scale and position
+//       final newScale = _initialScale * scaleDelta;
+//       final clampedScale = _clampScale(newScale);
+//
+//       final scaleFactor = clampedScale / _initialScale;
+//       final focalPoint = details.localFocalPoint;
+//
+//       final newWidth = widget.baseWidth * clampedScale;
+//       final newHeight = newWidth * 0.5;
+//
+//       // Calculate new position to keep focal point fixed during scaling
+//       final dx =
+//           focalPoint.dx - (focalPoint.dx - _initialPosition.dx) * scaleFactor;
+//       final dy =
+//           focalPoint.dy - (focalPoint.dy - _initialPosition.dy) * scaleFactor;
+//
+//       // Ensure signature doesn't exceed canvas bounds after scaling
+//       final newPosition = _clampPosition(
+//         Offset(dx, dy),
+//         newWidth.clamp(0.0, widget.containerSize.width),
+//         newHeight.clamp(0.0, widget.containerSize.height),
+//       );
+//
+//       setState(() {
+//         _currentScale = clampedScale;
+//         _currentPosition = newPosition;
+//       });
+//
+//       widget.onScaleChanged(clampedScale);
+//       widget.onPositionChanged(newPosition);
+//     } else {
+//       // Panning gesture - only update position
+//       final delta = details.localFocalPoint - _initialFocalPoint;
+//       final newPosition = _initialPosition + delta;
+//
+//       final currentWidth = widget.baseWidth * _currentScale;
+//       final currentHeight = currentWidth * 0.5;
+//
+//       // Ensure signature doesn't exceed canvas bounds during dragging
+//       final clampedPosition = _clampPosition(
+//         newPosition,
+//         currentWidth.clamp(0.0, widget.containerSize.width),
+//         currentHeight.clamp(0.0, widget.containerSize.height),
+//       );
+//
+//       setState(() {
+//         _currentPosition = clampedPosition;
+//       });
+//
+//       widget.onPositionChanged(clampedPosition);
+//     }
+//   }
+//
+//   void _onScaleEnd(ScaleEndDetails details) {
+//     // Reset initial values
+//     _initialPosition = _currentPosition;
+//     _initialScale = _currentScale;
+//   }
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     final currentWidth = widget.baseWidth * _currentScale;
+//
+//     // Initialize position callback
+//     if (!_isInitialized && currentWidth > 0 && widget.baseWidth > 0) {
+//       WidgetsBinding.instance.addPostFrameCallback((_) {
+//         if (mounted) {
+//           widget.onInitialized(currentWidth);
+//           setState(() {
+//             _isInitialized = true;
+//           });
+//         }
+//       });
+//     }
+//
+//     // Sync position from widget if it changed
+//     if (widget.position != _currentPosition && widget.position != Offset.zero) {
+//       WidgetsBinding.instance.addPostFrameCallback((_) {
+//         if (mounted) {
+//           setState(() {
+//             _currentPosition = widget.position;
+//             _initialPosition = widget.position;
+//           });
+//         }
+//       });
+//     }
+//
+//     // Use widget position if current is zero, otherwise use current
+//     final displayPosition = _currentPosition == Offset.zero
+//         ? (widget.position != Offset.zero
+//             ? widget.position
+//             : const Offset(100, 100))
+//         : _currentPosition;
+//
+//     return Positioned(
+//       left: displayPosition.dx,
+//       top: displayPosition.dy,
+//       child: Stack(
+//         children: [
+//           // Signature with border
+//           Container(
+//             decoration: BoxDecoration(
+//               border: Border.all(
+//                 color: AppColors.primary,
+//                 width: 1,
+//               ),
+//               borderRadius: BorderRadius.circular(4),
+//             ),
+//             child: GestureDetector(
+//               onScaleStart: _onScaleStart,
+//               onScaleUpdate: _onScaleUpdate,
+//               onScaleEnd: _onScaleEnd,
+//               child: Transform.scale(
+//                 scale: _currentScale,
+//                 child: SizedBox(
+//                   width: widget.baseWidth,
+//                   child: Image.memory(
+//                     widget.signatureBytes,
+//                     fit: BoxFit.contain,
+//                   ),
+//                 ),
+//               ),
+//             ),
+//           ),
+//           // Control buttons
+//           // Top-left: Resize handle
+//           Positioned(
+//             // left: -12,
+//             // top: -12,
+//             left: 0,
+//             top: 0,
+//             child: GestureDetector(
+//               behavior: HitTestBehavior.opaque,
+//               onPanStart: (details) {
+//                 // Store initial values when resize starts
+//                 _resizeStartPosition = _currentPosition;
+//                 _resizeStartScale = _currentScale;
+//                 _resizeStartHandlePosition = details.localPosition;
+//               },
+//               onPanUpdate: (details) {
+//                 // Handle resize from top-left corner
+//                 final handleDelta =
+//                     details.localPosition - _resizeStartHandlePosition;
+//
+//                 // Calculate scale change based on diagonal movement
+//                 // Dragging down-right increases size, dragging up-left decreases size
+//                 final diagonalDelta = handleDelta.dx + handleDelta.dy;
+//                 final baseSize = widget.baseWidth * _resizeStartScale;
+//                 // Adjust sensitivity - smaller divisor = more sensitive
+//                 final scaleChange = diagonalDelta / (baseSize * 0.3);
+//                 final newScale = _resizeStartScale * (1.0 + scaleChange);
+//                 final clampedScale = _clampScale(newScale);
+//
+//                 // Calculate new dimensions
+//                 final newWidth = widget.baseWidth * clampedScale;
+//                 final newHeight = newWidth * 0.5;
+//
+//                 // Calculate old dimensions
+//                 final oldWidth = widget.baseWidth * _resizeStartScale;
+//                 final oldHeight = oldWidth * 0.5;
+//
+//                 // Adjust position to keep bottom-right corner fixed
+//                 // When resizing from top-left, we move the top-left position
+//                 final newPosition = Offset(
+//                   _resizeStartPosition.dx + (oldWidth - newWidth),
+//                   _resizeStartPosition.dy + (oldHeight - newHeight),
+//                 );
+//
+//                 final clampedPosition = _clampPosition(
+//                   newPosition,
+//                   newWidth,
+//                   newHeight,
+//                 );
+//
+//                 setState(() {
+//                   _currentScale = clampedScale;
+//                   _currentPosition = clampedPosition;
+//                 });
+//
+//                 widget.onScaleChanged(clampedScale);
+//                 widget.onPositionChanged(clampedPosition);
+//               },
+//               onPanEnd: (details) {
+//                 // Reset resize start values
+//                 _resizeStartPosition = _currentPosition;
+//                 _resizeStartScale = _currentScale;
+//               },
+//               child: Container(
+//                 width: 20,
+//                 height: 20,
+//                 decoration: const BoxDecoration(
+//                     color: AppColors.primary,
+//                     //shape: BoxShape.circle,
+//                     borderRadius: BorderRadius.only(
+//                         topLeft: Radius.circular(4),
+//                         bottomRight: Radius.circular(4))),
+//                 child: const Icon(
+//                   Icons.open_in_full,
+//                   color: Colors.white,
+//                   size: 10,
+//                 ),
+//               ),
+//             ),
+//           ),
+//           // Top-right: Confirm button
+//           Positioned(
+//             right: 0,
+//             top: 0,
+//             child: GestureDetector(
+//                 onTap: widget.onConfirm,
+//                 child: Container(
+//                   width: 20,
+//                   height: 20,
+//                   decoration: const BoxDecoration(
+//                       color: AppColors.primary,
+//                       //shape: BoxShape.circle,
+//                       borderRadius: BorderRadius.only(
+//                           topRight: Radius.circular(4),
+//                           bottomLeft: Radius.circular(4))),
+//                   child: const Icon(
+//                     Icons.check,
+//                     color: Colors.white,
+//                     size: 10,
+//                   ),
+//                 )),
+//           ),
+//           // Bottom-right: Clear button
+//           Positioned(
+//             right: 0,
+//             bottom: 0,
+//             child: GestureDetector(
+//               onTap: widget.onClear,
+//               child: Container(
+//                 width: 20,
+//                 height: 20,
+//                 decoration: const BoxDecoration(
+//                     color: AppColors.primary,
+//                     //shape: BoxShape.circle,
+//                     borderRadius: BorderRadius.only(
+//                         bottomRight: Radius.circular(4),
+//                         topLeft: Radius.circular(4))),
+//                 child: const Icon(
+//                   Icons.clear,
+//                   color: Colors.white,
+//                   size: 10,
+//                 ),
+//               ),
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }
 
 class _SignaturePainter extends CustomPainter {
   final List<Offset?> points;
