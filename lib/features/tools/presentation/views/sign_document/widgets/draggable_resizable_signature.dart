@@ -14,7 +14,8 @@ class DraggableResizableSignature extends StatefulWidget {
   final VoidCallback? onClear;
   final VoidCallback? onConfirm;
 
-  const DraggableResizableSignature({super.key,
+  const DraggableResizableSignature({
+    super.key,
     required this.signatureBytes,
     required this.position,
     required this.scale,
@@ -43,10 +44,6 @@ class _DraggableResizableSignatureState
   double _initialScale = 1.0;
   Offset _initialFocalPoint = Offset.zero;
 
-  // Store initial values for resize handle
-  Offset _resizeStartPosition = Offset.zero;
-  double _resizeStartScale = 1.0;
-  Offset _resizeStartHandlePosition = Offset.zero;
 
   @override
   void initState() {
@@ -211,8 +208,8 @@ class _DraggableResizableSignatureState
     // Use widget position if current is zero, otherwise use current
     final displayPosition = _currentPosition == Offset.zero
         ? (widget.position != Offset.zero
-        ? widget.position
-        : const Offset(100, 100))
+            ? widget.position
+            : const Offset(100, 100))
         : _currentPosition;
 
     return Positioned(
@@ -246,53 +243,37 @@ class _DraggableResizableSignatureState
             ),
           ),
           // Control buttons
-          // Top-left: Resize handle
+          // Top-left: Increase size button
           Positioned(
-            // left: -12,
-            // top: -12,
             left: 0,
             top: 0,
             child: GestureDetector(
               behavior: HitTestBehavior.opaque,
-              onPanStart: (details) {
-                // Store initial values when resize starts
-                _resizeStartPosition = _currentPosition;
-                _resizeStartScale = _currentScale;
-                _resizeStartHandlePosition = details.localPosition;
-              },
-              onPanUpdate: (details) {
-                // Handle resize from top-left corner
-                final handleDelta =
-                    details.localPosition - _resizeStartHandlePosition;
-
-                // Calculate scale change based on diagonal movement
-                // Dragging down-right increases size, dragging up-left decreases size
-                final diagonalDelta = handleDelta.dx + handleDelta.dy;
-                final baseSize = widget.baseWidth * _resizeStartScale;
-                // Adjust sensitivity - smaller divisor = more sensitive
-                final scaleChange = diagonalDelta / (baseSize * 0.3);
-                final newScale = _resizeStartScale * (1.0 + scaleChange);
+              onTap: () {
+                // Increase signature size by 5px
+                final currentWidth = widget.baseWidth * _currentScale;
+                final newWidth = currentWidth + 5.0;
+                final newScale = newWidth / widget.baseWidth;
                 final clampedScale = _clampScale(newScale);
 
                 // Calculate new dimensions
-                final newWidth = widget.baseWidth * clampedScale;
-                final newHeight = newWidth * 0.5;
+                final finalWidth = widget.baseWidth * clampedScale;
+                final finalHeight = finalWidth * 0.5;
 
                 // Calculate old dimensions
-                final oldWidth = widget.baseWidth * _resizeStartScale;
+                final oldWidth = widget.baseWidth * _currentScale;
                 final oldHeight = oldWidth * 0.5;
 
                 // Adjust position to keep bottom-right corner fixed
-                // When resizing from top-left, we move the top-left position
                 final newPosition = Offset(
-                  _resizeStartPosition.dx + (oldWidth - newWidth),
-                  _resizeStartPosition.dy + (oldHeight - newHeight),
+                  _currentPosition.dx + (oldWidth - finalWidth),
+                  _currentPosition.dy + (oldHeight - finalHeight),
                 );
 
                 final clampedPosition = _clampPosition(
                   newPosition,
-                  newWidth,
-                  newHeight,
+                  finalWidth,
+                  finalHeight,
                 );
 
                 setState(() {
@@ -303,22 +284,16 @@ class _DraggableResizableSignatureState
                 widget.onScaleChanged(clampedScale);
                 widget.onPositionChanged(clampedPosition);
               },
-              onPanEnd: (details) {
-                // Reset resize start values
-                _resizeStartPosition = _currentPosition;
-                _resizeStartScale = _currentScale;
-              },
               child: Container(
                 width: 20,
                 height: 20,
                 decoration: const BoxDecoration(
                     color: AppColors.primary,
-                    //shape: BoxShape.circle,
                     borderRadius: BorderRadius.only(
                         topLeft: Radius.circular(4),
                         bottomRight: Radius.circular(4))),
                 child: const Icon(
-                  Icons.open_in_full,
+                  Icons.add,
                   color: Colors.white,
                   size: 10,
                 ),
@@ -336,7 +311,6 @@ class _DraggableResizableSignatureState
                   height: 20,
                   decoration: const BoxDecoration(
                       color: AppColors.primary,
-                      //shape: BoxShape.circle,
                       borderRadius: BorderRadius.only(
                           topRight: Radius.circular(4),
                           bottomLeft: Radius.circular(4))),
@@ -347,9 +321,66 @@ class _DraggableResizableSignatureState
                   ),
                 )),
           ),
-          // Bottom-right: Clear button
+          // Bottom-right: Decrease size button
           Positioned(
             right: 0,
+            bottom: 0,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () {
+                // Decrease signature size by 5px
+                final currentWidth = widget.baseWidth * _currentScale;
+                final newWidth = (currentWidth - 5.0).clamp(1.0, double.infinity);
+                final newScale = newWidth / widget.baseWidth;
+                final clampedScale = _clampScale(newScale);
+
+                // Calculate new dimensions
+                final finalWidth = widget.baseWidth * clampedScale;
+                final finalHeight = finalWidth * 0.5;
+
+                // Calculate old dimensions
+                final oldWidth = widget.baseWidth * _currentScale;
+                final oldHeight = oldWidth * 0.5;
+
+                // Adjust position to keep bottom-right corner fixed
+                final newPosition = Offset(
+                  _currentPosition.dx + (oldWidth - finalWidth),
+                  _currentPosition.dy + (oldHeight - finalHeight),
+                );
+
+                final clampedPosition = _clampPosition(
+                  newPosition,
+                  finalWidth,
+                  finalHeight,
+                );
+
+                setState(() {
+                  _currentScale = clampedScale;
+                  _currentPosition = clampedPosition;
+                });
+
+                widget.onScaleChanged(clampedScale);
+                widget.onPositionChanged(clampedPosition);
+              },
+              child: Container(
+                width: 20,
+                height: 20,
+                decoration: const BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.only(
+                        bottomRight: Radius.circular(4),
+                        topLeft: Radius.circular(4))),
+                child: const Icon(
+                  Icons.remove,
+                  color: Colors.white,
+                  size: 10,
+                ),
+              ),
+            ),
+          ),
+          // Bottom-left: Clear button
+          Positioned(
+            left: 0,
             bottom: 0,
             child: GestureDetector(
               onTap: widget.onClear,
@@ -358,10 +389,9 @@ class _DraggableResizableSignatureState
                 height: 20,
                 decoration: const BoxDecoration(
                     color: AppColors.primary,
-                    //shape: BoxShape.circle,
                     borderRadius: BorderRadius.only(
-                        bottomRight: Radius.circular(4),
-                        topLeft: Radius.circular(4))),
+                        bottomLeft: Radius.circular(4),
+                        topRight: Radius.circular(4))),
                 child: const Icon(
                   Icons.clear,
                   color: Colors.white,
