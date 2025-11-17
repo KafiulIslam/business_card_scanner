@@ -7,9 +7,9 @@ class AppColors {
   static const Color primaryDark = Color(0xFF1B5E20);
 
   // Secondary Colors
-  static const Color secondary = Color(0xFF1976D2); // Blue for actions
-  static const Color secondaryLight = Color(0xFF42A5F5);
-  static const Color secondaryDark = Color(0xFF0D47A1);
+  // static const Color secondary = Color(0xFF1976D2); // Blue for actions
+  // static const Color secondaryLight = Color(0xFF42A5F5);
+  // static const Color secondaryDark = Color(0xFF0D47A1);
 
   // Scanner Specific Colors
   static const Color scanOverlay = Color(0x80000000);
@@ -44,7 +44,7 @@ class AppColors {
   static const Color iconColor = Color(0xFFA1A1A1);
 
   //border colro
-  static const Color borderColor = Color(0xFFEEEEEE);
+  static const Color borderColor = Color(0xFFCCCCCC);
 
   // scaffold bg color
   static const Color scaffoldBG = Color(0xFFf7f7f7);

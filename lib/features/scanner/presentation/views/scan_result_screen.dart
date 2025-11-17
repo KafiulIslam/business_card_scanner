@@ -265,64 +265,64 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
     );
   }
 
-  Widget _buildTagsRow() {
-    return Row(
-      children: [
-        _buildTag('Prospects', isSelected: selectedTag == 'Prospects'),
-        Gap(AppDimensions.spacing8),
-        _buildTag('Leads', isSelected: selectedTag == 'Leads'),
-        Gap(AppDimensions.spacing8),
-        _buildTag('Conferences', isSelected: selectedTag == 'Conferences'),
-        const Spacer(),
-        Container(
-          padding: EdgeInsets.all(AppDimensions.spacing8),
-          decoration: BoxDecoration(
-            color: AppColors.success,
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(Icons.add, color: Colors.white, size: 20),
-        ),
-      ],
-    );
-  }
+  // Widget _buildTagsRow() {
+  //   return Row(
+  //     children: [
+  //       _buildTag('Prospects', isSelected: selectedTag == 'Prospects'),
+  //       Gap(AppDimensions.spacing8),
+  //       _buildTag('Leads', isSelected: selectedTag == 'Leads'),
+  //       Gap(AppDimensions.spacing8),
+  //       _buildTag('Conferences', isSelected: selectedTag == 'Conferences'),
+  //       const Spacer(),
+  //       Container(
+  //         padding: EdgeInsets.all(AppDimensions.spacing8),
+  //         decoration: BoxDecoration(
+  //           color: AppColors.success,
+  //           shape: BoxShape.circle,
+  //         ),
+  //         child: const Icon(Icons.add, color: Colors.white, size: 20),
+  //       ),
+  //     ],
+  //   );
+  // }
 
-  Widget _buildTag(String label, {required bool isSelected}) {
-    return InkWell(
-      onTap: () => setState(() => selectedTag = label),
-      child: Container(
-        padding: EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacing12,
-          vertical: AppDimensions.spacing8,
-        ),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.secondaryLight.withOpacity(0.2)
-              : Colors.white,
-          borderRadius: BorderRadius.circular(AppDimensions.radius20),
-          border: Border.all(
-            color: isSelected ? AppColors.secondary : AppColors.gray300,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              isSelected ? Icons.check_circle : Icons.circle_outlined,
-              size: 16,
-              color: isSelected ? AppColors.secondary : AppColors.gray400,
-            ),
-            Gap(AppDimensions.spacing4),
-            Text(
-              label,
-              style: AppTextStyles.labelSmall.copyWith(
-                color: isSelected ? AppColors.secondary : AppColors.gray600,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  // Widget _buildTag(String label, {required bool isSelected}) {
+  //   return InkWell(
+  //     onTap: () => setState(() => selectedTag = label),
+  //     child: Container(
+  //       padding: EdgeInsets.symmetric(
+  //         horizontal: AppDimensions.spacing12,
+  //         vertical: AppDimensions.spacing8,
+  //       ),
+  //       decoration: BoxDecoration(
+  //         color: isSelected
+  //             ? AppColors.primaryLight.withOpacity(0.2)
+  //             : Colors.white,
+  //         borderRadius: BorderRadius.circular(AppDimensions.radius20),
+  //         border: Border.all(
+  //           color: isSelected ? AppColors.primaryLight : AppColors.gray300,
+  //         ),
+  //       ),
+  //       child: Row(
+  //         mainAxisSize: MainAxisSize.min,
+  //         children: [
+  //           Icon(
+  //             isSelected ? Icons.check_circle : Icons.circle_outlined,
+  //             size: 16,
+  //             color: isSelected ? AppColors.primary : AppColors.gray400,
+  //           ),
+  //           Gap(AppDimensions.spacing4),
+  //           Text(
+  //             label,
+  //             style: AppTextStyles.labelSmall.copyWith(
+  //               color: isSelected ? AppColors.primary : AppColors.gray600,
+  //             ),
+  //           ),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
 
   Widget _buildExtractedFields() {
     return Column(
