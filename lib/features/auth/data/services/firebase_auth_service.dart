@@ -28,4 +28,15 @@ class FirebaseAuthService {
     return user;
   }
 
+  Future<void> signOut() async {
+    await _auth.signOut();
+  }
+
+  Future<void> deleteAccount() async {
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw Exception('No user is currently signed in.');
+    }
+    await user.delete();
+  }
 }

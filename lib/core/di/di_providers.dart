@@ -7,6 +7,10 @@ import 'package:business_card_scanner/features/auth/domain/use_cases/sign_up_use
 import 'package:business_card_scanner/features/auth/presentation/cubit/signup_cubit.dart';
 import 'package:business_card_scanner/features/auth/domain/use_cases/sign_in_use_case.dart';
 import 'package:business_card_scanner/features/auth/presentation/cubit/login_cubit.dart';
+import 'package:business_card_scanner/features/auth/domain/use_cases/sign_out_use_case.dart';
+import 'package:business_card_scanner/features/auth/presentation/cubit/logout_cubit.dart';
+import 'package:business_card_scanner/features/auth/domain/use_cases/delete_account_use_case.dart';
+import 'package:business_card_scanner/features/auth/presentation/cubit/delete_account_cubit.dart';
 import 'package:business_card_scanner/features/scanner/presentation/cubit/scan_cubit.dart';
 import 'package:business_card_scanner/features/network/data/services/firebase_storage_service.dart';
 import 'package:business_card_scanner/features/network/data/services/firebase_network_service.dart';
@@ -64,6 +68,12 @@ class AppProviders extends StatelessWidget {
         ),
         RepositoryProvider<SignInUseCase>(
           create: (ctx) => SignInUseCase(ctx.read<AuthRepository>()),
+        ),
+        RepositoryProvider<SignOutUseCase>(
+          create: (ctx) => SignOutUseCase(ctx.read<AuthRepository>()),
+        ),
+        RepositoryProvider<DeleteAccountUseCase>(
+          create: (ctx) => DeleteAccountUseCase(ctx.read<AuthRepository>()),
         ),
         RepositoryProvider<FirebaseStorageService>(
           create: (_) => FirebaseStorageService(),
@@ -151,6 +161,12 @@ class AppProviders extends StatelessWidget {
           ),
           BlocProvider<LoginCubit>(
             create: (ctx) => LoginCubit(ctx.read<SignInUseCase>()),
+          ),
+          BlocProvider<LogoutCubit>(
+            create: (ctx) => LogoutCubit(ctx.read<SignOutUseCase>()),
+          ),
+          BlocProvider<DeleteAccountCubit>(
+            create: (ctx) => DeleteAccountCubit(ctx.read<DeleteAccountUseCase>()),
           ),
           BlocProvider<ScanCubit>(
             create: (_) => ScanCubit(),

@@ -24,4 +24,15 @@ class AuthRepositoryImpl implements AuthRepository {
     return AppUser(
         uid: user.uid, email: user.email, displayName: user.displayName);
   }
+
+  @override
+  Future<void> signOut() {
+    return _firebaseAuthService.signOut();
+  }
+
+  @override
+  Future<void> deleteAccount() {
+    return _firebaseAuthService.deleteAccount();
+  }
+
 }
