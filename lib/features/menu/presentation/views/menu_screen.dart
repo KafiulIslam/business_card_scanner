@@ -4,6 +4,7 @@ import 'package:business_card_scanner/core/theme/app_text_style.dart';
 import 'package:business_card_scanner/features/auth/presentation/cubit/delete_account_cubit.dart';
 import 'package:business_card_scanner/features/auth/presentation/cubit/logout_cubit.dart';
 import 'package:business_card_scanner/features/menu/presentation/widgets/menu_tile.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -17,6 +18,10 @@ class MenuScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final fb.User? user = fb.FirebaseAuth.instance.currentUser;
+    final displayName = _resolveDisplayName(user);
+    final initials = _extractInitials(displayName);
+
     return MultiBlocListener(
       listeners: [
         BlocListener<LogoutCubit, LogoutState>(
@@ -65,15 +70,15 @@ class MenuScreen extends StatelessWidget {
                         border: Border.all(color: AppColors.primary)),
                     child: Center(
                       child: Text(
-                        'KI',
+                        initials,
                         style: AppTextStyles.headline3
-                            .copyWith(  color: AppColors.primary),
+                            .copyWith(color: AppColors.primary),
                       ),
                     ),
                   ),
                   const Gap(8),
                   Text(
-                    'Email',
+                    displayName,
                     style: AppTextStyles.headline3
                         .copyWith(fontSize: 16, color: Colors.black),
                   ),
@@ -214,5 +219,24 @@ class MenuScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String _resolveDisplayName(fb.User? user) {
+    final name = user?.displayName?.trim();
+    if (name != null && name.isNotEmpty) return name;
+    final email = user?.email?.trim();
+    if (email != null && email.isNotEmpty) return email;
+    return 'User';
+  }
+
+  String _extractInitials(String displayName) {
+    final words = displayName.trim().split(RegExp(r'\s+'));
+    final buffer = StringBuffer();
+    for (final word in words) {
+      if (word.isEmpty) continue;
+      buffer.write(word.characters.first.toUpperCase());
+      if (buffer.length == 2) break;
+    }
+    return buffer.isEmpty ? 'U' : buffer.toString();
   }
 }
