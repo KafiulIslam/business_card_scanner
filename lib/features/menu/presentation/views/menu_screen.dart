@@ -44,7 +44,10 @@ class MenuScreen extends StatelessWidget {
                   title: 'Privacy Policy'),
               Gap(AppDimensions.spacing16),
               // Terms
-              const MenuTile(icon: Icons.rule, title: 'Terms of Services'),
+              MenuTile(
+                  onTap: () => context.push(Routes.termsConditions),
+                  icon: Icons.rule,
+                  title: 'Terms & Conditions'),
               Gap(AppDimensions.spacing16),
               // Share us
               const MenuTile(icon: Icons.share_outlined, title: 'Share Us'),

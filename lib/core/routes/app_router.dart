@@ -4,6 +4,7 @@ import 'package:business_card_scanner/features/auth/presentation/views/login/log
 import 'package:business_card_scanner/features/auth/presentation/views/signUp/sign_up_screen.dart';
 import 'package:business_card_scanner/features/dashboard/dashboard_screen.dart';
 import 'package:business_card_scanner/features/menu/presentation/views/privacy_policy_screen.dart';
+import 'package:business_card_scanner/features/menu/presentation/views/terms_condition_screen.dart';
 import 'package:business_card_scanner/features/myCard/presentation/views/choose_template_screen.dart';
 import 'package:business_card_scanner/features/myCard/presentation/views/edit_template_details.dart';
 import 'package:business_card_scanner/features/myCard/presentation/views/edit_my_card.dart';
@@ -346,6 +347,18 @@ final GoRouter router = GoRouter(
         return CustomTransitionPage(
           key: state.pageKey,
           child: const PrivacyPolicyScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+        );
+      },
+    ),
+    GoRoute(
+      path: Routes.termsConditions,
+      pageBuilder: (context, state) {
+        return CustomTransitionPage(
+          key: state.pageKey,
+          child: const TermsConditionsScreen(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return FadeTransition(opacity: animation, child: child);
           },

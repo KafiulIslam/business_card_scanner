@@ -35,5 +35,6 @@ class Routes {
 
   //!======================== Menu Routes ========================
   static const String privacyPolicy = '/privacy-policy';
+  static const String termsConditions = '/terms-conditions';
 
 }
