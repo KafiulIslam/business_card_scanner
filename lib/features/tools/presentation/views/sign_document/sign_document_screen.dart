@@ -21,6 +21,8 @@ class SignDocumentScreen extends StatefulWidget {
 }
 
 class _SignDocumentScreenState extends State<SignDocumentScreen> {
+
+
   @override
   void initState() {
     super.initState();
@@ -89,7 +91,7 @@ class _SignDocumentScreenState extends State<SignDocumentScreen> {
                 if (state.documents.isEmpty) {
                   return _buildStatusMessage(
                     context,
-                    'No signed documents yet.\nTap the + button to add one.',
+                    'No signed documents yet.\nTap the floating button to add one.',
                     Icons.description_outlined,
                     actionLabel: 'Refresh',
                     onAction: _fetchSignedDocs,
@@ -209,7 +211,7 @@ class _SignDocumentScreenState extends State<SignDocumentScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 48, color: AppColors.gray400),
+            Icon(icon, size: 64, color: AppColors.gray400),
             const SizedBox(height: 12),
             Text(
               message,

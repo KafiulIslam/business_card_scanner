@@ -21,4 +21,5 @@ class AssetsPath {
   static String saveContact = "${pngAssets}save_contact.png";
   static String email = "${pngAssets}email.png";
   static String webview = "${pngAssets}webview.png";
+  static String empty = "${pngAssets}empty.png";
 }
