@@ -31,6 +31,22 @@ class _NetworkScreenState extends State<NetworkScreen> {
     _fetchNetworkCards();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Refresh cards when screen becomes visible again (after navigation)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        final state = context.read<NetworkCubit>().state;
+        final user = FirebaseAuth.instance.currentUser;
+        // Refresh if cards are empty and we're not currently loading
+        if (user != null && state.cards.isEmpty && !state.isLoading) {
+          _fetchNetworkCards();
+        }
+      }
+    });
+  }
+
   void _fetchNetworkCards() {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {

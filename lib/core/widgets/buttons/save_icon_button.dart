@@ -5,20 +5,29 @@ import '../../theme/app_dimensions.dart';
 class SaveIconButton extends StatelessWidget {
   final bool isLoading;
   final VoidCallback onTap;
+  final bool isEnabled;
 
-  const SaveIconButton(
-      {super.key, required this.isLoading, required this.onTap});
+  const SaveIconButton({
+    super.key,
+    required this.isLoading,
+    required this.onTap,
+    this.isEnabled = true,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final bool canTap = isEnabled && !isLoading;
+    
     return InkWell(
-      onTap: onTap,
+      onTap: canTap ? onTap : null,
       child: Container(
         margin: const EdgeInsets.only(right: 16),
         height: 36,
         width: 36,
         decoration: BoxDecoration(
-          color: isLoading ? AppColors.gray400 : AppColors.primary,
+          color: isLoading
+              ? AppColors.gray400
+              : (canTap ? AppColors.primary : AppColors.gray400),
           borderRadius: BorderRadius.circular(AppDimensions.radius8),
         ),
         child: isLoading
@@ -31,9 +40,9 @@ class SaveIconButton extends StatelessWidget {
                   ),
                 ),
               )
-            : const Icon(
+            : Icon(
                 Icons.save_as_outlined,
-                color: Colors.white,
+                color: canTap ? Colors.white : Colors.grey,
               ),
       ),
     );

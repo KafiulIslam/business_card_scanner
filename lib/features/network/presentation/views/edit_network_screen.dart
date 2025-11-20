@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
@@ -27,7 +28,17 @@ class EditNetworkScreen extends StatefulWidget {
 
 class _EditNetworkScreenState extends State<EditNetworkScreen> {
   late String selectedCategory;
-  String? selectedTag = NetworkConstants.defaultTag;
+
+  // Original values to compare against
+  late String _originalNote;
+  late String _originalName;
+  late String _originalTitle;
+  late String _originalCompany;
+  late String _originalEmail;
+  late String _originalPhone;
+  late String _originalAddress;
+  late String _originalWebsite;
+  late String _originalCategory;
 
   // fields controllers
   final TextEditingController _whereYouMetController = TextEditingController();
@@ -42,92 +53,148 @@ class _EditNetworkScreenState extends State<EditNetworkScreen> {
   // Screenshot controller for capturing the card preview widget
   final ScreenshotController _screenshotController = ScreenshotController();
 
-
-  void _saveCard() {
+  Future<void> _updateCard() async {
     if (widget.network.cardId == null) {
+      if (!mounted) return;
       CustomSnack.warning('Card ID is missing. Cannot update.', context);
       return;
     }
 
-    // Create updated NetworkModel with all current values
-    final updatedNetwork = NetworkModel(
-      cardId: widget.network.cardId,
-      uid: widget.network.uid,
-      imageUrl: widget.network.imageUrl,
-      category: selectedCategory,
-      note: _whereYouMetController.text.trim().isEmpty
-          ? null
-          : _whereYouMetController.text.trim(),
-      name: _nameController.text.trim().isEmpty
-          ? null
-          : _nameController.text.trim(),
-      title: _jobTitleController.text.trim().isEmpty
-          ? null
-          : _jobTitleController.text.trim(),
-      company: _companyController.text.trim().isEmpty
-          ? null
-          : _companyController.text.trim(),
-      email: _emailController.text.trim().isEmpty
-          ? null
-          : _emailController.text.trim(),
-      phone: _phoneController.text.trim().isEmpty
-          ? null
-          : _phoneController.text.trim(),
-      address: _addressController.text.trim().isEmpty
-          ? null
-          : _addressController.text.trim(),
-      website: _websiteController.text.trim().isEmpty
-          ? null
-          : _websiteController.text.trim(),
-      createdAt: widget.network.createdAt, // Preserve original creation date
-      isCameraScanned: widget.network.isCameraScanned,
-    );
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      if (!mounted) return;
+      CustomSnack.warning('User not authenticated', context);
+      return;
+    }
 
-    // Save to Firestore using the cubit
-    context.read<NetworkCubit>().saveNetworkCard(updatedNetwork);
+    try {
+      // Create updated NetworkModel with all current values
+      final updatedNetwork = NetworkModel(
+        cardId: widget.network.cardId,
+        uid: widget.network.uid,
+        imageUrl: widget.network.imageUrl,
+        category: selectedCategory,
+        note: _whereYouMetController.text.trim().isEmpty
+            ? null
+            : _whereYouMetController.text.trim(),
+        name: _nameController.text.trim().isEmpty
+            ? null
+            : _nameController.text.trim(),
+        title: _jobTitleController.text.trim().isEmpty
+            ? null
+            : _jobTitleController.text.trim(),
+        company: _companyController.text.trim().isEmpty
+            ? null
+            : _companyController.text.trim(),
+        email: _emailController.text.trim().isEmpty
+            ? null
+            : _emailController.text.trim(),
+        phone: _phoneController.text.trim().isEmpty
+            ? null
+            : _phoneController.text.trim(),
+        address: _addressController.text.trim().isEmpty
+            ? null
+            : _addressController.text.trim(),
+        website: _websiteController.text.trim().isEmpty
+            ? null
+            : _websiteController.text.trim(),
+        createdAt: widget.network.createdAt,
+        isCameraScanned: widget.network.isCameraScanned,
+      );
+
+      // Save to Firestore using the cubit (this will set isSuccess: true)
+      await context.read<NetworkCubit>().saveNetworkCard(updatedNetwork);
+
+      // Check if widget is still mounted before proceeding
+      if (!mounted) return;
+
+      // Fetch network list to update the cards in state
+      await context.read<NetworkCubit>().fetchNetworkCards(user.uid);
+    } catch (e) {
+      if (!mounted) return;
+      CustomSnack.warning('Failed to update network: ${e.toString()}', context);
+    }
   }
-
 
   @override
   void initState() {
     super.initState();
+    // Store original values for comparison
+    _originalNote = widget.network.note ?? '';
+    _originalName = widget.network.name ?? '';
+    _originalTitle = widget.network.title ?? '';
+    _originalCompany = widget.network.company ?? '';
+    _originalEmail = widget.network.email ?? '';
+    _originalPhone = widget.network.phone ?? '';
+    _originalAddress = widget.network.address ?? '';
+    _originalWebsite = widget.network.website ?? '';
+    _originalCategory =
+        widget.network.category ?? NetworkConstants.defaultCategory;
+
     // Initialize controllers with network data
-    _whereYouMetController.text = widget.network.note ?? '';
-    _nameController.text = widget.network.name ?? '';
-    _jobTitleController.text = widget.network.title ?? '';
-    _companyController.text = widget.network.company ?? '';
-    _emailController.text = widget.network.email ?? '';
-    _phoneController.text = widget.network.phone ?? '';
-    _addressController.text = widget.network.address ?? '';
-    _websiteController.text = widget.network.website ?? '';
+    _whereYouMetController.text = _originalNote;
+    _nameController.text = _originalName;
+    _jobTitleController.text = _originalTitle;
+    _companyController.text = _originalCompany;
+    _emailController.text = _originalEmail;
+    _phoneController.text = _originalPhone;
+    _addressController.text = _originalAddress;
+    _websiteController.text = _originalWebsite;
 
     // Initialize category
-    selectedCategory = widget.network.category ?? NetworkConstants.defaultCategory;
+    selectedCategory = _originalCategory;
 
-    // Add listeners to update preview when fields change
-    _nameController.addListener(_updatePreview);
-    _jobTitleController.addListener(_updatePreview);
-    _companyController.addListener(_updatePreview);
-    _emailController.addListener(_updatePreview);
-    _phoneController.addListener(_updatePreview);
-    _addressController.addListener(_updatePreview);
-    _websiteController.addListener(_updatePreview);
+    // Add listeners to update preview and check for changes when fields change
+    _whereYouMetController.addListener(_checkForChanges);
+    _nameController.addListener(_checkForChanges);
+    _jobTitleController.addListener(_checkForChanges);
+    _companyController.addListener(_checkForChanges);
+    _emailController.addListener(_checkForChanges);
+    _phoneController.addListener(_checkForChanges);
+    _addressController.addListener(_checkForChanges);
+    _websiteController.addListener(_checkForChanges);
   }
 
-  void _updatePreview() {
-    setState(() {});
+  void _checkForChanges() {
+    setState(() {
+      // This will trigger rebuild and check _hasChanges()
+    });
+  }
+
+  bool _hasChanges() {
+    // Compare current values with original values
+    final currentNote = _whereYouMetController.text.trim();
+    final currentName = _nameController.text.trim();
+    final currentTitle = _jobTitleController.text.trim();
+    final currentCompany = _companyController.text.trim();
+    final currentEmail = _emailController.text.trim();
+    final currentPhone = _phoneController.text.trim();
+    final currentAddress = _addressController.text.trim();
+    final currentWebsite = _websiteController.text.trim();
+
+    // Check if any field has changed
+    return currentNote != _originalNote ||
+        currentName != _originalName ||
+        currentTitle != _originalTitle ||
+        currentCompany != _originalCompany ||
+        currentEmail != _originalEmail ||
+        currentPhone != _originalPhone ||
+        currentAddress != _originalAddress ||
+        currentWebsite != _originalWebsite ||
+        selectedCategory != _originalCategory;
   }
 
   @override
   void dispose() {
     // Remove listeners before disposing controllers
-    _nameController.removeListener(_updatePreview);
-    _jobTitleController.removeListener(_updatePreview);
-    _companyController.removeListener(_updatePreview);
-    _emailController.removeListener(_updatePreview);
-    _phoneController.removeListener(_updatePreview);
-    _addressController.removeListener(_updatePreview);
-    _websiteController.removeListener(_updatePreview);
+    _whereYouMetController.removeListener(_checkForChanges);
+    _nameController.removeListener(_checkForChanges);
+    _jobTitleController.removeListener(_checkForChanges);
+    _companyController.removeListener(_checkForChanges);
+    _emailController.removeListener(_checkForChanges);
+    _phoneController.removeListener(_checkForChanges);
+    _addressController.removeListener(_checkForChanges);
+    _websiteController.removeListener(_checkForChanges);
 
     // Dispose controllers
     _whereYouMetController.dispose();
@@ -152,24 +219,29 @@ class _EditNetworkScreenState extends State<EditNetworkScreen> {
         actions: [
           BlocListener<NetworkCubit, NetworkState>(
             listenWhen: (prev, curr) =>
-                prev.isSuccess != curr.isSuccess || prev.error != curr.error,
+                (prev.isLoading && !curr.isLoading && curr.isSuccess) ||
+                (prev.error != curr.error && curr.error != null),
             listener: (context, state) {
-              if (state.isSuccess) {
-                CustomSnack.success('Network updated successfully', context);
-                context.read<NetworkCubit>().reset();
-                context.pop();
+              // Only trigger after loading completes (after fetchNetworkCards)
+              if (!state.isLoading && state.isSuccess && state.cards.isNotEmpty) {
+                CustomSnack.success('Card is updated successfully', context);
+                context.read<NetworkCubit>().clearFlags();
+                if (mounted) {
+                  context.pop();
+                }
               } else if (state.error != null) {
                 CustomSnack.warning(state.error!, context);
-                context.read<NetworkCubit>().reset();
+                context.read<NetworkCubit>().clearFlags();
               }
             },
             child: BlocBuilder<NetworkCubit, NetworkState>(
               builder: (context, state) {
                 return SaveIconButton(
                     isLoading: state.isLoading,
-                    onTap: () {
-                      if (!state.isLoading) {
-                        _saveCard();
+                    isEnabled: _hasChanges(),
+                    onTap: () async {
+                      if (!state.isLoading && _hasChanges()) {
+                        await _updateCard();
                       }
                     });
               },
@@ -214,7 +286,7 @@ class _EditNetworkScreenState extends State<EditNetworkScreen> {
 
   Widget _buildCategoryDropdown() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: EdgeInsets.symmetric(horizontal: AppDimensions.spacing16),
       decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(AppDimensions.radius32),
           color: AppColors.primaryLight.withOpacity(0.2)),
@@ -224,6 +296,7 @@ class _EditNetworkScreenState extends State<EditNetworkScreen> {
           onChanged: (value) {
             setState(() {
               selectedCategory = value ?? '';
+              // This will trigger _checkForChanges through setState
             });
           },
           iconEnabledColor: AppColors.primary,
@@ -250,60 +323,38 @@ class _EditNetworkScreenState extends State<EditNetworkScreen> {
           icon: Icons.person_outline,
           controller: _nameController,
           hint: 'Name',
-          onChanged: (value) {
-            setState(() {});
-          },
         ),
         CardInfoField(
           icon: Icons.work,
           controller: _jobTitleController,
           hint: 'Job Title',
-          onChanged: (value) {
-            setState(() {});
-          },
         ),
         CardInfoField(
           icon: Icons.domain,
           controller: _companyController,
           hint: 'Company',
-          onChanged: (value) {
-            setState(() {});
-          },
         ),
         CardInfoField(
           icon: Icons.email_outlined,
           controller: _emailController,
           hint: 'Email',
-          onChanged: (value) {
-            setState(() {});
-          },
         ),
         CardInfoField(
           icon: Icons.phone_outlined,
           controller: _phoneController,
           hint: 'Phone',
-          onChanged: (value) {
-            setState(() {});
-          },
         ),
         CardInfoField(
           icon: Icons.location_on_outlined,
           controller: _addressController,
           hint: 'Address',
-          onChanged: (value) {
-            setState(() {});
-          },
         ),
         CardInfoField(
           icon: Icons.language_outlined,
           controller: _websiteController,
           hint: 'Website',
-          onChanged: (value) {
-            setState(() {});
-          },
         ),
       ],
     );
   }
-
 }

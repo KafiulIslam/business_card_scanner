@@ -180,12 +180,24 @@ class NetworkDetailsScreen extends StatelessWidget {
           (prev.isLoading && !curr.isLoading && curr.isSuccess) ||
           (prev.error != curr.error && curr.error != null),
       listener: (context, state) {
+        // Only show delete success message if cards count decreased (delete operation)
+        // This prevents showing delete message on update operations
         if (!state.isLoading && state.isSuccess) {
-          CustomSnack.success('Network card deleted successfully', context);
-          context.read<NetworkCubit>().clearFlags();
-          // Navigate back to previous screen
-          if (context.mounted) {
-            context.pop();
+          // Check if this is a delete operation by comparing card counts
+          // If cards list is empty or we're on details screen, it's likely a delete
+          final isDeleteOperation = state.cards.isEmpty || 
+              !state.cards.any((card) => card.cardId == network.cardId);
+          
+          if (isDeleteOperation) {
+            CustomSnack.success('Network card deleted successfully', context);
+            context.read<NetworkCubit>().clearFlags();
+            // Navigate back to previous screen
+            if (context.mounted) {
+              context.pop();
+            }
+          } else {
+            // It's an update operation, just clear flags without showing message
+            context.read<NetworkCubit>().clearFlags();
           }
         } else if (state.error != null) {
           CustomSnack.warning(state.error!, context);
