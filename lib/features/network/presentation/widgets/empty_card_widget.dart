@@ -1,4 +1,3 @@
-import 'package:business_card_scanner/core/theme/app_assets.dart';
 import 'package:business_card_scanner/core/theme/app_dimensions.dart';
 import 'package:business_card_scanner/core/theme/app_text_style.dart';
 import 'package:business_card_scanner/core/utils/assets_path.dart';

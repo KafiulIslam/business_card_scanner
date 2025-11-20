@@ -66,20 +66,20 @@ class _NetworkScreenState extends State<NetworkScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.scaffoldBG,
-        leading: Padding(
-          padding: const EdgeInsets.all(10.0),
-          child: Container(
-            decoration: BoxDecoration(
-              color: AppColors.primaryLight.withOpacity(0.2),
-              border: Border.all(color: AppColors.primary),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.person,
-              color: AppColors.primary,
-            ),
-          ),
-        ),
+        // leading: Padding(
+        //   padding: const EdgeInsets.all(10.0),
+        //   child: Container(
+        //     decoration: BoxDecoration(
+        //       color: AppColors.primaryLight.withOpacity(0.2),
+        //       border: Border.all(color: AppColors.primary),
+        //       shape: BoxShape.circle,
+        //     ),
+        //     child: const Icon(
+        //       Icons.person,
+        //       color: AppColors.primary,
+        //     ),
+        //   ),
+        // ),
         title: Container(
           height: 40.h,
           decoration: BoxDecoration(
