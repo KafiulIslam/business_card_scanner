@@ -32,6 +32,7 @@ class EditNetworkScreen extends StatefulWidget {
 
 class _EditNetworkScreenState extends State<EditNetworkScreen> {
   late String selectedCategory;
+  late bool isCardUpdating = false;
 
   // Original values to compare against
   late String _originalNote;
@@ -72,6 +73,11 @@ class _EditNetworkScreenState extends State<EditNetworkScreen> {
     }
 
     try {
+
+      setState(() {
+        isCardUpdating = true;
+      });
+
       String? imageUrl = widget.network.imageUrl;
       //final isManualCard = widget.network.isCameraScanned == false;
 
@@ -172,6 +178,10 @@ class _EditNetworkScreenState extends State<EditNetworkScreen> {
     } catch (e) {
       if (!mounted) return;
       CustomSnack.warning('Failed to update network: ${e.toString()}', context);
+    } finally{
+      setState(() {
+        isCardUpdating = false;
+      });
     }
   }
 
@@ -316,10 +326,10 @@ class _EditNetworkScreenState extends State<EditNetworkScreen> {
           BlocBuilder<NetworkCubit, NetworkState>(
             builder: (context, state) {
               return SaveIconButton(
-                  isLoading: state.isLoading,
+                  isLoading: isCardUpdating,
                   isEnabled: _hasChanges(),
                   onTap: () async {
-                    if (!state.isLoading && _hasChanges()) {
+                    if (!isCardUpdating && _hasChanges()) {
                       await _updateCard(true);
                     }
                   });
