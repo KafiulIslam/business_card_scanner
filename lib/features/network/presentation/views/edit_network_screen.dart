@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -5,6 +7,7 @@ import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:screenshot/screenshot.dart';
 import '../../../../core/constants/network_constants.dart';
+import '../../../../core/routes/routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_dimensions.dart';
 import '../../../../core/theme/app_text_style.dart';
@@ -13,6 +16,7 @@ import '../../../../core/utils/custom_snack.dart';
 import '../../../../core/widgets/buttons/save_icon_button.dart';
 import '../../../../core/widgets/dynamic_preview_card.dart';
 import '../../../../core/widgets/inputFields/card_info_field.dart';
+import '../../data/services/firebase_storage_service.dart';
 import '../../domain/entities/network_model.dart';
 import '../cubit/network_cubit.dart';
 import '../cubit/network_state.dart';
@@ -53,7 +57,7 @@ class _EditNetworkScreenState extends State<EditNetworkScreen> {
   // Screenshot controller for capturing the card preview widget
   final ScreenshotController _screenshotController = ScreenshotController();
 
-  Future<void> _updateCard() async {
+  Future<void> _updateCard(bool isManualCard) async {
     if (widget.network.cardId == null) {
       if (!mounted) return;
       CustomSnack.warning('Card ID is missing. Cannot update.', context);
@@ -68,11 +72,63 @@ class _EditNetworkScreenState extends State<EditNetworkScreen> {
     }
 
     try {
+      String? imageUrl = widget.network.imageUrl;
+      //final isManualCard = widget.network.isCameraScanned == false;
+
+      // If it's a manual card, capture screenshot and upload new image
+      if (isManualCard) {
+        try {
+          // Wait for widget to be fully rendered before capturing
+          await Future.delayed(const Duration(milliseconds: 100));
+          await WidgetsBinding.instance.endOfFrame;
+
+          // Capture the card preview widget as an image
+          final imageFile = await _captureCardPreview();
+          if (imageFile == null || !await imageFile.exists()) {
+            if (mounted) {
+              CustomSnack.warning(
+                  'Failed to capture card image. Please try again.', context);
+            }
+            return;
+          }
+
+          // Upload new image to replace the old one (same path, overwrites)
+          final storageService = context.read<FirebaseStorageService>();
+          imageUrl = await storageService.updateCardImage(
+            imageFile,
+            widget.network.cardId!,
+          ).timeout(
+            const Duration(seconds: 30),
+            onTimeout: () => throw TimeoutException('Upload timeout'),
+          );
+
+          // Clean up temporary file
+          try {
+            await imageFile.delete();
+          } catch (_) {
+            // Ignore cleanup errors
+          }
+        } on TimeoutException {
+          if (mounted) {
+            CustomSnack.warning(
+                'Network error: Please check your internet connection and try again',
+                context);
+          }
+          return;
+        } catch (e) {
+          if (mounted) {
+            CustomSnack.warning('Failed to upload image: ${e.toString()}', context);
+          }
+          return;
+        }
+      }
+      // If camera scanned card, keep the same imageUrl (no change)
+
       // Create updated NetworkModel with all current values
       final updatedNetwork = NetworkModel(
         cardId: widget.network.cardId,
         uid: widget.network.uid,
-        imageUrl: widget.network.imageUrl,
+        imageUrl: imageUrl,
         category: selectedCategory,
         note: _whereYouMetController.text.trim().isEmpty
             ? null
@@ -102,7 +158,7 @@ class _EditNetworkScreenState extends State<EditNetworkScreen> {
         isCameraScanned: widget.network.isCameraScanned,
       );
 
-      // Save to Firestore using the cubit (this will set isSuccess: true)
+      // Save to Firestore using the cubit
       await context.read<NetworkCubit>().saveNetworkCard(updatedNetwork);
 
       // Check if widget is still mounted before proceeding
@@ -110,9 +166,49 @@ class _EditNetworkScreenState extends State<EditNetworkScreen> {
 
       // Fetch network list to update the cards in state
       await context.read<NetworkCubit>().fetchNetworkCards(user.uid);
+      if (mounted) {
+        context.go(Routes.dashboard);
+      }
     } catch (e) {
       if (!mounted) return;
       CustomSnack.warning('Failed to update network: ${e.toString()}', context);
+    }
+  }
+
+  /// Captures the card preview widget as an image file
+  Future<File?> _captureCardPreview() async {
+    try {
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      final imageBytes = await _screenshotController.capture(
+        delay: const Duration(milliseconds: 200),
+        pixelRatio: 2.0,
+      );
+
+      if (imageBytes == null || imageBytes.isEmpty) {
+        return null;
+      }
+
+      final tempDir = Directory.systemTemp;
+      if (!await tempDir.exists()) {
+        await tempDir.create(recursive: true);
+      }
+
+      final imageFile = File(
+        '${tempDir.path}/card_preview_${DateTime.now().millisecondsSinceEpoch}.png',
+      );
+
+      await imageFile.writeAsBytes(imageBytes);
+
+      // Verify file was created and has content
+      if (!await imageFile.exists() || await imageFile.length() == 0) {
+        return null;
+      }
+
+      return imageFile;
+    } catch (e) {
+      debugPrint('Error capturing card preview: $e');
+      return null;
     }
   }
 
@@ -217,36 +313,18 @@ class _EditNetworkScreenState extends State<EditNetworkScreen> {
           style: AppTextStyles.headline4,
         ),
         actions: [
-          BlocListener<NetworkCubit, NetworkState>(
-            listenWhen: (prev, curr) =>
-                (prev.isLoading && !curr.isLoading && curr.isSuccess) ||
-                (prev.error != curr.error && curr.error != null),
-            listener: (context, state) {
-              // Only trigger after loading completes (after fetchNetworkCards)
-              if (!state.isLoading && state.isSuccess && state.cards.isNotEmpty) {
-                CustomSnack.success('Card is updated successfully', context);
-                context.read<NetworkCubit>().clearFlags();
-                if (mounted) {
-                  context.pop();
-                }
-              } else if (state.error != null) {
-                CustomSnack.warning(state.error!, context);
-                context.read<NetworkCubit>().clearFlags();
-              }
+          BlocBuilder<NetworkCubit, NetworkState>(
+            builder: (context, state) {
+              return SaveIconButton(
+                  isLoading: state.isLoading,
+                  isEnabled: _hasChanges(),
+                  onTap: () async {
+                    if (!state.isLoading && _hasChanges()) {
+                      await _updateCard(true);
+                    }
+                  });
             },
-            child: BlocBuilder<NetworkCubit, NetworkState>(
-              builder: (context, state) {
-                return SaveIconButton(
-                    isLoading: state.isLoading,
-                    isEnabled: _hasChanges(),
-                    onTap: () async {
-                      if (!state.isLoading && _hasChanges()) {
-                        await _updateCard();
-                      }
-                    });
-              },
-            ),
-          ),
+          )
         ],
       ),
       body: SingleChildScrollView(
@@ -257,7 +335,9 @@ class _EditNetworkScreenState extends State<EditNetworkScreen> {
             DynamicPreviewCard(
                 screenshotController: _screenshotController,
                 network: NetworkModel(
-                    imageUrl: AssetsPath.manualCardBg,
+                    imageUrl: widget.network.isCameraScanned == true
+                        ? widget.network.imageUrl ?? AssetsPath.manualCardBg
+                        : AssetsPath.manualCardBg,
                     name: _nameController.text,
                     title: _jobTitleController.text,
                     company: _companyController.text,
