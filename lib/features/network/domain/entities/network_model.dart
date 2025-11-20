@@ -15,6 +15,7 @@ class NetworkModel {
   final String? website;
   final DateTime? createdAt;
   final bool? isCameraScanned;
+  final String? sourceType;
 
   NetworkModel({
     this.cardId,
@@ -31,6 +32,7 @@ class NetworkModel {
     this.website,
     this.createdAt,
     this.isCameraScanned,
+    this.sourceType,
   });
 
   Map<String, dynamic> toMap() {
@@ -51,6 +53,7 @@ class NetworkModel {
       map['createdAt'] = Timestamp.fromDate(createdAt!);
     }
     if (isCameraScanned != null) map['isCameraScanned'] = isCameraScanned;
+    if (sourceType != null) map['sourceType'] = sourceType;
     return map;
   }
 
@@ -79,6 +82,7 @@ class NetworkModel {
       website: map['website']?.toString(),
       createdAt: createdAt,
       isCameraScanned: map['isCameraScanned'] as bool?,
+      sourceType: map['sourceType']?.toString(),
     );
   }
 }

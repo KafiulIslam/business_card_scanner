@@ -1,3 +1,4 @@
+import 'package:business_card_scanner/core/constants/network_source_type.dart';
 import 'package:business_card_scanner/core/widgets/buttons/save_icon_button.dart';
 import 'package:business_card_scanner/features/myCard/domain/entities/my_card_model.dart';
 import 'package:flutter/material.dart';
@@ -82,7 +83,8 @@ class _EditMyCardScreenState extends State<EditMyCardScreen> {
                     phone: _phoneController.text,
                     address: _addressController.text,
                     email: _emailController.text,
-                    website: _websiteController.text)),
+                    website: _websiteController.text,
+                    sourceType: NetworkSourceType.manual)),
             Gap(AppDimensions.spacing16),
             _buildExtractedFields(),
             Gap(AppDimensions.spacing48 * 2), // Space for bottom buttons
@@ -154,5 +156,4 @@ class _EditMyCardScreenState extends State<EditMyCardScreen> {
       ],
     );
   }
-
 }

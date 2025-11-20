@@ -3,6 +3,7 @@ import 'package:business_card_scanner/core/utils/assets_path.dart';
 import 'package:business_card_scanner/features/network/domain/entities/network_model.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import '../../../../core/constants/network_source_type.dart';
 import '../widgets/card_template.dart';
 
 class ChooseTemplateScreen extends StatelessWidget {
@@ -40,7 +41,8 @@ class ChooseTemplateScreen extends StatelessWidget {
                     phone: '+123456789',
                     address: 'Bogura, Rajshahi, Bangladesh',
                     email: 'cardigo@gmail.com',
-                    website: 'cardigo.com'),
+                    website: 'cardigo.com',
+                    sourceType: NetworkSourceType.manual),
               );
             },
             separatorBuilder: (_, index) => Gap(AppDimensions.spacing12),

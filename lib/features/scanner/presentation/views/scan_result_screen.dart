@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:business_card_scanner/core/constants/network_source_type.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -89,21 +90,23 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
 
       // Create NetworkModel entity with uploaded image URL and createdAt
       final networkCard = NetworkModel(
-        cardId: cardId,
-        uid: user.uid,
-        imageUrl: imageUrl,
-        category: selectedCategory,
-        note: _whereYouMetController.text,
-        name: _nameController.text,
-        title: _jobTitleController.text,
-        company: _companyController.text,
-        email: _emailController.text,
-        phone: _phoneController.text,
-        address: _addressController.text,
-        website: _websiteController.text,
-        createdAt: DateTime.now(),
-        isCameraScanned: widget.isCameraScanned,
-      );
+          cardId: cardId,
+          uid: user.uid,
+          imageUrl: imageUrl,
+          category: selectedCategory,
+          note: _whereYouMetController.text,
+          name: _nameController.text,
+          title: _jobTitleController.text,
+          company: _companyController.text,
+          email: _emailController.text,
+          phone: _phoneController.text,
+          address: _addressController.text,
+          website: _websiteController.text,
+          createdAt: DateTime.now(),
+          isCameraScanned: widget.isCameraScanned,
+          sourceType: widget.isCameraScanned
+              ? NetworkSourceType.camera
+              : NetworkSourceType.gallery);
 
       // Save to Firestore - this will emit success state
       // Don't set loading state again since we're already managing it
@@ -369,5 +372,4 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
       ],
     );
   }
-
 }

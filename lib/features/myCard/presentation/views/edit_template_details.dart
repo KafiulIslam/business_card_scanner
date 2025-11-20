@@ -10,6 +10,7 @@ import 'package:business_card_scanner/core/theme/app_dimensions.dart';
 import 'package:business_card_scanner/core/utils/custom_snack.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/constants/network_source_type.dart';
 import '../../../../core/widgets/dynamic_preview_card.dart';
 import '../../../../core/widgets/inputFields/card_info_field.dart';
 import '../../../network/domain/entities/network_model.dart';
@@ -242,7 +243,8 @@ class _EditTemplateDetailsState extends State<EditTemplateDetails> {
                     phone: _phoneController.text,
                     address: _addressController.text,
                     email: _emailController.text,
-                    website: _websiteController.text)),
+                    website: _websiteController.text,
+                    sourceType: NetworkSourceType.manual)),
             Gap(AppDimensions.spacing16),
             _buildExtractedFields(),
             Gap(AppDimensions.spacing48 * 2), // Space for bottom buttons

@@ -73,7 +73,6 @@ class _EditNetworkScreenState extends State<EditNetworkScreen> {
     }
 
     try {
-
       setState(() {
         isCardUpdating = true;
       });
@@ -100,13 +99,15 @@ class _EditNetworkScreenState extends State<EditNetworkScreen> {
 
           // Upload new image to replace the old one (same path, overwrites)
           final storageService = context.read<FirebaseStorageService>();
-          imageUrl = await storageService.updateCardImage(
-            imageFile,
-            widget.network.cardId!,
-          ).timeout(
-            const Duration(seconds: 30),
-            onTimeout: () => throw TimeoutException('Upload timeout'),
-          );
+          imageUrl = await storageService
+              .updateCardImage(
+                imageFile,
+                widget.network.cardId!,
+              )
+              .timeout(
+                const Duration(seconds: 30),
+                onTimeout: () => throw TimeoutException('Upload timeout'),
+              );
 
           // Clean up temporary file
           try {
@@ -123,7 +124,8 @@ class _EditNetworkScreenState extends State<EditNetworkScreen> {
           return;
         } catch (e) {
           if (mounted) {
-            CustomSnack.warning('Failed to upload image: ${e.toString()}', context);
+            CustomSnack.warning(
+                'Failed to upload image: ${e.toString()}', context);
           }
           return;
         }
@@ -132,37 +134,37 @@ class _EditNetworkScreenState extends State<EditNetworkScreen> {
 
       // Create updated NetworkModel with all current values
       final updatedNetwork = NetworkModel(
-        cardId: widget.network.cardId,
-        uid: widget.network.uid,
-        imageUrl: imageUrl,
-        category: selectedCategory,
-        note: _whereYouMetController.text.trim().isEmpty
-            ? null
-            : _whereYouMetController.text.trim(),
-        name: _nameController.text.trim().isEmpty
-            ? null
-            : _nameController.text.trim(),
-        title: _jobTitleController.text.trim().isEmpty
-            ? null
-            : _jobTitleController.text.trim(),
-        company: _companyController.text.trim().isEmpty
-            ? null
-            : _companyController.text.trim(),
-        email: _emailController.text.trim().isEmpty
-            ? null
-            : _emailController.text.trim(),
-        phone: _phoneController.text.trim().isEmpty
-            ? null
-            : _phoneController.text.trim(),
-        address: _addressController.text.trim().isEmpty
-            ? null
-            : _addressController.text.trim(),
-        website: _websiteController.text.trim().isEmpty
-            ? null
-            : _websiteController.text.trim(),
-        createdAt: widget.network.createdAt,
-        isCameraScanned: widget.network.isCameraScanned,
-      );
+          cardId: widget.network.cardId,
+          uid: widget.network.uid,
+          imageUrl: imageUrl,
+          category: selectedCategory,
+          note: _whereYouMetController.text.trim().isEmpty
+              ? null
+              : _whereYouMetController.text.trim(),
+          name: _nameController.text.trim().isEmpty
+              ? null
+              : _nameController.text.trim(),
+          title: _jobTitleController.text.trim().isEmpty
+              ? null
+              : _jobTitleController.text.trim(),
+          company: _companyController.text.trim().isEmpty
+              ? null
+              : _companyController.text.trim(),
+          email: _emailController.text.trim().isEmpty
+              ? null
+              : _emailController.text.trim(),
+          phone: _phoneController.text.trim().isEmpty
+              ? null
+              : _phoneController.text.trim(),
+          address: _addressController.text.trim().isEmpty
+              ? null
+              : _addressController.text.trim(),
+          website: _websiteController.text.trim().isEmpty
+              ? null
+              : _websiteController.text.trim(),
+          createdAt: widget.network.createdAt,
+          isCameraScanned: widget.network.isCameraScanned,
+          sourceType: widget.network.sourceType);
 
       // Save to Firestore using the cubit
       await context.read<NetworkCubit>().saveNetworkCard(updatedNetwork);
@@ -178,7 +180,7 @@ class _EditNetworkScreenState extends State<EditNetworkScreen> {
     } catch (e) {
       if (!mounted) return;
       CustomSnack.warning('Failed to update network: ${e.toString()}', context);
-    } finally{
+    } finally {
       setState(() {
         isCardUpdating = false;
       });
@@ -354,7 +356,8 @@ class _EditNetworkScreenState extends State<EditNetworkScreen> {
                     phone: _phoneController.text,
                     address: _addressController.text,
                     email: _emailController.text,
-                    website: _websiteController.text)),
+                    website: _websiteController.text,
+                    sourceType: widget.network.sourceType)),
             Gap(AppDimensions.spacing16),
 
             // Category Dropdown

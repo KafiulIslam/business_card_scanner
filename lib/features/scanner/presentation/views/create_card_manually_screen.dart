@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:business_card_scanner/core/constants/network_source_type.dart';
 import 'package:business_card_scanner/core/utils/assets_path.dart';
 import 'package:business_card_scanner/core/widgets/buttons/save_icon_button.dart';
 import 'package:business_card_scanner/core/widgets/dynamic_preview_card.dart';
@@ -90,21 +91,22 @@ class _CreateCardManuallyScreenState extends State<CreateCardManuallyScreen> {
 
       // Create and save network card
       final networkCard = NetworkModel(
-        cardId: cardId,
-        uid: user.uid,
-        imageUrl: imageUrl,
-        category: selectedCategory,
-        note: _whereYouMetController.text,
-        name: _nameController.text,
-        title: _jobTitleController.text,
-        company: _companyController.text,
-        email: _emailController.text,
-        phone: _phoneController.text,
-        address: _addressController.text,
-        website: _websiteController.text,
-        createdAt: DateTime.now(),
-        isCameraScanned: false, // Manual cards are not camera scanned
-      );
+          cardId: cardId,
+          uid: user.uid,
+          imageUrl: imageUrl,
+          category: selectedCategory,
+          note: _whereYouMetController.text,
+          name: _nameController.text,
+          title: _jobTitleController.text,
+          company: _companyController.text,
+          email: _emailController.text,
+          phone: _phoneController.text,
+          address: _addressController.text,
+          website: _websiteController.text,
+          createdAt: DateTime.now(),
+          isCameraScanned: false,
+          // Manual cards are not camera scanned
+          sourceType: NetworkSourceType.manual);
 
       await cubit.saveNetworkCard(networkCard, setLoadingState: false);
       await cubit.fetchNetworkCards(user.uid);
@@ -238,7 +240,8 @@ class _CreateCardManuallyScreenState extends State<CreateCardManuallyScreen> {
                     phone: _phoneController.text,
                     address: _addressController.text,
                     email: _emailController.text,
-                    website: _websiteController.text)),
+                    website: _websiteController.text,
+                    sourceType: NetworkSourceType.manual)),
             //_buildCardPreview(),
             Gap(AppDimensions.spacing16),
 
