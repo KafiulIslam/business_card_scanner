@@ -10,6 +10,7 @@ import 'package:business_card_scanner/features/myCard/presentation/views/edit_te
 import 'package:business_card_scanner/features/myCard/presentation/views/edit_my_card.dart';
 import 'package:business_card_scanner/features/myCard/domain/entities/my_card_model.dart';
 import 'package:business_card_scanner/features/network/domain/entities/network_model.dart';
+import 'package:business_card_scanner/features/network/presentation/views/edit_network_screen.dart';
 import 'package:business_card_scanner/features/network/presentation/views/network_details_screen.dart';
 import 'package:business_card_scanner/features/onBoard/presentation/views/onboard_screen.dart';
 import 'package:business_card_scanner/features/scanner/presentation/views/create_card_manually_screen.dart';
@@ -111,6 +112,32 @@ final GoRouter router = GoRouter(
         return CustomTransitionPage(
           key: state.pageKey,
           child: NetworkDetailsScreen(
+            network: network,
+          ),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+        );
+      },
+    ),
+    GoRoute(
+      path: Routes.editNetwork,
+      pageBuilder: (context, state) {
+        final network = state.extra as NetworkModel?;
+        if (network == null) {
+          // Fallback - you might want to handle this differently
+          return CustomTransitionPage(
+            key: state.pageKey,
+            child: const SizedBox(),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              return FadeTransition(opacity: animation, child: child);
+            },
+          );
+        }
+        return CustomTransitionPage(
+          key: state.pageKey,
+          child: EditNetworkScreen(
             network: network,
           ),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {

@@ -11,6 +11,7 @@ class Routes {
 
   //!======================== Network Routes ========================
   static const String networkDetails = '/network-details';
+  static const String editNetwork = '/edit-network';
 
   //!======================== Scanner Routes ========================
   static const String scanResult = '/scan-result';

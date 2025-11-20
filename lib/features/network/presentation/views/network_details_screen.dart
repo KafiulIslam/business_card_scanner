@@ -3,6 +3,7 @@ import 'package:business_card_scanner/core/theme/app_dimensions.dart';
 import 'package:business_card_scanner/core/theme/app_text_style.dart';
 import 'package:business_card_scanner/core/utils/assets_path.dart';
 import 'package:business_card_scanner/core/widgets/custom_image_holder.dart';
+import 'package:business_card_scanner/core/widgets/popup_item.dart';
 import 'package:business_card_scanner/features/network/domain/entities/network_model.dart';
 import 'package:business_card_scanner/features/network/presentation/cubit/network_cubit.dart';
 import 'package:business_card_scanner/features/network/presentation/cubit/network_state.dart';
@@ -11,6 +12,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/routes/routes.dart';
 import '../../../../core/utils/custom_snack.dart';
 import '../../../../core/services/external_app_service.dart';
 
@@ -201,24 +203,28 @@ class NetworkDetailsScreen extends StatelessWidget {
             style: AppTextStyles.headline4,
           ),
           actions: [
-            InkWell(
-              onTap: () => _showDeleteConfirmationDialog(context),
-              borderRadius: BorderRadius.circular(8),
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  color: Colors.red.withOpacity(0.2),
-                ),
-                child: const Padding(
-                  padding: EdgeInsets.all(6.0),
-                  child: Icon(
-                    Icons.delete_forever_outlined,
-                    color: Colors.red,
-                    size: 18,
-                  ),
-                ),
+            PopupMenuButton(
+              icon: const Icon(
+                Icons.more_horiz,
+                color: Colors.black,
+                size: 24,
               ),
+              itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                PopupMenuItem(
+                  onTap: () => context.push(
+                    Routes.editNetwork,
+                    extra: network,
+                  ),
+                  child: const CustomPopupItem(
+                      icon: Icons.edit_note_outlined, title: 'Edit'),
+                ),
+                PopupMenuItem(
+                    onTap: () => _showDeleteConfirmationDialog(context),
+                    child: const CustomPopupItem(
+                        icon: Icons.delete_forever_outlined, title: 'Delete')),
+              ],
             ),
+
             const Gap(16)
           ],
         ),
