@@ -7,14 +7,16 @@ import 'package:business_card_scanner/features/tools/presentation/views/tools_sc
 import 'package:business_card_scanner/features/menu/presentation/views/menu_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({super.key});
+  final int initialIndex;
+
+  const DashboardScreen({super.key, this.initialIndex = 0});
 
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  int _currentIndex = 0; // Default to Scan in the middle
+  late int _currentIndex;
 
   late final List<Widget> _pages = const <Widget>[
     NetworkScreen(),
@@ -23,6 +25,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
     ToolsScreen(),
     MenuScreen(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.initialIndex;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +58,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.contact_mail_sharp),
-           // activeIcon: Icon(Icons.credit_card),
+            // activeIcon: Icon(Icons.credit_card),
             label: 'My Card',
           ),
           BottomNavigationBarItem(
@@ -60,7 +68,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.category_outlined),
-           // activeIcon: Icon(Icons.build),
+            // activeIcon: Icon(Icons.build),
             label: 'Tools',
           ),
           BottomNavigationBarItem(

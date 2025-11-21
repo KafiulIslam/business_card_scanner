@@ -472,4 +472,5 @@ class _EditNetworkScreenState extends State<EditNetworkScreen> {
       ],
     );
   }
+
 }

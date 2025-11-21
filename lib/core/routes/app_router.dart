@@ -84,13 +84,18 @@ final GoRouter router = GoRouter(
     //!======================== Dashboard Routes ========================
     GoRoute(
       path: Routes.dashboard,
-      pageBuilder: (context, state) => CustomTransitionPage(
-        key: state.pageKey,
-        child: const DashboardScreen(),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(opacity: animation, child: child);
-        },
-      ),
+      pageBuilder: (context, state) {
+        final pageIndex = state.extra as int? ?? 0;
+        return CustomTransitionPage(
+          key: state.pageKey,
+          child: DashboardScreen(
+            initialIndex: pageIndex,
+          ),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+        );
+      },
     ),
 
     //!======================== Network Routes ========================

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:business_card_scanner/core/routes/routes.dart';
 import 'package:business_card_scanner/core/widgets/buttons/save_icon_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -41,7 +42,7 @@ class _EditTemplateDetailsState extends State<EditTemplateDetails> {
   // Screenshot controller for capturing the card preview widget
   final ScreenshotController _screenshotController = ScreenshotController();
 
-  Future<void> _saveCard() async {
+  Future<void> _saveMyCard() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       CustomSnack.warning('Please login to save cards', context);
@@ -103,6 +104,14 @@ class _EditTemplateDetailsState extends State<EditTemplateDetails> {
       await cubit.saveMyCard(myCard, setLoadingState: false);
       // Fetch cards to update the state before navigating back
       await cubit.fetchMyCards(user.uid);
+
+      if (mounted) {
+        context.go(
+          Routes.dashboard,
+          extra: 1,
+        );
+        CustomSnack.success('Your card is saved successfully!', context);
+      }
 
       // Clean up temporary file
       try {
@@ -191,40 +200,25 @@ class _EditTemplateDetailsState extends State<EditTemplateDetails> {
           style: AppTextStyles.headline4,
         ),
         actions: [
-          BlocListener<MyCardCubit, MyCardState>(
-            listenWhen: (prev, curr) =>
-                prev.isSuccess != curr.isSuccess || prev.error != curr.error,
-            listener: (context, state) {
-              if (state.isSuccess) {
-                CustomSnack.success('Card saved successfully', context);
-                // Clear flags but keep the cards that were just fetched
-                context.read<MyCardCubit>().clearFlags();
-                context.pop();
-              } else if (state.error != null) {
-                CustomSnack.warning(state.error!, context);
-                // Clear error flag but keep the cards
-                context.read<MyCardCubit>().clearFlags();
-              }
-            },
-            child: BlocBuilder<MyCardCubit, MyCardState>(
-              builder: (context, state) {
-                return SaveIconButton(
-                    isLoading: state.isLoading,
-                    onTap: () {
-                      if (_nameController.text.isNotEmpty &&
-                          _jobTitleController.text.isNotEmpty &&
-                          _companyController.text.isNotEmpty) {
-                        if (!state.isLoading) {
-                          _saveCard();
-                        }
-                      } else {
-                        CustomSnack.warning(
-                            'Please enter name, title, company name & all available information!',
-                            context);
+          BlocBuilder<MyCardCubit, MyCardState>(
+            builder: (context, state) {
+              return SaveIconButton(
+                  isLoading: state.isLoading,
+                  isEnabled: _nameController.text.isEmpty ? false : true,
+                  onTap: () {
+                    if (_nameController.text.isNotEmpty &&
+                        _jobTitleController.text.isNotEmpty &&
+                        _companyController.text.isNotEmpty) {
+                      if (!state.isLoading) {
+                        _saveMyCard();
                       }
-                    });
-              },
-            ),
+                    } else {
+                      CustomSnack.warning(
+                          'Please enter name, title, company name & all available information!',
+                          context);
+                    }
+                  });
+            },
           ),
           const Gap(16),
         ],
