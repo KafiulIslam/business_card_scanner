@@ -127,7 +127,7 @@ class _MyCardScreenState extends State<MyCardScreen> {
         child: ListView.separated(
           padding: EdgeInsets.zero,
           itemCount: state.cards.length,
-          separatorBuilder: (context, index) => Gap(AppDimensions.spacing16),
+          separatorBuilder: (context, index) => const SizedBox.shrink(),
           itemBuilder: (context, index) {
             final card = state.cards[index];
             return MyCardListItem(
@@ -240,7 +240,7 @@ class _MyCardScreenState extends State<MyCardScreen> {
                         Container(
                           width: 16.w,
                           height: 16.w,
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             color: AppColors.primary,
                             shape: BoxShape.circle,
                           ),

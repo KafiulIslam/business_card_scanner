@@ -3,7 +3,12 @@ import 'package:business_card_scanner/features/myCard/presentation/cubit/my_card
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
+
+import '../../../../core/constants/network_source_type.dart';
+import '../../../../core/widgets/dynamic_preview_card.dart';
+import '../../../network/domain/entities/network_model.dart';
 
 class MyCardListItem extends StatelessWidget {
   final MyCardModel card;
@@ -40,6 +45,21 @@ class MyCardListItem extends StatelessWidget {
       dateText = '${date.day} ${months[date.month - 1]}, ${date.year}';
     }
 
+    // Screenshot controller for capturing the card preview widget
+    final ScreenshotController screenshotController = ScreenshotController();
+
+    return DynamicPreviewCard(
+        screenshotController: screenshotController,
+        network: NetworkModel(
+            imageUrl: card.imageUrl,
+            name: card.name,
+            title: card.title,
+            company: card.company,
+            phone: card.phone,
+            address: card.address,
+            email: card.email,
+            website: card.website,
+            sourceType: NetworkSourceType.manual));
     return Container(
       height: 200.h,
       width: double.infinity,
