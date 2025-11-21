@@ -1,8 +1,11 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:business_card_scanner/core/constants/network_source_type.dart';
+import 'package:business_card_scanner/core/widgets/custom_image_holder.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:screenshot/screenshot.dart';
@@ -58,7 +61,7 @@ class _EditNetworkScreenState extends State<EditNetworkScreen> {
   // Screenshot controller for capturing the card preview widget
   final ScreenshotController _screenshotController = ScreenshotController();
 
-  Future<void> _updateCard(bool isManualCard) async {
+  Future<void> _updateCard() async {
     if (widget.network.cardId == null) {
       if (!mounted) return;
       CustomSnack.warning('Card ID is missing. Cannot update.', context);
@@ -81,7 +84,7 @@ class _EditNetworkScreenState extends State<EditNetworkScreen> {
       //final isManualCard = widget.network.isCameraScanned == false;
 
       // If it's a manual card, capture screenshot and upload new image
-      if (isManualCard) {
+      if (widget.network.sourceType == NetworkSourceType.manual) {
         try {
           // Wait for widget to be fully rendered before capturing
           await Future.delayed(const Duration(milliseconds: 100));
@@ -332,7 +335,7 @@ class _EditNetworkScreenState extends State<EditNetworkScreen> {
                   isEnabled: _hasChanges(),
                   onTap: () async {
                     if (!isCardUpdating && _hasChanges()) {
-                      await _updateCard(true);
+                      await _updateCard();
                     }
                   });
             },
@@ -344,20 +347,39 @@ class _EditNetworkScreenState extends State<EditNetworkScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Card Preview Section
-            DynamicPreviewCard(
-                screenshotController: _screenshotController,
-                network: NetworkModel(
-                    imageUrl: widget.network.isCameraScanned == true
-                        ? widget.network.imageUrl ?? AssetsPath.manualCardBg
-                        : AssetsPath.manualCardBg,
-                    name: _nameController.text,
-                    title: _jobTitleController.text,
-                    company: _companyController.text,
-                    phone: _phoneController.text,
-                    address: _addressController.text,
-                    email: _emailController.text,
-                    website: _websiteController.text,
-                    sourceType: widget.network.sourceType)),
+            if (widget.network.sourceType == NetworkSourceType.manual) ...[
+              DynamicPreviewCard(
+                  screenshotController: _screenshotController,
+                  network: NetworkModel(
+                      imageUrl: widget.network.isCameraScanned == true
+                          ? widget.network.imageUrl ?? AssetsPath.manualCardBg
+                          : AssetsPath.manualCardBg,
+                      name: _nameController.text,
+                      title: _jobTitleController.text,
+                      company: _companyController.text,
+                      phone: _phoneController.text,
+                      address: _addressController.text,
+                      email: _emailController.text,
+                      website: _websiteController.text,
+                      sourceType: widget.network.sourceType))
+            ] else ...[
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: CustomImageHolder(
+                    imageUrl: widget.network.imageUrl ?? '',
+                    isCircle: false,
+                    height: 200.h,
+                    width: double.infinity,
+                    fitType:
+                        widget.network.sourceType == NetworkSourceType.camera
+                            ? BoxFit.cover
+                            : BoxFit.fill,
+                    errorWidget: const Icon(
+                      Icons.add_card_rounded,
+                      size: 48,
+                    )),
+              )
+            ],
             Gap(AppDimensions.spacing16),
 
             // Category Dropdown
