@@ -1,5 +1,3 @@
-import 'dart:async';
-import 'dart:io';
 import 'package:business_card_scanner/core/routes/routes.dart';
 import 'package:business_card_scanner/core/widgets/buttons/save_icon_button.dart';
 import 'package:flutter/material.dart';
@@ -15,7 +13,6 @@ import '../../../../core/constants/network_source_type.dart';
 import '../../../../core/widgets/dynamic_preview_card.dart';
 import '../../../../core/widgets/inputFields/card_info_field.dart';
 import '../../../network/domain/entities/network_model.dart';
-import '../../../network/data/services/firebase_storage_service.dart';
 import '../../domain/entities/my_card_model.dart';
 import '../../presentation/cubit/my_card_cubit.dart';
 import '../../presentation/cubit/my_card_state.dart';
@@ -60,36 +57,14 @@ class _EditTemplateDetailsState extends State<EditTemplateDetails> {
       // Don't reset here - it clears the cards. Just set loading state
       cubit.setLoading(true);
 
-      // Wait for widget to be fully rendered before capturing
-      await Future.delayed(const Duration(milliseconds: 100));
-      await WidgetsBinding.instance.endOfFrame;
-
-      // Capture the card preview widget as an image
-      final imageFile = await _captureCardPreview();
-      if (imageFile == null || !await imageFile.exists()) {
-        cubit.setLoading(false);
-        if (mounted) {
-          CustomSnack.warning(
-              'Failed to capture card image. Please try again.', context);
-        }
-        return;
-      }
-
-      // Generate card ID and upload image
+      // Generate card ID
       final cardId = DateTime.now().millisecondsSinceEpoch.toString();
-      final storageService = context.read<FirebaseStorageService>();
 
-      final imageUrl =
-          await storageService.uploadMyCardImage(imageFile, cardId).timeout(
-                const Duration(seconds: 30),
-                onTimeout: () => throw TimeoutException('Upload timeout'),
-              );
-
-      // Create and save my card
+      // Create and save my card using widget.imagePath directly as imageUrl
       final myCard = MyCardModel(
         cardId: cardId,
         uid: user.uid,
-        imageUrl: imageUrl,
+        imageUrl: widget.imagePath,
         name: _nameController.text,
         title: _jobTitleController.text,
         company: _companyController.text,
@@ -112,18 +87,6 @@ class _EditTemplateDetailsState extends State<EditTemplateDetails> {
         );
         CustomSnack.success('Your card is saved successfully!', context);
       }
-
-      // Clean up temporary file
-      try {
-        await imageFile.delete();
-      } catch (_) {}
-    } on TimeoutException {
-      cubit.setLoading(false);
-      if (mounted) {
-        CustomSnack.warning(
-            'Network error: Please check your internet connection and try again',
-            context);
-      }
     } catch (e) {
       cubit.setLoading(false);
       if (mounted) {
@@ -138,43 +101,6 @@ class _EditTemplateDetailsState extends State<EditTemplateDetails> {
           CustomSnack.warning('Failed to save card: ${e.toString()}', context);
         }
       }
-    }
-  }
-
-  /// Captures the card preview widget as an image file
-  Future<File?> _captureCardPreview() async {
-    try {
-      await Future.delayed(const Duration(milliseconds: 100));
-
-      final imageBytes = await _screenshotController.capture(
-        delay: const Duration(milliseconds: 200),
-        pixelRatio: 2.0,
-      );
-
-      if (imageBytes == null || imageBytes.isEmpty) {
-        return null;
-      }
-
-      final tempDir = Directory.systemTemp;
-      if (!await tempDir.exists()) {
-        await tempDir.create(recursive: true);
-      }
-
-      final imageFile = File(
-        '${tempDir.path}/my_card_preview_${DateTime.now().millisecondsSinceEpoch}.png',
-      );
-
-      await imageFile.writeAsBytes(imageBytes);
-
-      // Verify file was created and has content
-      if (!await imageFile.exists() || await imageFile.length() == 0) {
-        return null;
-      }
-
-      return imageFile;
-    } catch (e) {
-      debugPrint('Error capturing card preview: $e');
-      return null;
     }
   }
 
