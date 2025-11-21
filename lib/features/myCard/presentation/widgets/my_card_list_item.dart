@@ -1,11 +1,13 @@
+import 'package:business_card_scanner/core/routes/routes.dart';
+import 'package:business_card_scanner/core/widgets/popup_item.dart';
 import 'package:business_card_scanner/features/myCard/domain/entities/my_card_model.dart';
 import 'package:business_card_scanner/features/myCard/presentation/cubit/my_card_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
-
 import '../../../../core/constants/network_source_type.dart';
 import '../../../../core/widgets/dynamic_preview_card.dart';
 import '../../../network/domain/entities/network_model.dart';
@@ -48,18 +50,74 @@ class MyCardListItem extends StatelessWidget {
     // Screenshot controller for capturing the card preview widget
     final ScreenshotController screenshotController = ScreenshotController();
 
-    return DynamicPreviewCard(
-        screenshotController: screenshotController,
-        network: NetworkModel(
-            imageUrl: card.imageUrl,
-            name: card.name,
-            title: card.title,
-            company: card.company,
-            phone: card.phone,
-            address: card.address,
-            email: card.email,
-            website: card.website,
-            sourceType: NetworkSourceType.manual));
+    return SizedBox(
+      height: 200.h,
+      width: double.infinity,
+      child: Stack(
+        children: [
+          DynamicPreviewCard(
+              screenshotController: screenshotController,
+              network: NetworkModel(
+                  imageUrl: card.imageUrl,
+                  name: card.name,
+                  title: card.title,
+                  company: card.company,
+                  phone: card.phone,
+                  address: card.address,
+                  email: card.email,
+                  website: card.website,
+                  sourceType: NetworkSourceType.manual)),
+          Align(
+            alignment: Alignment.bottomRight,
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 24.0, right: 24.0),
+              child: Container(
+                height: 36,
+                width: 36,
+                decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white)),
+                child: Center(
+                  child: PopupMenuButton(
+                    icon: const Icon(
+                      Icons.more_horiz,
+                      color: Colors.white,
+                      size: 18,
+                    ),
+                    itemBuilder: (BuildContext context) =>
+                        <PopupMenuEntry<String>>[
+                      PopupMenuItem(
+                          onTap: () =>
+                              context.push(Routes.editMyCard, extra: card),
+                          child: const CustomPopupItem(
+                              icon: Icons.edit_note_outlined, title: 'Edit')),
+                      PopupMenuItem(
+                          onTap: () {
+                            SharePlus.instance.share(ShareParams(
+                                text:
+                                    'Check out & download ${card.name}\'s digital business card - ${card.imageUrl}'));
+                          },
+                          child: const CustomPopupItem(
+                              icon: Icons.share, title: 'Share')),
+                      PopupMenuItem(
+                        onTap: () {
+                          Future.microtask(() {
+                            _showDeleteConfirmationDialog(context);
+                          });
+                        },
+                        child: const CustomPopupItem(
+                            icon: Icons.delete_forever_outlined,
+                            title: 'Delete'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          )
+        ],
+      ),
+    );
     return Container(
       height: 200.h,
       width: double.infinity,

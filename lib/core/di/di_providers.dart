@@ -24,6 +24,7 @@ import 'package:business_card_scanner/features/myCard/data/services/firebase_my_
 import 'package:business_card_scanner/features/myCard/data/repositories/my_card_repository_impl.dart';
 import 'package:business_card_scanner/features/myCard/domain/repositories/my_card_repository.dart';
 import 'package:business_card_scanner/features/myCard/domain/use_cases/save_my_card_use_case.dart';
+import 'package:business_card_scanner/features/myCard/domain/use_cases/update_my_card_use_case.dart';
 import 'package:business_card_scanner/features/myCard/domain/use_cases/get_my_cards_use_case.dart';
 import 'package:business_card_scanner/features/myCard/domain/use_cases/delete_my_card_use_case.dart';
 import 'package:business_card_scanner/features/myCard/presentation/cubit/my_card_cubit.dart';
@@ -101,6 +102,9 @@ class AppProviders extends StatelessWidget {
         ),
         RepositoryProvider<SaveMyCardUseCase>(
           create: (ctx) => SaveMyCardUseCase(ctx.read<MyCardRepository>()),
+        ),
+        RepositoryProvider<UpdateMyCardUseCase>(
+          create: (ctx) => UpdateMyCardUseCase(ctx.read<MyCardRepository>()),
         ),
         RepositoryProvider<GetMyCardsUseCase>(
           create: (ctx) => GetMyCardsUseCase(ctx.read<MyCardRepository>()),
@@ -181,6 +185,7 @@ class AppProviders extends StatelessWidget {
           BlocProvider<MyCardCubit>(
             create: (ctx) => MyCardCubit(
               ctx.read<SaveMyCardUseCase>(),
+              ctx.read<UpdateMyCardUseCase>(),
               ctx.read<GetMyCardsUseCase>(),
               ctx.read<DeleteMyCardUseCase>(),
             ),

@@ -13,6 +13,11 @@ class MyCardRepositoryImpl implements MyCardRepository {
   }
 
   @override
+  Future<void> updateMyCard(String documentId, MyCardModel card) async {
+    await _firebaseMyCardService.updateMyCard(documentId, card);
+  }
+
+  @override
   Future<List<MyCardModel>> getMyCardsByUid(String uid) async {
     return await _firebaseMyCardService.getMyCardsByUid(uid);
   }

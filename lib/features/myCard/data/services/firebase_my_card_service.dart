@@ -80,6 +80,40 @@ class FirebaseMyCardService {
             .toList());
   }
 
+  Future<void> updateMyCard(String documentId, MyCardModel card) async {
+    try {
+      if (documentId.isEmpty) {
+        throw Exception('Document ID is required to update my card');
+      }
+      if (card.cardId == null) {
+        throw Exception('Card ID is required to update my card');
+      }
+      
+      // Get only the fields that should be updated (exclude createdAt and cardId)
+      final data = card.toMap();
+      // Remove fields that shouldn't be updated
+      data.remove('createdAt');
+      data.remove('cardId');
+      data.remove('uid'); // UID should not be changed
+      
+      // Only update non-null fields
+      final updateData = <String, dynamic>{};
+      data.forEach((key, value) {
+        if (value != null) {
+          updateData[key] = value;
+        }
+      });
+      
+      if (updateData.isEmpty) {
+        throw Exception('No fields to update');
+      }
+      
+      await _firestore.collection('my_card').doc(documentId).update(updateData);
+    } catch (e) {
+      throw Exception('Failed to update my card: $e');
+    }
+  }
+
   Future<void> deleteMyCard(String cardId) async {
     try {
       if (cardId.isEmpty) {
