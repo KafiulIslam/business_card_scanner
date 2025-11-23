@@ -7,11 +7,14 @@ import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart
 import 'package:image_picker/image_picker.dart';
 import '../../domain/entities/scan_result_data.dart';
 import 'scan_state.dart';
+import '../../../../core/services/openai_extraction_service.dart';
+import '../../../../core/exceptions/openai_exception.dart';
 
 class ScanCubit extends Cubit<ScanState> {
   ScanCubit() : super(ScanState.initial());
 
   TextRecognizer? _textRecognizer;
+  final OpenAIExtractionService _openAIService = OpenAIExtractionService();
   bool _isInitialized = false;
   bool _isDisposing = false;
 
@@ -146,11 +149,14 @@ class ScanCubit extends Cubit<ScanState> {
       final xfile = await controller.takePicture();
       final recognized = await _recognize(InputImage.fromFilePath(xfile.path));
 
+      // Try AI extraction first, fallback to regex if it fails
+      final extracted = await _extractFieldsWithAI(recognized);
+
       emit(state.copyWith(
         isBusy: false,
         result: ScanResultData(
           rawText: recognized,
-          extracted: _extractFields(recognized),
+          extracted: extracted,
           imageFile: File(xfile.path),
           isCameraScanned: true,
         ),
@@ -173,11 +179,15 @@ class ScanCubit extends Cubit<ScanState> {
       }
 
       final recognized = await _recognize(InputImage.fromFilePath(xFile.path));
+      
+      // Try AI extraction first, fallback to regex if it fails
+      final extracted = await _extractFieldsWithAI(recognized);
+
       emit(state.copyWith(
         isBusy: false,
         result: ScanResultData(
           rawText: recognized,
-          extracted: _extractFields(recognized),
+          extracted: extracted,
           imageFile: File(xFile.path),
           isCameraScanned: false,
         ),
@@ -193,11 +203,15 @@ class ScanCubit extends Cubit<ScanState> {
     emit(state.copyWith(isBusy: true, clearError: true, clearResult: true));
     try {
       final recognized = await _recognize(InputImage.fromFilePath(path));
+      
+      // Try AI extraction first, fallback to regex if it fails
+      final extracted = await _extractFieldsWithAI(recognized);
+
       emit(state.copyWith(
         isBusy: false,
         result: ScanResultData(
           rawText: recognized,
-          extracted: _extractFields(recognized),
+          extracted: extracted,
           imageFile: File(path),
           isCameraScanned: false,
         ),
@@ -225,6 +239,38 @@ class ScanCubit extends Cubit<ScanState> {
       // If recognition fails, throw meaningful error
       throw Exception('Text recognition failed: $e');
     }
+  }
+
+  /// Extract fields using AI first, fallback to regex extraction if AI fails
+  Future<Map<String, String?>> _extractFieldsWithAI(String text) async {
+    // Try AI extraction first
+    try {
+      final aiExtracted = await _openAIService.extractBusinessCardFields(text);
+      
+      // Validate that we got at least some meaningful data
+      if (_isValidExtraction(aiExtracted)) {
+        debugPrint('✅ AI extraction successful');
+        return aiExtracted;
+      } else {
+        debugPrint('⚠️ AI extraction returned empty/invalid data, falling back to regex');
+      }
+    } on OpenAIException catch (e) {
+      // Log the error but don't fail - fallback to regex
+      debugPrint('⚠️ AI extraction failed: ${e.message}. Falling back to regex extraction.');
+    } catch (e) {
+      // Catch any other unexpected errors
+      debugPrint('⚠️ Unexpected error during AI extraction: $e. Falling back to regex extraction.');
+    }
+
+    // Fallback to regex-based extraction
+    debugPrint('📝 Using regex-based extraction');
+    return _extractFields(text);
+  }
+
+  /// Validate if AI extraction returned meaningful data
+  bool _isValidExtraction(Map<String, String?> extracted) {
+    // Check if at least one field has a non-empty value
+    return extracted.values.any((value) => value != null && value.trim().isNotEmpty);
   }
 
   Map<String, String?> _extractFields(String text) {

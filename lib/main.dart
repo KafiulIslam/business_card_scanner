@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'core/theme/app_theme.dart';
 import 'core/di/di_providers.dart';
 import 'firebase_options.dart';
@@ -10,6 +11,14 @@ import 'firebase_options.dart';
 void main() async {
   //initialize flutter project
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Load environment variables
+  try {
+    await dotenv.load(fileName: '.env');
+  } catch (e) {
+    // .env file is optional, but recommended for OpenAI API key
+    debugPrint('Warning: Could not load .env file: $e');
+  }
 
   // make the UI responsive
   await ScreenUtil.ensureScreenSize();
