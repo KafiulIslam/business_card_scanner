@@ -20,7 +20,7 @@ class DynamicPreviewCard extends StatelessWidget {
       child: Screenshot(
         controller: screenshotController,
         child: Container(
-          height: 200.h,
+          height: 220.h,
           width: double.infinity,
           decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
@@ -29,28 +29,34 @@ class DynamicPreviewCard extends StatelessWidget {
                   image: AssetImage(network.imageUrl ?? ''),
                   fit: BoxFit.cover)),
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
+            padding: EdgeInsets.only(
+                right: 24.w, left: 16.w, top: 16.h, bottom: 16.h),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          network.name ?? '',
-                          style: AppTextStyles.headline1
-                              .copyWith(fontSize: 16, color: Colors.white),
-                        ),
-                        Text(
-                          network.title ?? '',
-                          style: AppTextStyles.headline3
-                              .copyWith(fontSize: 14, color: Colors.white),
-                        ),
-                      ],
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            network.name ?? '',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTextStyles.headline1
+                                .copyWith(fontSize: 16, color: Colors.white),
+                          ),
+                          Text(
+                            network.title ?? '',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTextStyles.headline3
+                                .copyWith(fontSize: 14, color: Colors.white),
+                          ),
+                        ],
+                      ),
                     ),
-                    const Spacer(),
                     Column(
                       children: [
                         if (network.company?.isNotEmpty ?? false) ...[

@@ -105,7 +105,7 @@ class _MyCardListItemState extends State<MyCardListItem> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 200.h,
+      height: 220.h,
       width: double.infinity,
       child: Stack(
         children: [
@@ -122,52 +122,43 @@ class _MyCardListItemState extends State<MyCardListItem> {
                   website: widget.card.website,
                   sourceType: NetworkSourceType.manual)),
           Align(
-            alignment: Alignment.bottomRight,
+            alignment: Alignment.topRight,
             child: Padding(
-              padding: const EdgeInsets.only(bottom: 24.0, right: 24.0),
-              child: Container(
-                height: 36,
-                width: 36,
-                decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white)),
-                child: Center(
-                  child: PopupMenuButton(
-                    icon: const Icon(
-                      Icons.more_horiz,
-                      color: Colors.white,
-                      size: 18,
-                    ),
-                    itemBuilder: (BuildContext context) =>
-                        <PopupMenuEntry<String>>[
-                      PopupMenuItem(
-                          onTap: () => Future.microtask(() {
-                                context.push(Routes.editMyCard,
-                                    extra: widget.card);
-                              }),
-                          child: const CustomPopupItem(
-                              icon: Icons.edit_note_outlined, title: 'Edit')),
-                      PopupMenuItem(
-                          onTap: () {
-                            Future.microtask(() {
-                              _shareCardScreenshot();
-                            });
-                          },
-                          child: const CustomPopupItem(
-                              icon: Icons.share, title: 'Share')),
-                      PopupMenuItem(
-                        onTap: () {
-                          Future.microtask(() {
-                            _showDeleteConfirmationDialog(context);
-                          });
-                        },
-                        child: const CustomPopupItem(
-                            icon: Icons.delete_forever_outlined,
-                            title: 'Delete'),
-                      ),
-                    ],
-                  ),
+              padding: const EdgeInsets.only(top: 8.0, right: 12.0),
+              child: PopupMenuButton(
+                icon: const Icon(
+                  Icons.more_horiz,
+                  color: Colors.white,
+                  size: 24,
                 ),
+                itemBuilder: (BuildContext context) =>
+                <PopupMenuEntry<String>>[
+                  PopupMenuItem(
+                      onTap: () => Future.microtask(() {
+                        context.push(Routes.editMyCard,
+                            extra: widget.card);
+                      }),
+                      child: const CustomPopupItem(
+                          icon: Icons.edit_note_outlined, title: 'Edit')),
+                  PopupMenuItem(
+                      onTap: () {
+                        Future.microtask(() {
+                          _shareCardScreenshot();
+                        });
+                      },
+                      child: const CustomPopupItem(
+                          icon: Icons.share, title: 'Share')),
+                  PopupMenuItem(
+                    onTap: () {
+                      Future.microtask(() {
+                        _showDeleteConfirmationDialog(context);
+                      });
+                    },
+                    child: const CustomPopupItem(
+                        icon: Icons.delete_forever_outlined,
+                        title: 'Delete'),
+                  ),
+                ],
               ),
             ),
           )

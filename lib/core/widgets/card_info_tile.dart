@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import 'package:screenshot/screenshot.dart';
 import '../theme/app_text_style.dart';
 
 class CardInfoTile extends StatelessWidget {
@@ -20,9 +21,13 @@ class CardInfoTile extends StatelessWidget {
           ),
         ],
         const Gap(8),
-        Text(
-          info,
-          style: AppTextStyles.labelSmall.copyWith(color: Colors.white),
+        Expanded(
+          child: Text(
+            info,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTextStyles.labelSmall.copyWith(color: Colors.white),
+          ),
         )
       ],
     );
