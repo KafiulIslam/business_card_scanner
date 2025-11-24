@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
+import 'package:business_card_scanner/core/routes/app_router.dart';
 import 'package:business_card_scanner/core/services/external_app_service.dart';
 import 'package:business_card_scanner/core/theme/app_colors.dart';
 import 'package:business_card_scanner/core/theme/app_dimensions.dart';
@@ -12,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
@@ -364,6 +366,7 @@ class _SignCanvasScreenState extends State<SignCanvasScreen> {
       });
 
       if (mounted) {
+        context.pop();
         CustomSnack.success('Signed PDF saved successfully.', context);
       }
     } catch (e) {
@@ -442,10 +445,18 @@ class _SignCanvasScreenState extends State<SignCanvasScreen> {
             Padding(
               padding: const EdgeInsets.all(12.0),
               child: _isSavingSignedPdf
-                  ? SizedBox(
+                  ? Container(
                       height: 32.h,
                       width: 32.w,
-                      child: const CircularProgressIndicator())
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          color: AppColors.gray200),
+                      child: const Center(
+                        child: CircularProgressIndicator(
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    )
                   : Container(
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
@@ -620,7 +631,7 @@ class _SignCanvasScreenState extends State<SignCanvasScreen> {
                 borderRadius: BorderRadius.circular(AppDimensions.radius16),
               ),
             ),
-            onPressed: _addSignature,
+            onPressed: _isSavingSignedPdf ? null : _addSignature,
             icon: const Icon(Icons.add, color: Colors.white),
             label: Text(
               _signatureImage == null ? 'Add Signature' : 'Replace Signature',

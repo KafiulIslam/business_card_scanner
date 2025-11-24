@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:business_card_scanner/core/routes/routes.dart';
 import 'package:business_card_scanner/core/services/external_app_service.dart';
 import 'package:business_card_scanner/core/theme/app_colors.dart';
@@ -11,6 +12,8 @@ import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SignDocumentScreen extends StatefulWidget {
@@ -21,8 +24,6 @@ class SignDocumentScreen extends StatefulWidget {
 }
 
 class _SignDocumentScreenState extends State<SignDocumentScreen> {
-
-
   @override
   void initState() {
     super.initState();
@@ -64,7 +65,6 @@ class _SignDocumentScreenState extends State<SignDocumentScreen> {
   @override
   Widget build(BuildContext context) {
     final user = fb.FirebaseAuth.instance.currentUser;
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Sign Document'),
@@ -111,6 +111,7 @@ class _SignDocumentScreenState extends State<SignDocumentScreen> {
                     documents: state.documents,
                     onOpenPdf: _openSignedPdf,
                     onShare: _shareSignedDocument,
+                    onDownload: _downloadSignedDocument,
                   ),
                 );
               },
@@ -189,13 +190,75 @@ class _SignDocumentScreenState extends State<SignDocumentScreen> {
           'Signed document "${doc.title.isNotEmpty ? doc.title : 'Untitled'}": ${doc.pdfUrl}';
       await externalAppService.shareContent(
         shareText,
-       // subject: doc.title,
+        // subject: doc.title,
       );
     } catch (e) {
       if (mounted) {
         CustomSnack.warning('Failed to share document: $e', context);
       }
     }
+  }
+
+  Future<void> _downloadSignedDocument(SignedDocumentModel doc) async {
+    if (doc.pdfUrl.isEmpty) {
+      if (mounted) {
+        CustomSnack.warning('No PDF URL found to download.', context);
+      }
+      return;
+    }
+
+    final uri = Uri.tryParse(doc.pdfUrl);
+    if (uri == null) {
+      if (mounted) {
+        CustomSnack.warning('Invalid PDF URL.', context);
+      }
+      return;
+    }
+
+    try {
+      final response = await http.get(uri);
+      if (response.statusCode != 200) {
+        throw Exception('Server responded with ${response.statusCode}');
+      }
+
+      final directory = await _resolveDownloadDirectory();
+      final sanitizedTitle = doc.title.isNotEmpty
+          ? doc.title.replaceAll(RegExp(r'[^a-zA-Z0-9_\- ]'), '_')
+          : 'signed_document';
+      final file = File('${directory.path}/$sanitizedTitle.pdf');
+      await file.writeAsBytes(response.bodyBytes, flush: true);
+
+      if (mounted) {
+        CustomSnack.success('Document saved to ${file.path}', context);
+      }
+    } catch (e) {
+      if (mounted) {
+        CustomSnack.warning('Failed to download document: $e', context);
+      }
+    }
+  }
+
+  Future<Directory> _resolveDownloadDirectory() async {
+    if (Platform.isAndroid) {
+      final directories =
+          await getExternalStorageDirectories(type: StorageDirectory.downloads);
+      if (directories != null && directories.isNotEmpty) {
+        return directories.first;
+      }
+      final fallback = await getExternalStorageDirectory();
+      if (fallback != null) {
+        return fallback;
+      }
+    } else if (Platform.isIOS) {
+      return await getApplicationDocumentsDirectory();
+    } else {
+      final downloadsDirectory = await getDownloadsDirectory();
+      if (downloadsDirectory != null) {
+        return downloadsDirectory;
+      }
+    }
+
+    return await getApplicationDocumentsDirectory();
   }
 
   Widget _buildStatusMessage(
@@ -239,11 +302,13 @@ class _SignedDocsListView extends StatelessWidget {
   final List<SignedDocumentModel> documents;
   final ValueChanged<String> onOpenPdf;
   final ValueChanged<SignedDocumentModel>? onShare;
+  final ValueChanged<SignedDocumentModel>? onDownload;
 
   const _SignedDocsListView({
     required this.documents,
     required this.onOpenPdf,
     this.onShare,
+    this.onDownload,
   });
 
   @override
@@ -299,9 +364,10 @@ class _SignedDocsListView extends StatelessWidget {
                 size: 18,
               ),
               itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                // open doc
                 PopupMenuItem(
                   onTap: () {
-                   // Navigator.of(context).pop();
+                    // Navigator.of(context).pop();
                     onOpenPdf(doc.pdfUrl);
                   },
                   child: const CustomPopupItem(
@@ -310,17 +376,24 @@ class _SignedDocsListView extends StatelessWidget {
                 ),
                 PopupMenuItem(
                   onTap: () {
-                   // Navigator.of(context).pop();
+                    onDownload?.call(doc);
+                  },
+                  child: const CustomPopupItem(
+                      icon: Icons.download_outlined, title: 'Download'),
+                ),
+                // share doc
+                PopupMenuItem(
+                  onTap: () {
+                    // Navigator.of(context).pop();
                     onShare?.call(doc);
                   },
                   child: const CustomPopupItem(
                       icon: Icons.share_outlined, title: 'Share'),
                 ),
+                // delete doc
                 PopupMenuItem(
                   onTap: () {
-                    context
-                        .read<SignedDocsCubit>()
-                        .deleteSignedDocument(doc);
+                    context.read<SignedDocsCubit>().deleteSignedDocument(doc);
                   },
                   child: const CustomPopupItem(
                       icon: Icons.delete_forever_outlined, title: 'Delete'),
