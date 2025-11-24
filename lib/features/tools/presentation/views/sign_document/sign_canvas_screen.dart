@@ -460,15 +460,16 @@ class _SignCanvasScreenState extends State<SignCanvasScreen> {
                   : Container(
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
+                        color: AppColors.primaryLight.withOpacity(0.2),
                         shape: BoxShape.circle,
-                        border: Border.all(color: Colors.black),
+                        border: Border.all(color: AppColors.primary),
                       ),
                       child: Center(
                         child: PopupMenuButton<_SignatureMenuAction>(
                           onSelected: _onSignatureMenuSelected,
                           icon: const Icon(
                             Icons.more_horiz_rounded,
-                            color: Colors.black,
+                            color: AppColors.primary,
                             size: 14,
                           ),
                           itemBuilder: (BuildContext context) =>
