@@ -11,6 +11,7 @@ import 'package:business_card_scanner/features/tools/presentation/views/sign_doc
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
@@ -41,6 +42,7 @@ class SignCanvasScreen extends StatefulWidget {
 
 class _SignCanvasScreenState extends State<SignCanvasScreen> {
   Uint8List? _signatureImage;
+
   // Signature position and scale state
   Offset _signaturePosition = Offset.zero;
   double _signatureScale = 1.0;
@@ -48,6 +50,22 @@ class _SignCanvasScreenState extends State<SignCanvasScreen> {
   double _signatureAspectRatio = 0.5;
   Size _pdfCanvasSize = Size.zero;
   bool _isSavingSignedPdf = false;
+  late final PdfViewerController _pdfViewerController;
+  int _currentPageNumber = 1;
+  int _totalPageCount = 1;
+  int _signaturePageNumber = 1;
+
+  @override
+  void initState() {
+    super.initState();
+    _pdfViewerController = PdfViewerController();
+  }
+
+  @override
+  void dispose() {
+    _pdfViewerController.dispose();
+    super.dispose();
+  }
 
   Future<void> _addSignature() async {
     // Show bottom sheet with signature options
@@ -85,9 +103,26 @@ class _SignCanvasScreenState extends State<SignCanvasScreen> {
         _baseSignatureWidth = 0.0; // Reset to recalculate initial position
         _signaturePosition =
             Offset.zero; // Will be set in onInitialized callback
+        _signaturePageNumber = _currentPageNumber;
       });
       CustomSnack.success('Signature added', context);
     }
+  }
+
+  void _handlePageChanged(int pageNumber) {
+    if (!mounted) return;
+    if (_currentPageNumber != pageNumber) {
+      setState(() {
+        _currentPageNumber = pageNumber;
+      });
+    }
+  }
+
+  void _handleDocumentLoaded(int totalPages) {
+    if (!mounted) return;
+    setState(() {
+      _totalPageCount = totalPages;
+    });
   }
 
   Future<Uint8List?> _showDrawSignatureSheet() async {
@@ -199,7 +234,9 @@ class _SignCanvasScreenState extends State<SignCanvasScreen> {
         return null;
       }
 
-      final page = document.pages[0];
+      final targetPageIndex =
+          (_signaturePageNumber - 1).clamp(0, document.pages.count - 1);
+      final page = document.pages[targetPageIndex];
       final pageSize = page.getClientSize();
 
       final previewWidth = _pdfCanvasSize.width;
@@ -274,7 +311,9 @@ class _SignCanvasScreenState extends State<SignCanvasScreen> {
     final user = fb.FirebaseAuth.instance.currentUser;
     if (user == null) {
       CustomSnack.warning(
-          'Please login to save your signed document.', context);
+        'Please login to save your signed document.',
+        context,
+      );
       return;
     }
 
@@ -282,28 +321,46 @@ class _SignCanvasScreenState extends State<SignCanvasScreen> {
       _isSavingSignedPdf = true;
     });
 
+    File? tempSignedFile;
+
     try {
+      // Generate PDF bytes
       final outputBytes = await _generateSignedPdfBytes();
       if (outputBytes == null) {
+        // <== IMPORTANT: prevent infinite loading
+        setState(() {
+          _isSavingSignedPdf = false;
+        });
         return;
       }
 
+      // Prepare file
       final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final tempDir = await getTemporaryDirectory();
+      tempSignedFile = File('${tempDir.path}/signed_$timestamp.pdf');
+      await tempSignedFile.writeAsBytes(outputBytes, flush: true);
+
+      // Upload to Firebase Storage (correct syntax!)
       final storageRef = FirebaseStorage.instance
           .ref()
           .child('signed_docs')
           .child(user.uid)
           .child('signed_$timestamp.pdf');
 
-      final metadata = SettableMetadata(contentType: 'application/pdf');
-      await storageRef.putData(outputBytes, metadata);
-      final downloadUrl = await storageRef.getDownloadURL();
+      final uploadTask = storageRef.putFile(
+        tempSignedFile,
+        SettableMetadata(contentType: 'application/pdf'),
+      );
 
+      final snapshot = await uploadTask;
+      final downloadUrl = await snapshot.ref.getDownloadURL();
+
+      // Save metadata in Firestore
       await FirebaseFirestore.instance.collection('signed_docs').add({
         'title': widget.documentTitle,
         'pdf_url': downloadUrl,
         'uid': user.uid,
-        'created_at': Timestamp.fromDate(DateTime.now()),
+        'created_at': Timestamp.now(),
       });
 
       if (mounted) {
@@ -314,6 +371,13 @@ class _SignCanvasScreenState extends State<SignCanvasScreen> {
         CustomSnack.warning('Failed to save signed PDF: $e', context);
       }
     } finally {
+      // delete temp file
+      if (tempSignedFile != null && await tempSignedFile.exists()) {
+        try {
+          await tempSignedFile.delete();
+        } catch (_) {}
+      }
+
       if (mounted) {
         setState(() {
           _isSavingSignedPdf = false;
@@ -362,62 +426,62 @@ class _SignCanvasScreenState extends State<SignCanvasScreen> {
           style: AppTextStyles.headline4.copyWith(color: AppColors.gray900),
         ),
         actions: [
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: AppDimensions.spacing8),
+            child: Center(
+              child: Text(
+                '$_currentPageNumber/$_totalPageCount',
+                style: AppTextStyles.bodyMedium.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.gray700,
+                ),
+              ),
+            ),
+          ),
           if (_signatureImage != null) ...[
             Padding(
               padding: const EdgeInsets.all(12.0),
-              child: Container(
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.black),
-                ),
-                child: Center(
-                  child: PopupMenuButton<_SignatureMenuAction>(
-                    onSelected: _onSignatureMenuSelected,
-                    icon: const Icon(
-                      Icons.more_horiz_rounded,
-                      color: Colors.black,
-                      size: 14,
+              child: _isSavingSignedPdf
+                  ? SizedBox(
+                      height: 32.h,
+                      width: 32.w,
+                      child: const CircularProgressIndicator())
+                  : Container(
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.black),
+                      ),
+                      child: Center(
+                        child: PopupMenuButton<_SignatureMenuAction>(
+                          onSelected: _onSignatureMenuSelected,
+                          icon: const Icon(
+                            Icons.more_horiz_rounded,
+                            color: Colors.black,
+                            size: 14,
+                          ),
+                          itemBuilder: (BuildContext context) =>
+                              <PopupMenuEntry<_SignatureMenuAction>>[
+                            const PopupMenuItem(
+                              value: _SignatureMenuAction.save,
+                              child: CustomPopupItem(
+                                icon: Icons.save,
+                                title: 'Save',
+                              ),
+                            ),
+                            const PopupMenuItem(
+                              value: _SignatureMenuAction.download,
+                              child: CustomPopupItem(
+                                icon: Icons.download_outlined,
+                                title: 'Download',
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                    itemBuilder: (BuildContext context) =>
-                        <PopupMenuEntry<_SignatureMenuAction>>[
-                      const PopupMenuItem(
-                        value: _SignatureMenuAction.save,
-                        child: CustomPopupItem(
-                          icon: Icons.save,
-                          title: 'Save',
-                        ),
-                      ),
-                      const PopupMenuItem(
-                        value: _SignatureMenuAction.download,
-                        child: CustomPopupItem(
-                          icon: Icons.download_outlined,
-                          title: 'Download',
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
             )
           ]
-
-          // Padding(
-          //   padding: EdgeInsets.symmetric(horizontal: AppDimensions.spacing8),
-          //   child: Center(
-          //     child: Text(
-          //       '${widget.currentPage}/$_totalPages',
-          //       style: AppTextStyles.bodyMedium.copyWith(
-          //         fontWeight: FontWeight.w600,
-          //         color: AppColors.gray700,
-          //       ),
-          //     ),
-          //   ),
-          // ),
-          // IconButton(
-          //   icon: const Icon(Icons.check, color: AppColors.secondary),
-          //   onPressed: _finishSigning,
-          // ),
         ],
       ),
       body: Padding(
@@ -426,106 +490,113 @@ class _SignCanvasScreenState extends State<SignCanvasScreen> {
             vertical: AppDimensions.spacing8),
         child: LayoutBuilder(
           builder: (context, constraints) {
-            final canvasSize =
-                Size(constraints.maxWidth, constraints.maxHeight);
-            _pdfCanvasSize = canvasSize;
             return Center(
               child: AspectRatio(
                 aspectRatio: 3 / 4,
-                child: Stack(
-                  children: [
-                    // pdf preview
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius:
-                            BorderRadius.circular(AppDimensions.radius24),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 20,
-                            offset: const Offset(0, 10),
+                child: LayoutBuilder(
+                  builder: (context, stackConstraints) {
+                    final stackSize = Size(
+                        stackConstraints.maxWidth, stackConstraints.maxHeight);
+                    _pdfCanvasSize = stackSize;
+                    return Stack(
+                      children: [
+                        // pdf preview
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius:
+                                BorderRadius.circular(AppDimensions.radius24),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.05),
+                                blurRadius: 20,
+                                offset: const Offset(0, 10),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                      // padding: EdgeInsets.all(AppDimensions.spacing24),
-                      child: ClipRRect(
-                        borderRadius:
-                            BorderRadius.circular(AppDimensions.radius20),
-                        child: Container(
-                          color: AppColors.surface,
-                          child: widget.pdfFilePath != null
-                              ? _PdfPreview(
-                                  pdfFilePath: widget.pdfFilePath!,
-                                )
-                              : (widget.preview ?? _DefaultDocumentPreview()),
+                          child: ClipRRect(
+                            borderRadius:
+                                BorderRadius.circular(AppDimensions.radius20),
+                            child: Container(
+                              color: AppColors.surface,
+                              child: widget.pdfFilePath != null
+                                  ? _PdfPreview(
+                                      pdfFilePath: widget.pdfFilePath!,
+                                      controller: _pdfViewerController,
+                                      onCurrentPageChanged: _handlePageChanged,
+                                      onTotalPagesResolved:
+                                          _handleDocumentLoaded,
+                                    )
+                                  : (widget.preview ??
+                                      _DefaultDocumentPreview()),
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                    if (_signatureImage != null)
-                      // signature
-                      DraggableResizableSignature(
-                        signatureBytes: _signatureImage!,
-                        position: _signaturePosition,
-                        scale: _signatureScale,
-                        baseWidth: _baseSignatureWidth > 0
-                            ? _baseSignatureWidth
-                            : constraints.maxWidth * 0.35,
-                        imageAspectRatio: _signatureAspectRatio,
-                        containerSize: Size(
-                          constraints.maxWidth,
-                          constraints.maxHeight,
-                        ),
-                        onPositionChanged: (newPosition) {
-                          setState(() {
-                            _signaturePosition = newPosition;
-                          });
-                        },
-                        onScaleChanged: (newScale) {
-                          setState(() {
-                            _signatureScale = newScale;
-                          });
-                        },
-                        onInitialized: (width) {
-                          setState(() {
-                            if (_baseSignatureWidth == 0) {
-                              _baseSignatureWidth = width;
-                            }
-                            // Set initial position to bottom-right
-                            if (_signaturePosition == Offset.zero) {
-                              final signatureHeight =
-                                  width * _signatureAspectRatio;
-                              _signaturePosition = Offset(
-                                (constraints.maxWidth -
-                                        width -
-                                        AppDimensions.spacing32)
-                                    .clamp(0.0, double.infinity),
-                                (constraints.maxHeight -
-                                        signatureHeight -
-                                        AppDimensions.spacing32)
-                                    .clamp(0.0, double.infinity),
-                              );
-                            }
-                          });
-                        },
-                        onClear: () {
-                          setState(() {
-                            _signatureImage = null;
-                            _signaturePosition = Offset.zero;
-                            _signatureScale = 1.0;
-                            _baseSignatureWidth = 0.0;
-                            _signatureAspectRatio = 0.5;
-                          });
-                          // Show options to add new signature
-                          _addSignature();
-                        },
-                        onConfirm: () {
-                          // Signature is confirmed/selected
-                          // You can add any confirmation logic here if needed
-                          CustomSnack.success('Signature confirmed', context);
-                        },
-                      ),
-                  ],
+                        if (_signatureImage != null)
+                          // signature
+                          DraggableResizableSignature(
+                            signatureBytes: _signatureImage!,
+                            position: _signaturePosition,
+                            scale: _signatureScale,
+                            baseWidth: _baseSignatureWidth > 0
+                                ? _baseSignatureWidth
+                                : stackConstraints.maxWidth * 0.35,
+                            imageAspectRatio: _signatureAspectRatio,
+                            containerSize: stackSize,
+                            onPositionChanged: (newPosition) {
+                              setState(() {
+                                _signaturePosition = newPosition;
+                                _signaturePageNumber = _currentPageNumber;
+                              });
+                            },
+                            onScaleChanged: (newScale) {
+                              setState(() {
+                                _signatureScale = newScale;
+                                _signaturePageNumber = _currentPageNumber;
+                              });
+                            },
+                            onInitialized: (width) {
+                              setState(() {
+                                if (_baseSignatureWidth == 0) {
+                                  _baseSignatureWidth = width;
+                                }
+                                // Set initial position to bottom-right
+                                if (_signaturePosition == Offset.zero) {
+                                  final signatureHeight =
+                                      width * _signatureAspectRatio;
+                                  _signaturePosition = Offset(
+                                    (stackConstraints.maxWidth -
+                                            width -
+                                            AppDimensions.spacing32)
+                                        .clamp(0.0, double.infinity),
+                                    (stackConstraints.maxHeight -
+                                            signatureHeight -
+                                            AppDimensions.spacing32)
+                                        .clamp(0.0, double.infinity),
+                                  );
+                                }
+                                _signaturePageNumber = _currentPageNumber;
+                              });
+                            },
+                            onClear: () {
+                              setState(() {
+                                _signatureImage = null;
+                                _signaturePosition = Offset.zero;
+                                _signatureScale = 1.0;
+                                _baseSignatureWidth = 0.0;
+                                _signatureAspectRatio = 0.5;
+                              });
+                              // Show options to add new signature
+                              _addSignature();
+                            },
+                            onConfirm: () {
+                              CustomSnack.success(
+                                  'Signature confirmed', context);
+                            },
+                          ),
+                      ],
+                    );
+                  },
                 ),
               ),
             );
@@ -669,19 +740,32 @@ class _SignatureOptionTile extends StatelessWidget {
 
 class _PdfPreview extends StatelessWidget {
   final String pdfFilePath;
+  final PdfViewerController controller;
+  final ValueChanged<int>? onCurrentPageChanged;
+  final ValueChanged<int>? onTotalPagesResolved;
 
   const _PdfPreview({
     required this.pdfFilePath,
+    required this.controller,
+    this.onCurrentPageChanged,
+    this.onTotalPagesResolved,
   });
 
   @override
   Widget build(BuildContext context) {
     return SfPdfViewer.file(
       File(pdfFilePath),
+      controller: controller,
       enableDoubleTapZooming: true,
       enableTextSelection: false,
       canShowScrollHead: false,
       canShowScrollStatus: false,
+      onPageChanged: (details) {
+        onCurrentPageChanged?.call(details.newPageNumber);
+      },
+      onDocumentLoaded: (details) {
+        onTotalPagesResolved?.call(details.document.pages.count);
+      },
     );
   }
 }
