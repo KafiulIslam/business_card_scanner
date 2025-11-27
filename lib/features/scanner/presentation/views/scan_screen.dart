@@ -10,40 +10,48 @@ import '../cubit/scan_state.dart';
 import 'package:business_card_scanner/core/theme/app_dimensions.dart';
 import 'package:business_card_scanner/core/theme/app_text_style.dart';
 
-class ScanScreen extends StatefulWidget {
+class ScanScreen extends StatelessWidget {
   const ScanScreen({super.key});
 
   @override
-  State<ScanScreen> createState() => _ScanScreenState();
+  Widget build(BuildContext context) {
+    return BlocProvider<ScanCubit>(
+      create: (_) => ScanCubit(),
+      child: const _ScanScreenContent(),
+    );
+  }
 }
 
-class _ScanScreenState extends State<ScanScreen> with WidgetsBindingObserver {
-  bool _isDisposed = false;
+class _ScanScreenContent extends StatefulWidget {
+  const _ScanScreenContent();
 
+  @override
+  State<_ScanScreenContent> createState() => _ScanScreenContentState();
+}
+
+class _ScanScreenContentState extends State<_ScanScreenContent>
+    with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     // Initialize camera and text recognizer only when screen opens
     _initializeCamera();
+
   }
 
   @override
   void dispose() {
-    if (!_isDisposed) {
-      WidgetsBinding.instance.removeObserver(this);
-      // Ensure camera/textRecognizer are properly released when screen closes
-      context.read<ScanCubit>().disposeResources();
-      _isDisposed = true;
-    }
+    WidgetsBinding.instance.removeObserver(this);
+    // BlocProvider will automatically close the cubit and dispose resources
+
     super.dispose();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    // Only handle lifecycle if screen is still mounted
-    if (!_isDisposed && mounted) {
-      // Forward lifecycle to cubit to handle camera properly
+    // Forward lifecycle to cubit to handle camera properly
+    if (mounted) {
       context.read<ScanCubit>().handleLifecycle(state);
     }
   }

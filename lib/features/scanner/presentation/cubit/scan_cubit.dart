@@ -138,6 +138,12 @@ class ScanCubit extends Cubit<ScanState> {
     }
   }
 
+  @override
+  Future<void> close() async {
+    await disposeResources();
+    return super.close();
+  }
+
   // ========= Actions =========
 
   Future<void> scanFromCamera() async {
@@ -428,4 +434,5 @@ class ScanCubit extends Cubit<ScanState> {
       'address': address,
     };
   }
+
 }

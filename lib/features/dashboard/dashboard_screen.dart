@@ -18,27 +18,33 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   late int _currentIndex;
 
-  late final List<Widget> _pages = const <Widget>[
-    NetworkScreen(),
-    MyCardScreen(),
-    ScanScreen(),
-    ToolsScreen(),
-    MenuScreen(),
-  ];
-
   @override
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex;
   }
 
+  Widget _buildPage(int index) {
+    switch (index) {
+      case 0:
+        return const NetworkScreen();
+      case 1:
+        return const MyCardScreen();
+      case 2:
+        return const ScanScreen();
+      case 3:
+        return const ToolsScreen();
+      case 4:
+        return const MenuScreen();
+      default:
+        return const NetworkScreen();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _pages,
-      ),
+      body: _buildPage(_currentIndex),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         currentIndex: _currentIndex,

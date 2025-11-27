@@ -1,5 +1,4 @@
 import 'package:camera/camera.dart';
-
 import '../../domain/entities/scan_result_data.dart';
 
 class ScanState {

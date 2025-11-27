@@ -11,7 +11,6 @@ import 'package:business_card_scanner/features/auth/domain/use_cases/sign_out_us
 import 'package:business_card_scanner/features/auth/presentation/cubit/logout_cubit.dart';
 import 'package:business_card_scanner/features/auth/domain/use_cases/delete_account_use_case.dart';
 import 'package:business_card_scanner/features/auth/presentation/cubit/delete_account_cubit.dart';
-import 'package:business_card_scanner/features/scanner/presentation/cubit/scan_cubit.dart';
 import 'package:business_card_scanner/features/network/data/services/firebase_storage_service.dart';
 import 'package:business_card_scanner/features/network/data/services/firebase_network_service.dart';
 import 'package:business_card_scanner/features/network/data/repositories/network_repository_impl.dart';
@@ -171,9 +170,6 @@ class AppProviders extends StatelessWidget {
           ),
           BlocProvider<DeleteAccountCubit>(
             create: (ctx) => DeleteAccountCubit(ctx.read<DeleteAccountUseCase>()),
-          ),
-          BlocProvider<ScanCubit>(
-            create: (_) => ScanCubit(),
           ),
           BlocProvider<NetworkCubit>(
             create: (ctx) => NetworkCubit(
