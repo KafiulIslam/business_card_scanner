@@ -12,6 +12,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
+import 'package:scanning_effect/scanning_effect.dart';
 import '../../../../core/routes/routes.dart';
 
 class NetworkScreen extends StatefulWidget {
@@ -131,6 +132,7 @@ class _NetworkScreenState extends State<NetworkScreen> {
           // Header with Profile, Search, and Filter
           // _buildHeader(),
           // Cards List
+
           Expanded(
             child: BlocBuilder<NetworkCubit, NetworkState>(
               builder: (context, state) {

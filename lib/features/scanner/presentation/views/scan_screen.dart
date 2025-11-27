@@ -1,3 +1,4 @@
+import 'package:business_card_scanner/core/theme/app_colors.dart';
 import 'package:business_card_scanner/core/utils/custom_snack.dart';
 import 'package:business_card_scanner/core/routes/routes.dart';
 import 'package:camera/camera.dart';
@@ -5,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
+import 'package:scanning_effect/scanning_effect.dart';
 import '../cubit/scan_cubit.dart';
 import '../cubit/scan_state.dart';
 import 'package:business_card_scanner/core/theme/app_dimensions.dart';
@@ -37,7 +39,6 @@ class _ScanScreenContentState extends State<_ScanScreenContent>
     WidgetsBinding.instance.addObserver(this);
     // Initialize camera and text recognizer only when screen opens
     _initializeCamera();
-
   }
 
   @override
@@ -137,72 +138,83 @@ class _ScanScreenContentState extends State<_ScanScreenContent>
                   ),
                 ),
 
+                // Scanning effect inside the card frame (only when busy)
+                if (state.isBusy)
+                  Positioned.fill(
+                    child: Center(
+                      child: SizedBox(
+                        height: MediaQuery.sizeOf(context).height / 3.2,
+                        child: ScanningEffect(
+                          scanningColor: AppColors.primary,
+                          borderLineColor: Colors.transparent,
+                          delay: const Duration(microseconds: 200),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.transparent,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
                 // Bottom controls
                 Positioned(
                   left: 16,
                   right: 16,
                   bottom: 16,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      if (state.isBusy)
-                        const Padding(
-                          padding: EdgeInsets.only(bottom: 12),
-                          child: CircularProgressIndicator(color: Colors.white),
+                      // Pick from gallery
+                      InkWell(
+                        onTap: state.isBusy
+                            ? null
+                            : context.read<ScanCubit>().scanFromGallery,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.image_outlined,
+                                color: Colors.white),
+                            Text(
+                              'Image',
+                              style: AppTextStyles.headline3
+                                  .copyWith(color: Colors.white, fontSize: 14),
+                            ),
+                          ],
                         ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          // Pick from gallery
-                          InkWell(
-                            onTap: state.isBusy
-                                ? null
-                                : context.read<ScanCubit>().scanFromGallery,
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(Icons.image_outlined,
-                                    color: Colors.white),
-                                Text(
-                                  'Image',
-                                  style: AppTextStyles.headline3.copyWith(
-                                      color: Colors.white, fontSize: 14),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Gap(AppDimensions.spacing40),
+                      ),
+                      Gap(AppDimensions.spacing40),
 
-                          // Capture
-                          InkWell(
-                            onTap: state.isBusy || controller == null
-                                ? null
-                                : context.read<ScanCubit>().scanFromCamera,
-                            child: _buildShutterButton(),
-                          ),
-                          Gap(AppDimensions.spacing40),
+                      // Capture
+                      InkWell(
+                        onTap: state.isBusy || controller == null
+                            ? null
+                            : context.read<ScanCubit>().scanFromCamera,
+                        child: _buildShutterButton(),
+                      ),
+                      Gap(AppDimensions.spacing40),
 
-                          // Manual add (hook up your route)
-                          InkWell(
-                            onTap: () {
-                                context.push(
-                                Routes.createCardManually,
-                              );
-                            },
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(Icons.add_card_rounded,
-                                    color: Colors.white),
-                                Text(
-                                  'Add Card',
-                                  style: AppTextStyles.headline3.copyWith(
-                                      color: Colors.white, fontSize: 14),
-                                ),
-                              ],
+                      // Manual add (hook up your route)
+                      InkWell(
+                        onTap: () {
+                          context.push(
+                            Routes.createCardManually,
+                          );
+                        },
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.add_card_rounded,
+                                color: Colors.white),
+                            Text(
+                              'Add Card',
+                              style: AppTextStyles.headline3
+                                  .copyWith(color: Colors.white, fontSize: 14),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ],
                   ),
