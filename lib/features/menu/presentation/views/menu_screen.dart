@@ -1,4 +1,6 @@
+import 'package:business_card_scanner/core/services/external_app_service.dart';
 import 'package:business_card_scanner/core/theme/app_colors.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:business_card_scanner/core/theme/app_dimensions.dart';
 import 'package:business_card_scanner/core/theme/app_text_style.dart';
 import 'package:business_card_scanner/features/auth/presentation/cubit/delete_account_cubit.dart';
@@ -94,12 +96,27 @@ class MenuScreen extends StatelessWidget {
                       onTap: () => context.push(Routes.termsConditions),
                       icon: Icons.rule,
                       title: 'Terms & Conditions'),
-                  // Gap(AppDimensions.spacing16),
-                  // // Share us
-                  // const MenuTile(icon: Icons.share_outlined, title: 'Share Us'),
-                  // Gap(AppDimensions.spacing16),
-                  // // Rate us
-                  // const MenuTile(icon: Icons.star, title: 'Rate Us'),
+                  Gap(AppDimensions.spacing16),
+                  // Share us
+                  MenuTile(
+                    onTap: () => _shareApp(context),
+                    icon: Icons.share_outlined,
+                    title: 'Share Us',
+                  ),
+                  Gap(AppDimensions.spacing16),
+                  // Rate us
+                  MenuTile(
+                    onTap: () => _rateApp(context),
+                    icon: Icons.star,
+                    title: 'Rate Us',
+                  ),
+                  Gap(AppDimensions.spacing16),
+                  // Feedback
+                  MenuTile(
+                    onTap: () => _sendFeedback(context),
+                    icon: Icons.feedback_outlined,
+                    title: 'Feedback',
+                  ),
                   Gap(AppDimensions.spacing16),
                   // Logout
                   BlocBuilder<LogoutCubit, LogoutState>(
@@ -238,5 +255,53 @@ class MenuScreen extends StatelessWidget {
       if (buffer.length == 2) break;
     }
     return buffer.isEmpty ? 'U' : buffer.toString();
+  }
+
+  Future<void> _rateApp(BuildContext context) async {
+    const playStoreUrl =
+        'https://play.google.com/store/apps/details?id=com.codertent.cardigo';
+    final uri = Uri.parse(playStoreUrl);
+
+    try {
+      final launched =
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!launched && context.mounted) {
+        CustomSnack.warning('Unable to open Play Store.', context);
+      }
+    } catch (e) {
+      if (context.mounted) {
+        CustomSnack.warning('Failed to open Play Store: $e', context);
+      }
+    }
+  }
+
+  Future<void> _sendFeedback(BuildContext context) async {
+    try {
+      final externalAppService = context.read<ExternalAppService>();
+      await externalAppService.sendEmail('codertent@gmail.com');
+    } catch (e) {
+      if (context.mounted) {
+        CustomSnack.warning('Failed to open email: $e', context);
+      }
+    }
+  }
+
+  Future<void> _shareApp(BuildContext context) async {
+    const shareText =
+        '📇 Discover Cardigo – the smartest way to scan, save, and manage business cards!\n\n'
+        '✨ Scan cards instantly with OCR\n'
+        '📱 Create stunning digital business cards\n'
+        '📄 Convert images to PDF & sign documents\n\n'
+        'Download now:\n'
+        'https://play.google.com/store/apps/details?id=com.codertent.cardigo';
+
+    try {
+      final externalAppService = context.read<ExternalAppService>();
+      await externalAppService.shareContent(shareText);
+    } catch (e) {
+      if (context.mounted) {
+        CustomSnack.warning('Failed to share: $e', context);
+      }
+    }
   }
 }
