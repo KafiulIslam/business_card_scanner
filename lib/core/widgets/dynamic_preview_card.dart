@@ -70,28 +70,31 @@ class DynamicPreviewCard extends StatelessWidget {
                       width: 100.w,
                       child: Column(
                         children: [
-                          if (isEditable ?? true) ...[
-                            if (imagePath == null) ...[
-                              const Icon(
-                                Icons.domain,
-                                color: Colors.white,
-                                size: 36,
-                              )
-                            ] else ...[
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: SizedBox(
+                          if (imagePath != null ||
+                              (network.company?.isNotEmpty ?? false)) ...[
+                            if (isEditable ?? true) ...[
+                              if (imagePath == null) ...[
+                                const Icon(
+                                  Icons.domain,
+                                  color: Colors.white,
+                                  size: 36,
+                                )
+                              ] else ...[
+                                SizedBox(
                                   height: 36.h,
                                   width: 36.w,
-                                  child: Image.file(
-                                    imagePath!,
-                                    fit: BoxFit.cover,
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: Image.file(
+                                      imagePath!,
+                                      fit: BoxFit.contain,
+                                    ),
                                   ),
-                                ),
-                              )
-                            ]
-                          ] else ...[
-                            _buildCompanyLogoHolder(network.companyLogo ?? '')
+                                )
+                              ]
+                            ] else ...[
+                              _buildCompanyLogoHolder(network.companyLogo ?? '')
+                            ],
                           ],
                           Text(
                             network.company ?? '',

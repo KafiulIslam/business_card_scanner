@@ -132,13 +132,15 @@ class _MyCardListItemState extends State<MyCardListItem> {
                   color: Colors.white,
                   size: 24,
                 ),
-                itemBuilder: (BuildContext context) =>
-                <PopupMenuEntry<String>>[
+                itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
                   PopupMenuItem(
                       onTap: () => Future.microtask(() {
-                        context.push(Routes.editMyCard,
-                            extra: widget.card);
-                      }),
+                            // context.push(Routes.editMyCard, extra: widget.card);
+                            context.push(
+                              Routes.chooseTemplate,
+                              extra: {'isEditing': true, 'card': widget.card},
+                            );
+                          }),
                       child: const CustomPopupItem(
                           icon: Icons.edit_note_outlined, title: 'Edit')),
                   PopupMenuItem(
@@ -156,8 +158,7 @@ class _MyCardListItemState extends State<MyCardListItem> {
                       });
                     },
                     child: const CustomPopupItem(
-                        icon: Icons.delete_forever_outlined,
-                        title: 'Delete'),
+                        icon: Icons.delete_forever_outlined, title: 'Delete'),
                   ),
                 ],
               ),

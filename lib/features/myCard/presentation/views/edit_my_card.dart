@@ -19,8 +19,10 @@ import '../../presentation/cubit/my_card_state.dart';
 
 class EditMyCardScreen extends StatefulWidget {
   final MyCardModel card;
+  final String imageUrl;
 
-  const EditMyCardScreen({super.key, required this.card});
+  const EditMyCardScreen(
+      {super.key, required this.card, required this.imageUrl});
 
   @override
   State<EditMyCardScreen> createState() => _EditMyCardScreenState();
@@ -37,6 +39,7 @@ class _EditMyCardScreenState extends State<EditMyCardScreen> {
   late String _originalPhone;
   late String _originalAddress;
   late String _originalWebsite;
+  late String _originalImageUrl;
 
   // fields controllers
   late TextEditingController _nameController;
@@ -53,14 +56,15 @@ class _EditMyCardScreenState extends State<EditMyCardScreen> {
   @override
   void initState() {
     super.initState();
-    // Store original values for comparison
-    _originalName = widget.card.name ?? '';
-    _originalTitle = widget.card.title ?? '';
-    _originalCompany = widget.card.company ?? '';
-    _originalEmail = widget.card.email ?? '';
-    _originalPhone = widget.card.phone ?? '';
-    _originalAddress = widget.card.address ?? '';
-    _originalWebsite = widget.card.website ?? '';
+    // Store original values for comparison (trimmed for consistent comparison)
+    _originalName = (widget.card.name ?? '').trim();
+    _originalTitle = (widget.card.title ?? '').trim();
+    _originalCompany = (widget.card.company ?? '').trim();
+    _originalEmail = (widget.card.email ?? '').trim();
+    _originalPhone = (widget.card.phone ?? '').trim();
+    _originalAddress = (widget.card.address ?? '').trim();
+    _originalWebsite = (widget.card.website ?? '').trim();
+    _originalImageUrl = (widget.card.imageUrl ?? '').trim();
 
     // Initialize controllers with card data
     _nameController = TextEditingController(text: _originalName);
@@ -97,6 +101,9 @@ class _EditMyCardScreenState extends State<EditMyCardScreen> {
     final currentAddress = _addressController.text.trim();
     final currentWebsite = _websiteController.text.trim();
 
+    // Check if imageUrl has changed
+    final imageUrlChanged = widget.imageUrl != _originalImageUrl;
+
     // Check if any field has changed
     return currentName != _originalName ||
         currentTitle != _originalTitle ||
@@ -104,7 +111,8 @@ class _EditMyCardScreenState extends State<EditMyCardScreen> {
         currentEmail != _originalEmail ||
         currentPhone != _originalPhone ||
         currentAddress != _originalAddress ||
-        currentWebsite != _originalWebsite;
+        currentWebsite != _originalWebsite ||
+        imageUrlChanged;
   }
 
   Future<void> _updateCard() async {
@@ -130,7 +138,7 @@ class _EditMyCardScreenState extends State<EditMyCardScreen> {
       final updatedCard = MyCardModel(
         cardId: widget.card.cardId,
         uid: widget.card.uid,
-        imageUrl: widget.card.imageUrl,
+        imageUrl: widget.imageUrl, // Use the new imageUrl from widget
         category: widget.card.category,
         name: _nameController.text.trim().isEmpty
             ? null
@@ -236,10 +244,11 @@ class _EditMyCardScreenState extends State<EditMyCardScreen> {
             DynamicPreviewCard(
                 screenshotController: _screenshotController,
                 network: NetworkModel(
-                    imageUrl: widget.card.imageUrl,
+                    imageUrl: widget.imageUrl,
                     name: _nameController.text,
                     title: _jobTitleController.text,
                     company: _companyController.text,
+                    companyLogo: widget.card.logoUrl,
                     phone: _phoneController.text,
                     address: _addressController.text,
                     email: _emailController.text,

@@ -188,9 +188,16 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: Routes.chooseTemplate,
       pageBuilder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+
+        final bool isEditing = extra?['isEditing'] as bool? ?? false;
+        final MyCardModel? card = extra?['card'] as MyCardModel?;
         return CustomTransitionPage(
           key: state.pageKey,
-          child: const ChooseTemplateScreen(),
+          child: ChooseTemplateScreen(
+            isEditing: isEditing,
+            card: card ?? MyCardModel(),
+          ),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return FadeTransition(opacity: animation, child: child);
           },
@@ -215,7 +222,11 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: Routes.editMyCard,
       pageBuilder: (context, state) {
-        final card = state.extra as MyCardModel?;
+        final extra = state.extra as Map<String, dynamic>?;
+
+        final String imageUrl = extra?['imageUrl'] as String? ?? '';
+        final MyCardModel? card = extra?['card'] as MyCardModel?;
+        //final card = state.extra as MyCardModel?;
         if (card == null) {
           // Fallback - you might want to handle this differently
           return CustomTransitionPage(
@@ -231,6 +242,7 @@ final GoRouter router = GoRouter(
           key: state.pageKey,
           child: EditMyCardScreen(
             card: card,
+            imageUrl: imageUrl,
           ),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return FadeTransition(opacity: animation, child: child);

@@ -1,4 +1,5 @@
 import 'package:business_card_scanner/core/widgets/buttons/custom_floating_button.dart';
+import 'package:business_card_scanner/features/myCard/domain/entities/my_card_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -87,7 +88,10 @@ class _MyCardScreenState extends State<MyCardScreen> {
               floatingActionButton: state.cards.isNotEmpty
                   ? CustomFloatingButton(
                       icon: Icons.add,
-                      onTap: () => context.push(Routes.chooseTemplate),
+                      onTap: () => context.push(
+                        Routes.chooseTemplate,
+                        extra: {'isEditing': false, 'card': MyCardModel()},
+                      ),
                     )
                   : null,
             );
@@ -148,7 +152,10 @@ class _MyCardScreenState extends State<MyCardScreen> {
   Widget _buildCreateCardWidget(BuildContext context) {
     return InkWell(
       onTap: () {
-        context.push(Routes.chooseTemplate);
+        context.push(
+          Routes.chooseTemplate,
+          extra: {'isEditing': false, 'card': MyCardModel()},
+        );
       },
       borderRadius: BorderRadius.circular(AppDimensions.radius12),
       child: Container(
@@ -274,5 +281,4 @@ class _MyCardScreenState extends State<MyCardScreen> {
       ),
     );
   }
-
 }
