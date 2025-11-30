@@ -329,6 +329,7 @@ class _EditTemplateDetailsState extends State<EditTemplateDetails> {
           CardInfoField(
             icon: Icons.phone_outlined,
             controller: _phoneController,
+            inputType: TextInputType.phone,
             hint: 'Phone',
             onChanged: (value) {
               setState(() {});
@@ -339,6 +340,7 @@ class _EditTemplateDetailsState extends State<EditTemplateDetails> {
           CardInfoField(
             icon: Icons.email_outlined,
             controller: _emailController,
+            inputType: TextInputType.emailAddress,
             hint: 'Email',
             onChanged: (value) {
               setState(() {});

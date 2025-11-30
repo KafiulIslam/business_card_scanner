@@ -9,13 +9,15 @@ class CardInfoField extends StatefulWidget {
   final TextEditingController controller;
   final ValueChanged<String>? onChanged;
   final String hint;
+  final TextInputType? inputType;
 
   const CardInfoField(
       {super.key,
       required this.icon,
       required this.controller,
       this.onChanged,
-      required this.hint});
+      required this.hint,
+      this.inputType = TextInputType.text});
 
   @override
   State<CardInfoField> createState() => _CardInfoFieldState();
@@ -51,6 +53,7 @@ class _CardInfoFieldState extends State<CardInfoField> {
               onChanged: widget.onChanged,
               cursorColor: AppColors.primary,
               style: AppTextStyles.bodySmall.copyWith(color: Colors.black),
+              keyboardType: widget.inputType,
               decoration: InputDecoration(
                 filled: false,
                 fillColor: Colors.transparent,
