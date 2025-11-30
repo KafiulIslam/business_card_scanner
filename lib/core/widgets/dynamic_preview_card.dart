@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:business_card_scanner/features/network/domain/entities/network_model.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
