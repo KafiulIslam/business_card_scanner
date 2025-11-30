@@ -17,6 +17,7 @@ import '../../../../core/theme/app_text_style.dart';
 import '../../../../core/utils/custom_snack.dart';
 import '../../../../core/widgets/dynamic_preview_card.dart';
 import '../../../../core/widgets/inputFields/card_info_field.dart';
+import '../../../network/data/services/firebase_storage_service.dart';
 import '../../../network/domain/entities/network_model.dart';
 import '../../presentation/cubit/my_card_cubit.dart';
 import '../../presentation/cubit/my_card_state.dart';
@@ -109,6 +110,9 @@ class _EditMyCardScreenState extends State<EditMyCardScreen> {
     // Check if imageUrl has changed
     final imageUrlChanged = widget.imageUrl != _originalImageUrl;
 
+    // Check if logo has been changed
+    final logoChanged = isLogoChanging || _selectedLogoFile != null;
+
     // Check if any field has changed
     return currentName != _originalName ||
         currentTitle != _originalTitle ||
@@ -117,7 +121,8 @@ class _EditMyCardScreenState extends State<EditMyCardScreen> {
         currentPhone != _originalPhone ||
         currentAddress != _originalAddress ||
         currentWebsite != _originalWebsite ||
-        imageUrlChanged;
+        imageUrlChanged ||
+        logoChanged;
   }
 
   Future<void> _updateCard() async {
@@ -138,6 +143,20 @@ class _EditMyCardScreenState extends State<EditMyCardScreen> {
       setState(() {
         isCardUpdating = true;
       });
+
+      // Handle logo upload if user picked a new logo
+      String? logoUrl;
+      if (_selectedLogoFile != null && isLogoChanging) {
+        // Upload logo to storage (will replace existing if logoUrl already exists)
+        final storageService = FirebaseStorageService();
+        logoUrl = await storageService.uploadCompanyLogo(
+          _selectedLogoFile!,
+          widget.card.cardId!,
+        );
+      } else {
+        // Keep existing logoUrl if no new logo was picked
+        logoUrl = widget.card.logoUrl;
+      }
 
       // Create updated MyCardModel with all current values
       final updatedCard = MyCardModel(
@@ -167,6 +186,7 @@ class _EditMyCardScreenState extends State<EditMyCardScreen> {
         website: _websiteController.text.trim().isEmpty
             ? null
             : _websiteController.text.trim(),
+        logoUrl: logoUrl,
         createdAt: widget.card.createdAt,
         isCameraScanned: widget.card.isCameraScanned,
       );
