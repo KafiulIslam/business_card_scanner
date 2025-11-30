@@ -135,7 +135,6 @@ class _MyCardListItemState extends State<MyCardListItem> {
                 itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
                   PopupMenuItem(
                       onTap: () => Future.microtask(() {
-                            // context.push(Routes.editMyCard, extra: widget.card);
                             context.push(
                               Routes.chooseTemplate,
                               extra: {'isEditing': true, 'card': widget.card},
