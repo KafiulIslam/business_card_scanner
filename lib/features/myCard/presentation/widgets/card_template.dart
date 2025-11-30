@@ -71,16 +71,17 @@ class CardTemplate extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   CardInfoTile(icon: Icons.phone, info: network.phone ?? ""),
-                  const Gap(2),
-                  CardInfoTile(
-                      icon: Icons.location_on_outlined,
-                      info: network.address ?? ''),
+
                   const Gap(2),
                   CardInfoTile(icon: Icons.email, info: network.email ?? ''),
                   const Gap(2),
                   CardInfoTile(
                       icon: Icons.language_outlined,
                       info: network.website ?? ''),
+                  const Gap(2),
+                  CardInfoTile(
+                      icon: Icons.location_on_outlined,
+                      info: network.address ?? ''),
                 ],
               ),
             ],

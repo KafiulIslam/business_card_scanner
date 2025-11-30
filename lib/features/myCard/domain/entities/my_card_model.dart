@@ -12,6 +12,7 @@ class MyCardModel {
   final String? phone;
   final String? address;
   final String? website;
+  final String? logoUrl;
   final DateTime? createdAt;
   final bool? isCameraScanned;
 
@@ -27,6 +28,7 @@ class MyCardModel {
     this.phone,
     this.address,
     this.website,
+    this.logoUrl,
     this.createdAt,
     this.isCameraScanned,
   });
@@ -44,6 +46,7 @@ class MyCardModel {
     if (phone != null) map['phone'] = phone;
     if (address != null) map['address'] = address;
     if (website != null) map['website'] = website;
+    if (logoUrl != null) map['logoUrl'] = logoUrl;
     if (createdAt != null) {
       map['createdAt'] = Timestamp.fromDate(createdAt!);
     }
@@ -73,6 +76,7 @@ class MyCardModel {
       phone: map['phone']?.toString(),
       address: map['address']?.toString(),
       website: map['website']?.toString(),
+      logoUrl: map['logoUrl']?.toString(),
       createdAt: createdAt,
       isCameraScanned: map['isCameraScanned'] as bool?,
     );

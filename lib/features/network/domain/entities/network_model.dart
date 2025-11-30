@@ -9,6 +9,7 @@ class NetworkModel {
   final String? name;
   final String? title;
   final String? company;
+  final String? companyLogo;
   final String? email;
   final String? phone;
   final String? address;
@@ -26,6 +27,7 @@ class NetworkModel {
     this.name,
     this.title,
     this.company,
+    this.companyLogo,
     this.email,
     this.phone,
     this.address,
@@ -45,6 +47,7 @@ class NetworkModel {
     if (name != null) map['name'] = name;
     if (title != null) map['title'] = title;
     if (company != null) map['company'] = company;
+    if (companyLogo != null) map['company_logo'] = companyLogo;
     if (email != null) map['email'] = email;
     if (phone != null) map['phone'] = phone;
     if (address != null) map['address'] = address;
@@ -76,6 +79,7 @@ class NetworkModel {
       name: map['name']?.toString(),
       title: map['title']?.toString(),
       company: map['company']?.toString(),
+      companyLogo: map['company_logo']?.toString(),
       email: map['email']?.toString(),
       phone: map['phone']?.toString(),
       address: map['address']?.toString(),

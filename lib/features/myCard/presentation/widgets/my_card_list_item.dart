@@ -116,6 +116,7 @@ class _MyCardListItemState extends State<MyCardListItem> {
                   name: widget.card.name,
                   title: widget.card.title,
                   company: widget.card.company,
+                  companyLogo: widget.card.logoUrl,
                   phone: widget.card.phone,
                   address: widget.card.address,
                   email: widget.card.email,
