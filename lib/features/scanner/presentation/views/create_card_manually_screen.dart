@@ -225,39 +225,47 @@ class _CreateCardManuallyScreenState extends State<CreateCardManuallyScreen> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Card Preview Section
-            DynamicPreviewCard(
-                screenshotController: _screenshotController,
-                network: NetworkModel(
-                    imageUrl: AssetsPath.manualCardBg,
-                    name: _nameController.text,
-                    title: _jobTitleController.text,
-                    company: _companyController.text,
-                    phone: _phoneController.text,
-                    address: _addressController.text,
-                    email: _emailController.text,
-                    website: _websiteController.text,
-                    sourceType: NetworkSourceType.manual)),
-            //_buildCardPreview(),
-            Gap(AppDimensions.spacing16),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Card Preview Section
+          DynamicPreviewCard(
+              screenshotController: _screenshotController,
+              network: NetworkModel(
+                  imageUrl: AssetsPath.manualCardBg,
+                  name: _nameController.text,
+                  title: _jobTitleController.text,
+                  company: _companyController.text,
+                  phone: _phoneController.text,
+                  address: _addressController.text,
+                  email: _emailController.text,
+                  website: _websiteController.text,
+                  sourceType: NetworkSourceType.manual)),
+          //_buildCardPreview(),
+          Expanded(child: _buildFormField()),
+        ],
+      ),
+    );
+  }
 
-            // Category Dropdown
-            Padding(
-              padding:
-                  EdgeInsets.symmetric(horizontal: AppDimensions.spacing16),
-              child: _buildCategoryDropdown(),
-            ),
-            Gap(AppDimensions.spacing16),
+  Widget _buildFormField() {
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Gap(AppDimensions.spacing16),
 
-            // Extracted Information Fields
-            _buildExtractedFields(),
-            Gap(AppDimensions.spacing48 * 2), // Space for bottom buttons
-          ],
-        ),
+          // Category Dropdown
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: AppDimensions.spacing16),
+            child: _buildCategoryDropdown(),
+          ),
+          Gap(AppDimensions.spacing16),
+
+          // Extracted Information Fields
+          _buildExtractedFields(),
+          Gap(AppDimensions.spacing48), // Space for bottom buttons
+        ],
       ),
     );
   }
@@ -296,6 +304,8 @@ class _CreateCardManuallyScreenState extends State<CreateCardManuallyScreen> {
             icon: Icons.description_outlined,
             controller: _whereYouMetController,
             hint: 'Where you met?'),
+
+        // name
         CardInfoField(
           icon: Icons.person_outline,
           controller: _nameController,
@@ -304,6 +314,8 @@ class _CreateCardManuallyScreenState extends State<CreateCardManuallyScreen> {
             setState(() {});
           },
         ),
+
+        // title
         CardInfoField(
           icon: Icons.work,
           controller: _jobTitleController,
@@ -312,6 +324,8 @@ class _CreateCardManuallyScreenState extends State<CreateCardManuallyScreen> {
             setState(() {});
           },
         ),
+
+        // company
         CardInfoField(
           icon: Icons.domain,
           controller: _companyController,
@@ -320,34 +334,44 @@ class _CreateCardManuallyScreenState extends State<CreateCardManuallyScreen> {
             setState(() {});
           },
         ),
-        CardInfoField(
-          icon: Icons.email_outlined,
-          controller: _emailController,
-          hint: 'Email',
-          onChanged: (value) {
-            setState(() {});
-          },
-        ),
+
+        // phone
         CardInfoField(
           icon: Icons.phone_outlined,
           controller: _phoneController,
+          inputType: TextInputType.phone,
           hint: 'Phone',
           onChanged: (value) {
             setState(() {});
           },
         ),
+
+        // email
         CardInfoField(
-          icon: Icons.location_on_outlined,
-          controller: _addressController,
-          hint: 'Address',
+          icon: Icons.email_outlined,
+          controller: _emailController,
+          inputType: TextInputType.emailAddress,
+          hint: 'Email',
           onChanged: (value) {
             setState(() {});
           },
         ),
+
+        // website
         CardInfoField(
           icon: Icons.language_outlined,
           controller: _websiteController,
           hint: 'Website',
+          onChanged: (value) {
+            setState(() {});
+          },
+        ),
+
+        // address
+        CardInfoField(
+          icon: Icons.location_on_outlined,
+          controller: _addressController,
+          hint: 'Address',
           onChanged: (value) {
             setState(() {});
           },
