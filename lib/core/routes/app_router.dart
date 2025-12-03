@@ -23,6 +23,7 @@ import 'package:business_card_scanner/features/tools/presentation/views/image_to
 import 'package:business_card_scanner/features/tools/domain/entities/image_to_text_model.dart';
 import 'package:business_card_scanner/features/tools/presentation/views/sign_document/sign_document_screen.dart';
 import 'package:business_card_scanner/features/tools/presentation/views/sign_document/sign_canvas_screen.dart';
+import 'package:business_card_scanner/features/tools/presentation/views/writeEmail/write_email_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import '../../splash_screen.dart';
@@ -377,6 +378,18 @@ final GoRouter router = GoRouter(
             documentTitle: args['documentTitle'] as String? ?? 'Sign Document',
             pdfFilePath: args['pdfFilePath'] as String?,
           ),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+        );
+      },
+    ),
+    GoRoute(
+      path: Routes.writeEmail,
+      pageBuilder: (context, state) {
+        return CustomTransitionPage(
+          key: state.pageKey,
+          child: const WriteEmailScreen(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return FadeTransition(opacity: animation, child: child);
           },

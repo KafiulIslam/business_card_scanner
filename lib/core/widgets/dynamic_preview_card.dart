@@ -80,17 +80,25 @@ class DynamicPreviewCard extends StatelessWidget {
                                   size: 36,
                                 )
                               ] else ...[
-                                SizedBox(
-                                  height: 36.h,
-                                  width: 36.w,
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(8),
-                                    child: Image.file(
-                                      imagePath!,
-                                      fit: BoxFit.contain,
-                                    ),
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(8.r),
+                                  child: Image.file(
+                                    imagePath!,
+                                    height: 36.h,
+                                    width: 36.w,
+                                    fit: BoxFit.contain,
                                   ),
                                 )
+
+                                // ClipRRect(
+                                //   borderRadius: BorderRadius.circular(6.r),
+                                //   child: Image.file(
+                                //     imagePath!,
+                                //     height: 36.h,
+                                //     width: 36.w,
+                                //     fit: BoxFit.cover,
+                                //   ),
+                                // )
                               ]
                             ] else ...[
                               _buildCompanyLogoHolder(network.companyLogo ?? '')

@@ -32,6 +32,12 @@ class ToolsScreen extends StatelessWidget {
                   icon: Icons.edit_note_outlined,
                   title: 'Sign Document',
                   subtitle: 'Sign documents digitally'),
+              const Gap(16),
+              ToolCard(
+                  onTap: () => context.push(Routes.writeEmail),
+                  icon: Icons.email_outlined,
+                  title: 'Write Email',
+                  subtitle: 'Write email with AI'),
             ],
           ),
         ),

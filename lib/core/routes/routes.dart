@@ -32,6 +32,7 @@ class Routes {
   static const String convertPdf = '/convert-pdf';
   static const String signDocument = '/sign-doc';
   static const String signCanvas = '/sign-canvas';
+  static const String writeEmail = '/write-email';
 
 
   //!======================== Menu Routes ========================
