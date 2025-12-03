@@ -47,6 +47,8 @@ import 'package:business_card_scanner/features/tools/domain/use_cases/get_signed
 import 'package:business_card_scanner/features/tools/domain/use_cases/delete_signed_document_use_case.dart';
 import 'package:business_card_scanner/features/tools/presentation/cubit/convert_pdf_cubit.dart';
 import 'package:business_card_scanner/features/tools/presentation/cubit/signed_docs_cubit.dart';
+import 'package:business_card_scanner/features/tools/data/services/openai_email_service.dart';
+import 'package:business_card_scanner/features/tools/presentation/cubit/write_email_cubit.dart';
 
 class AppProviders extends StatelessWidget {
   final Widget child;
@@ -82,22 +84,27 @@ class AppProviders extends StatelessWidget {
           create: (_) => FirebaseNetworkService(),
         ),
         RepositoryProvider<NetworkRepository>(
-          create: (ctx) => NetworkRepositoryImpl(ctx.read<FirebaseNetworkService>()),
+          create: (ctx) =>
+              NetworkRepositoryImpl(ctx.read<FirebaseNetworkService>()),
         ),
         RepositoryProvider<SaveNetworkCardUseCase>(
-          create: (ctx) => SaveNetworkCardUseCase(ctx.read<NetworkRepository>()),
+          create: (ctx) =>
+              SaveNetworkCardUseCase(ctx.read<NetworkRepository>()),
         ),
         RepositoryProvider<GetNetworkCardsUseCase>(
-          create: (ctx) => GetNetworkCardsUseCase(ctx.read<NetworkRepository>()),
+          create: (ctx) =>
+              GetNetworkCardsUseCase(ctx.read<NetworkRepository>()),
         ),
         RepositoryProvider<DeleteNetworkCardUseCase>(
-          create: (ctx) => DeleteNetworkCardUseCase(ctx.read<NetworkRepository>()),
+          create: (ctx) =>
+              DeleteNetworkCardUseCase(ctx.read<NetworkRepository>()),
         ),
         RepositoryProvider<FirebaseMyCardService>(
           create: (_) => FirebaseMyCardService(),
         ),
         RepositoryProvider<MyCardRepository>(
-          create: (ctx) => MyCardRepositoryImpl(ctx.read<FirebaseMyCardService>()),
+          create: (ctx) =>
+              MyCardRepositoryImpl(ctx.read<FirebaseMyCardService>()),
         ),
         RepositoryProvider<SaveMyCardUseCase>(
           create: (ctx) => SaveMyCardUseCase(ctx.read<MyCardRepository>()),
@@ -118,7 +125,8 @@ class AppProviders extends StatelessWidget {
           create: (_) => FirebaseImageToTextService(),
         ),
         RepositoryProvider<ImageToTextRepository>(
-          create: (ctx) => ImageToTextRepositoryImpl(ctx.read<FirebaseImageToTextService>()),
+          create: (ctx) =>
+              ImageToTextRepositoryImpl(ctx.read<FirebaseImageToTextService>()),
         ),
         RepositoryProvider<FirebasePdfService>(
           create: (_) => FirebasePdfService(),
@@ -130,17 +138,20 @@ class AppProviders extends StatelessWidget {
           create: (_) => FirebaseSignedDocsService(),
         ),
         RepositoryProvider<SignedDocumentRepository>(
-          create: (ctx) =>
-              SignedDocumentRepositoryImpl(ctx.read<FirebaseSignedDocsService>()),
+          create: (ctx) => SignedDocumentRepositoryImpl(
+              ctx.read<FirebaseSignedDocsService>()),
         ),
         RepositoryProvider<GetImageToTextListUseCase>(
-          create: (ctx) => GetImageToTextListUseCase(ctx.read<ImageToTextRepository>()),
+          create: (ctx) =>
+              GetImageToTextListUseCase(ctx.read<ImageToTextRepository>()),
         ),
         RepositoryProvider<UpdateImageToTextUseCase>(
-          create: (ctx) => UpdateImageToTextUseCase(ctx.read<ImageToTextRepository>()),
+          create: (ctx) =>
+              UpdateImageToTextUseCase(ctx.read<ImageToTextRepository>()),
         ),
         RepositoryProvider<DeleteImageToTextUseCase>(
-          create: (ctx) => DeleteImageToTextUseCase(ctx.read<ImageToTextRepository>()),
+          create: (ctx) =>
+              DeleteImageToTextUseCase(ctx.read<ImageToTextRepository>()),
         ),
         RepositoryProvider<GetPdfDocumentsUseCase>(
           create: (ctx) => GetPdfDocumentsUseCase(ctx.read<PdfRepository>()),
@@ -156,6 +167,9 @@ class AppProviders extends StatelessWidget {
           create: (ctx) =>
               DeleteSignedDocumentUseCase(ctx.read<SignedDocumentRepository>()),
         ),
+        RepositoryProvider<OpenAIEmailService>(
+          create: (_) => OpenAIEmailService(),
+        ),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -169,7 +183,8 @@ class AppProviders extends StatelessWidget {
             create: (ctx) => LogoutCubit(ctx.read<SignOutUseCase>()),
           ),
           BlocProvider<DeleteAccountCubit>(
-            create: (ctx) => DeleteAccountCubit(ctx.read<DeleteAccountUseCase>()),
+            create: (ctx) =>
+                DeleteAccountCubit(ctx.read<DeleteAccountUseCase>()),
           ),
           BlocProvider<NetworkCubit>(
             create: (ctx) => NetworkCubit(
@@ -200,11 +215,13 @@ class AppProviders extends StatelessWidget {
             ),
           ),
           BlocProvider<SignedDocsCubit>(
-            create: (ctx) =>
-                SignedDocsCubit(
+            create: (ctx) => SignedDocsCubit(
               ctx.read<GetSignedDocumentsUseCase>(),
               ctx.read<DeleteSignedDocumentUseCase>(),
             ),
+          ),
+          BlocProvider<WriteEmailCubit>(
+            create: (ctx) => WriteEmailCubit(ctx.read<OpenAIEmailService>()),
           ),
         ],
         child: child,
