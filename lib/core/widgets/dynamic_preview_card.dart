@@ -29,7 +29,7 @@ class DynamicPreviewCard extends StatelessWidget {
       child: Screenshot(
         controller: screenshotController,
         child: Container(
-          height: 220.h,
+          height: 210.h,
           width: double.infinity,
           decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
@@ -51,7 +51,7 @@ class DynamicPreviewCard extends StatelessWidget {
                         children: [
                           Text(
                             network.name ?? '',
-                            maxLines: 1,
+                            maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: AppTextStyles.headline1
                                 .copyWith(fontSize: 16, color: Colors.white),
@@ -116,6 +116,7 @@ class DynamicPreviewCard extends StatelessWidget {
                     )
                   ],
                 ),
+                //Gap(AppDimensions.spacing16),
                 const Spacer(),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -128,9 +129,30 @@ class DynamicPreviewCard extends StatelessWidget {
                         icon: Icons.language_outlined,
                         info: network.website ?? ''),
                     const Gap(2),
-                    CardInfoTile(
-                        icon: Icons.location_on_outlined,
-                        info: network.address ?? ''),
+                    Row(
+                      children: [
+                        if (network.address?.isNotEmpty ?? false) ...[
+                          const Icon(
+                            Icons.location_on_outlined,
+                            color: Colors.white,
+                            size: 18,
+                          ),
+                        ],
+                        const Gap(8),
+                        Expanded(
+                          child: Text(
+                            network.address ?? '',
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTextStyles.labelSmall
+                                .copyWith(color: Colors.white),
+                          ),
+                        )
+                      ],
+                    )
+                    // CardInfoTile(
+                    //     icon: Icons.location_on_outlined,
+                    //     info: network.address ?? ''),
                   ],
                 ),
               ],

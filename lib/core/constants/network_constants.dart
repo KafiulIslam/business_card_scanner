@@ -31,7 +31,7 @@ class NetworkConstants {
   ];
 
   /// Default tag when no tag is selected
-  static const String? defaultTag = 'Prospects';
+  static const String defaultTag = 'Prospects';
 
   // ==================== VALIDATION ====================
 

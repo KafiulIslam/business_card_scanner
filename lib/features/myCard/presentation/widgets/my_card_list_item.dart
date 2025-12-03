@@ -6,7 +6,6 @@ import 'package:business_card_scanner/features/myCard/domain/entities/my_card_mo
 import 'package:business_card_scanner/features/myCard/presentation/cubit/my_card_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
@@ -105,7 +104,7 @@ class _MyCardListItemState extends State<MyCardListItem> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 220.h,
+      //height: 220.h,
       width: double.infinity,
       child: Stack(
         children: [

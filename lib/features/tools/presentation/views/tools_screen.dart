@@ -37,7 +37,7 @@ class ToolsScreen extends StatelessWidget {
                   onTap: () => context.push(Routes.writeEmail),
                   icon: Icons.email_outlined,
                   title: 'Write Email',
-                  subtitle: 'Write email with AI'),
+                  subtitle: 'Generate emails with AI'),
             ],
           ),
         ),

@@ -42,10 +42,6 @@ class _PasswordInputFieldState extends State<PasswordInputField> {
               onTap: () {
                 setState(() {
                   isPassObscure = !isPassObscure;
-                  var index = 0;
-                  if (!isPassObscure) {
-                    index = 1;
-                  }
                 });
               },
               child: isPassObscure
