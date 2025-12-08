@@ -9,7 +9,8 @@ class CustomSnack {
   static void success(String message, BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       duration: const Duration(seconds: 3),
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.transparent,
+      elevation: 0,
       content: ContentCart(isSuccess: true, message: message),
     ));
   }
@@ -17,7 +18,8 @@ class CustomSnack {
   static void warning(String message, BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       duration: const Duration(seconds: 3),
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.transparent,
+      elevation: 0,
       content: ContentCart(isSuccess: false, message: message),
     ));
   }
@@ -36,7 +38,7 @@ class ContentCart extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFE9E9E9)),
+          border: Border.all(color: AppColors.borderColor),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.06),
