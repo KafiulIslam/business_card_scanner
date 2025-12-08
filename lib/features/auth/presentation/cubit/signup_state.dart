@@ -5,7 +5,7 @@ abstract class SignupState extends Equatable {
 
   const factory SignupState.initial() = SignupInitial;
   const factory SignupState.loading() = SignupLoading;
-  factory SignupState.success(AppUser user) = SignupSuccess;
+  const factory SignupState.success(AppUser user) = SignupSuccess;
   const factory SignupState.failure(String message) = SignupFailure;
 
   @override
@@ -22,7 +22,7 @@ class SignupLoading extends SignupState {
 
 class SignupSuccess extends SignupState {
   final AppUser user;
-  SignupSuccess(this.user);
+  const SignupSuccess(this.user);
 
   @override
   List<Object?> get props => [user];

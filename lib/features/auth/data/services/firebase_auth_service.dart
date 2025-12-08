@@ -39,4 +39,5 @@ class FirebaseAuthService {
     }
     await user.delete();
   }
+
 }

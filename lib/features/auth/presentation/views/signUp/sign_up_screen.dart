@@ -46,7 +46,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 if (state is SignupSuccess) {
                   CustomSnack.success(
                       'You account is created successfully!', context);
-                  context.go(Routes.login);
+                  context.go(Routes.dashboard);
                 }
               },
               builder: (context, state) {
