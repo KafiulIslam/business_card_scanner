@@ -45,44 +45,53 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: _buildPage(_currentIndex),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: _currentIndex,
-        selectedItemColor: AppColors.primary,
-        unselectedItemColor: AppColors.gray600,
-        showUnselectedLabels: true,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.contacts_outlined),
-            //activeIcon: Icon(Icons.group),
-            label: 'Network',
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(16), topRight: Radius.circular(16)),
+          border: Border(
+            top: BorderSide(
+              color: Colors.grey.shade200,
+            ),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.contact_mail_sharp),
-            // activeIcon: Icon(Icons.credit_card),
-            label: 'My Card',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.qr_code_scanner_outlined),
-            //activeIcon: Icon(Icons.qr_code_scanner),
-            label: 'Scan',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.category_outlined),
-            // activeIcon: Icon(Icons.build),
-            label: 'Tools',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.menu),
-            //activeIcon: Icon(Icons.menu_open),
-            label: 'Menu',
-          ),
-        ],
+        ),
+        child: BottomNavigationBar(
+          elevation: 0,
+          type: BottomNavigationBarType.fixed,
+          currentIndex: _currentIndex,
+          selectedItemColor: AppColors.primary,
+          unselectedItemColor: AppColors.gray600,
+          showUnselectedLabels: true,
+          backgroundColor: Colors.transparent,
+          onTap: (index) {
+            setState(() {
+              _currentIndex = index;
+            });
+          },
+          items: const <BottomNavigationBarItem>[
+            BottomNavigationBarItem(
+              icon: Icon(Icons.contacts_outlined),
+              label: 'Network',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.contact_mail_sharp),
+              label: 'My Card',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.qr_code_scanner_outlined),
+              label: 'Scan',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.category_outlined),
+              label: 'Tools',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.menu),
+              label: 'Menu',
+            ),
+          ],
+        ),
       ),
     );
   }
