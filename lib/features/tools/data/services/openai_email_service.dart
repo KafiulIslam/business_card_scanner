@@ -16,6 +16,8 @@ class OpenAIEmailService {
       throw const OpenAIException('Email concept cannot be empty');
     }
 
+    print('Email response one');
+
     try {
       final result = await FirebaseFunctions.instance
           .httpsCallable('generateEmail')
@@ -24,6 +26,9 @@ class OpenAIEmailService {
             'emailConcept': emailConcept,
           })
           .timeout(_timeout);
+
+      print('Email response two $result');
+
       final data = Map<String, dynamic>.from(result.data as Map);
       final text = data['text']?.toString().trim();
       if (text == null || text.isEmpty) {
@@ -33,6 +38,7 @@ class OpenAIEmailService {
     } on FirebaseFunctionsException catch (e) {
       throw OpenAIException(e.message ?? 'AI request failed');
     } catch (e) {
+      print('Email response three ${e.toString()}');
       if (e is OpenAIException) rethrow;
       throw OpenAIException('Unexpected error: ${e.toString()}');
     }
