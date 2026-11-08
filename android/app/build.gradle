@@ -3,8 +3,7 @@ plugins {
     // START: FlutterFire Configuration
     id 'com.google.gms.google-services'
     // END: FlutterFire Configuration
-    id "kotlin-android"
-    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
+    // The Flutter Gradle Plugin must be applied after the Android Gradle plugin.
     id "dev.flutter.flutter-gradle-plugin"
 }
 
@@ -24,16 +23,20 @@ android {
         targetCompatibility = JavaVersion.VERSION_1_8
     }
 
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8
-    }
-
     defaultConfig {
         applicationId = "com.codertent.cardigo"
         minSdk = 29
         targetSdk = 36
-        versionCode = 6
-        versionName = "1.0.6"
+        versionCode = 7
+        versionName = "1.0.7"
+    }
+
+    // Keep native libraries uncompressed and 16 KB zip-aligned. AGP 8.5.1+
+    // writes PAGE_ALIGNMENT_16K into the app bundle when this is false.
+    packaging {
+        jniLibs {
+            useLegacyPackaging = false
+        }
     }
 
     signingConfigs {
@@ -58,8 +61,26 @@ android {
     }
 }
 
+kotlin {
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8
+    }
+}
 
-dependencies {}
+dependencies {
+    // google_mlkit_text_recognition 0.12.x pulls text-recognition 16.0.0,
+    // whose libmlkit_google_ocr_pipeline.so is aligned to 4 KB. Play rejects
+    // that on Android 15+. 16.0.1 depends on bundled-common 17.0.0, which is
+    // 16 KB aligned for arm64-v8a and x86_64.
+    implementation 'com.google.mlkit:text-recognition:16.0.1'
+}
+
+configurations.configureEach {
+    resolutionStrategy {
+        force 'com.google.mlkit:text-recognition:16.0.1'
+        force 'com.google.mlkit:text-recognition-bundled-common:17.0.0'
+    }
+}
 
 flutter {
     source = "../.."
